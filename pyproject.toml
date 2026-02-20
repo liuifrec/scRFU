@@ -1,0 +1,69 @@
+[build-system]
+requires = ["hatchling>=1.25.0"]
+build-backend = "hatchling.build"
+
+[project]
+name = "scrfu"
+dynamic = ["version"]
+description = "RFU calling for 10x single-cell TCR data integrated into scirpy/scverse AnnData."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { file = "LICENSE" }
+authors = [
+  { name = "James Liu", email = "REPLACE_ME@example.com" }
+]
+keywords = ["single-cell", "TCR", "scirpy", "AnnData", "immunology", "RFU"]
+classifiers = [
+  "Development Status :: 2 - Pre-Alpha",
+  "Intended Audience :: Science/Research",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "Topic :: Scientific/Engineering :: Bio-Informatics",
+]
+
+dependencies = [
+  "anndata>=0.10",
+  "numpy>=1.23",
+  "pandas>=2.0",
+]
+
+[project.optional-dependencies]
+scirpy = [
+  "scirpy>=0.13",
+  "scanpy>=1.9",
+]
+dev = [
+  "pytest>=7.4",
+  "ruff>=0.6",
+  "mypy>=1.8",
+  "types-requests",
+]
+
+[project.scripts]
+scrfu = "scrfu.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/REPLACE_ME/scrfu"
+Repository = "https://github.com/REPLACE_ME/scrfu"
+Issues = "https://github.com/REPLACE_ME/scrfu/issues"
+
+[tool.hatch.version]
+path = "src/scrfu/_version.py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/scrfu"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+select = ["E", "F", "I", "B", "UP", "SIM"]
+ignore = ["E501"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"

@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+pip-wheel-metadata/
+
+# IDEs
+.vscode/
+.idea/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# OS
+.DS_Store
+
+# Outputs
+*.h5ad
+*.h5mu
+*.loom
+*.csv
+*.tsv
+*.tsv.gz
+*.log
+
+# Ruff/Mypy
+.mypy_cache/
+.ruff_cache/
