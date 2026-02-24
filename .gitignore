@@ -30,3 +30,5 @@ pip-wheel-metadata/
 # Ruff/Mypy
 .mypy_cache/
 .ruff_cache/
+# scRFU scratch
+.scrfu/
