@@ -1,13 +1,13 @@
 from __future__ import annotations
 
-from typing import Any, Dict, Optional
+from typing import Any
 
 import pandas as pd
 
 from ._version import __version__
 
 
-def _pick_first(df: pd.DataFrame, candidates: list[str]) -> Optional[str]:
+def _pick_first(df: pd.DataFrame, candidates: list[str]) -> str | None:
     for c in candidates:
         if c in df.columns:
             return c
@@ -18,7 +18,7 @@ def attach_rfu_results(
     adata: Any,
     features: pd.DataFrame,
     rfu_df: pd.DataFrame,
-    provenance: Optional[Dict] = None,
+    provenance: dict | None = None,
     out_key: str = "rfu",
     cdr3_col_out: str = "trb_cdr3aa",
     trbv_col_out: str = "trbv",
@@ -80,7 +80,9 @@ def attach_rfu_results(
         raise ValueError("rfu_df must contain column 'cell_id'")
 
     label_col = _pick_first(rfu_df, ["rfu_label", "label", "RFU", "rfu"])
-    score_col = _pick_first(rfu_df, ["rfu_score", "score", "COR", "cor", "distance", "dist", "prob"])
+    score_col = _pick_first(
+        rfu_df, ["rfu_score", "score", "COR", "cor", "distance", "dist", "prob"]
+    )
 
     rf = rfu_df.copy()
     if label_col is None:

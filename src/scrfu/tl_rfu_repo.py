@@ -1,15 +1,16 @@
 from __future__ import annotations
 
+from collections.abc import Sequence
 from pathlib import Path
-from typing import Any, Optional, Sequence, Union
+from typing import Any
 
 import pandas as pd
 
 from .attach import attach_rfu_results
-from .extract import extract_trb_features
 from .backends.rfu_repo import RFURepoBackend
+from .extract import extract_trb_features
 
-PathLike = Union[str, Path]
+PathLike = str | Path
 
 
 def call_rfu_repo(
@@ -21,8 +22,8 @@ def call_rfu_repo(
     prefer_productive: bool = True,
     wrapper_r_path: PathLike = "r/run_rfu_repo.R",
     rscript_bin: str = "Rscript",
-    extra_r_args: Optional[Sequence[str]] = None,
-    workdir: Optional[PathLike] = None,
+    extra_r_args: Sequence[str] | None = None,
+    workdir: PathLike | None = None,
     out_key: str = "rfu",
 ) -> pd.DataFrame:
     """
@@ -35,6 +36,9 @@ def call_rfu_repo(
 
     Returns the result dataframe (at least: cell_id, rfu_label, rfu_score).
     """
+    if isinstance(extra_r_args, str):
+        raise TypeError("extra_r_args must be a sequence of strings, not a single string.")
+
     features = extract_trb_features(
         adata,
         airr_key=airr_key,

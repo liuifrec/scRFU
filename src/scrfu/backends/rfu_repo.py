@@ -3,15 +3,15 @@ from __future__ import annotations
 import os
 import subprocess
 import tempfile
+from collections.abc import Sequence
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Optional, Sequence, Union
 
 import pandas as pd
 
 from ..rfu import RFURunResult, file_sha256
 
-PathLike = Union[str, Path]
+PathLike = str | Path
 
 
 # ---------------------------------------------------------------------
@@ -33,7 +33,7 @@ class RFURepoPaths:
     km5000_rdata: Path
 
     @staticmethod
-    def from_dir(rfu_dir: PathLike) -> "RFURepoPaths":
+    def from_dir(rfu_dir: PathLike) -> RFURepoPaths:
         d = Path(rfu_dir).expanduser().resolve()
 
         rfu_r = d / "RFU.R"
@@ -43,9 +43,7 @@ class RFURepoPaths:
         missing = [p.name for p in (rfu_r, trimer, km5000) if not p.exists()]
         if missing:
             raise FileNotFoundError(
-                "RFU_DIR is missing required files: "
-                + ", ".join(missing)
-                + f"\nRFU_DIR={d}\n"
+                "RFU_DIR is missing required files: " + ", ".join(missing) + f"\nRFU_DIR={d}\n"
                 "Expected files:\n"
                 "  - RFU.R\n"
                 "  - trimerMDSfit_small.Rdata\n"
@@ -84,7 +82,7 @@ class RFURepoBackend:
         self,
         *,
         rfu_dir: PathLike,
-        wrapper_r_path: Optional[PathLike] = None,
+        wrapper_r_path: PathLike | None = None,
         rscript_bin: str = "Rscript",
     ) -> None:
         self.paths = RFURepoPaths.from_dir(rfu_dir)
@@ -109,15 +107,14 @@ class RFURepoBackend:
         self,
         features: pd.DataFrame,
         *,
-        extra_args: Optional[Sequence[str]] = None,
-        workdir: Optional[PathLike] = None,
+        extra_args: Sequence[str] | None = None,
+        workdir: PathLike | None = None,
     ) -> RFURunResult:
 
         required = {"cell_id", "cdr3aa", "trbv"}
         if not required.issubset(features.columns):
             raise ValueError(
-                f"features must contain columns {required}, "
-                f"but got {list(features.columns)}"
+                f"features must contain columns {required}, but got {list(features.columns)}"
             )
 
         extra_args = list(extra_args or [])
@@ -129,9 +126,7 @@ class RFURepoBackend:
             base = Path(".scrfu") / "rfu_repo_runs"
             base.mkdir(parents=True, exist_ok=True)
 
-            work_path = Path(
-                tempfile.mkdtemp(prefix="run_", dir=str(base))
-            ).resolve()
+            work_path = Path(tempfile.mkdtemp(prefix="run_", dir=str(base))).resolve()
         else:
             work_path = Path(workdir).expanduser().resolve()
             work_path.mkdir(parents=True, exist_ok=True)
@@ -142,9 +137,7 @@ class RFURepoBackend:
         stderr_log = work_path / "stderr.log"
 
         # Write features
-        features.loc[:, ["cell_id", "cdr3aa", "trbv"]].to_csv(
-            in_tsv, sep="\t", index=False
-        )
+        features.loc[:, ["cell_id", "cdr3aa", "trbv"]].to_csv(in_tsv, sep="\t", index=False)
 
         cmd = [
             self.rscript_bin,

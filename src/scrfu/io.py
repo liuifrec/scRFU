@@ -1,12 +1,10 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Union
 
 import anndata as ad
 
-
-PathLike = Union[str, Path]
+PathLike = str | Path
 
 
 def read_h5ad(path: PathLike) -> ad.AnnData:

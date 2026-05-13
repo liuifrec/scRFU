@@ -1,4 +1,5 @@
 import pandas as pd
+import pytest
 
 
 class DummyAdata:
@@ -26,3 +27,32 @@ def test_attach_rfu_results():
     assert adata.obs.loc["c1", "rfu_label"] == "RFU3386"
     assert pd.isna(adata.obs.loc["c2", "rfu_label"])
     assert adata.uns["scrfu"]["package_version"]
+
+
+def test_attach_rfu_results_accepts_alternate_columns_and_records_provenance():
+    from scrfu.attach import attach_rfu_results
+
+    adata = DummyAdata(["c1", "c2"])
+    features = pd.DataFrame({"cell_id": ["c1"], "cdr3_aa": ["CASSA"], "v_gene": ["TRBV1"]})
+    rfu = pd.DataFrame({"cell_id": ["c1"], "label": ["RFU7"], "score": ["0.25"]})
+
+    attach_rfu_results(adata, features, rfu, provenance={"source": "unit-test"})
+
+    assert adata.obs.loc["c1", "trb_cdr3aa"] == "CASSA"
+    assert adata.obs.loc["c1", "trbv"] == "TRBV1"
+    assert adata.obs.loc["c1", "rfu_label"] == "RFU7"
+    assert adata.obs.loc["c1", "rfu_score"] == pytest.approx(0.25)
+    assert adata.uns["scrfu"]["rfu"]["source"] == "unit-test"
+
+
+def test_attach_rfu_results_handles_empty_features():
+    from scrfu.attach import attach_rfu_results
+
+    adata = DummyAdata(["c1", "c2"])
+    features = pd.DataFrame(columns=["cell_id", "cdr3aa", "trbv"])
+
+    attach_rfu_results(adata, features, pd.DataFrame(), provenance={"note": "empty"})
+
+    assert list(adata.obs.columns) == ["trb_cdr3aa", "trbv", "rfu_label", "rfu_score"]
+    assert adata.obs["rfu_score"].isna().all()
+    assert adata.uns["scrfu"]["rfu"]["note"] == "empty"

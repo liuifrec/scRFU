@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Optional
+from typing import Any
 
 import pandas as pd
 
@@ -36,15 +36,12 @@ def extract_trb_features(
         raise KeyError(f"AnnData missing obsm['{airr_key}']; cannot extract AIRR features.")
 
     airr_obj = adata.obsm[airr_key]
-    if isinstance(airr_obj, pd.DataFrame):
-        df = airr_obj.copy()
-    else:
-        # best-effort conversion (works for dict-like / record arrays in many cases)
-        df = pd.DataFrame(airr_obj)
+    df = airr_obj.copy() if isinstance(airr_obj, pd.DataFrame) else pd.DataFrame(airr_obj)
 
     # Normalize columns
     cols = {c.lower(): c for c in df.columns}
-    def pick(*cands: str) -> Optional[str]:
+
+    def pick(*cands: str) -> str | None:
         for c in cands:
             if c in cols:
                 return cols[c]
@@ -55,12 +52,16 @@ def extract_trb_features(
     cdr3_col = pick("cdr3aa", "junction_aa", "cdr3_aa")
     v_col = pick("v_call", "v_gene", "trbv", "v")
 
-    missing = [name for name, col in [
-        ("cell_id", cell_col),
-        ("chain/locus", chain_col),
-        ("cdr3aa/junction_aa", cdr3_col),
-        ("v_call/v_gene", v_col),
-    ] if col is None]
+    missing = [
+        name
+        for name, col in [
+            ("cell_id", cell_col),
+            ("chain/locus", chain_col),
+            ("cdr3aa/junction_aa", cdr3_col),
+            ("v_call/v_gene", v_col),
+        ]
+        if col is None
+    ]
     if missing:
         raise ValueError(f"AIRR table missing columns: {missing}. Columns seen: {list(df.columns)}")
 
@@ -102,7 +103,7 @@ def extract_trb_features(
 
     # Align to adata.obs_names if present: keep only known cells
     if hasattr(adata, "obs_names"):
-        obs_names = set(map(str, list(getattr(adata, "obs_names"))))
+        obs_names = set(map(str, list(adata.obs_names)))
         out = out[out["cell_id"].isin(obs_names)].copy()
 
     return out

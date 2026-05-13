@@ -2,14 +2,13 @@ from __future__ import annotations
 
 import hashlib
 import subprocess
+from collections.abc import Sequence
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Optional, Sequence, Union
 
 import pandas as pd
 
-
-PathLike = Union[str, Path]
+PathLike = str | Path
 
 
 @dataclass(frozen=True)
@@ -34,8 +33,8 @@ def run_rfu_rscript(
     *,
     rscript_path: PathLike,
     atlas_path: PathLike,
-    out_path: Optional[PathLike] = None,
-    extra_args: Optional[Sequence[str]] = None,
+    out_path: PathLike | None = None,
+    extra_args: Sequence[str] | None = None,
 ) -> RFURunResult:
     """
     Call an external R script to perform RFU assignment.
