@@ -65,6 +65,7 @@ def call_rfu_repo(
                 "out_key": out_key,
                 "note": "No TRB features extracted; RFU not run.",
             },
+            out_key=out_key,
         )
         return pd.DataFrame({"cell_id": [], "rfu_label": [], "rfu_score": []})
 
@@ -85,5 +86,6 @@ def call_rfu_repo(
             "airr_key": airr_key,
             "out_key": out_key,
         },
+        out_key=out_key,
     )
     return run.df

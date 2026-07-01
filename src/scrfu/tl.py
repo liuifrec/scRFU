@@ -8,6 +8,7 @@ import pandas as pd
 
 from .summary import aggregate_rfu, rfu_summary
 from .tl_rfu_repo import call_rfu_repo
+from .validation import validate_airr
 
 PathLike = str | Path
 
@@ -62,4 +63,4 @@ def call_rfu(
     raise ValueError(f"Unknown backend: {backend}. Supported: 'rfu_repo'")
 
 
-__all__ = ["aggregate_rfu", "call_rfu", "call_rfu_repo", "rfu_summary"]
+__all__ = ["aggregate_rfu", "call_rfu", "call_rfu_repo", "rfu_summary", "validate_airr"]

@@ -5,10 +5,12 @@ import subprocess
 import tempfile
 from collections.abc import Sequence
 from dataclasses import dataclass
+from datetime import UTC, datetime
 from pathlib import Path
 
 import pandas as pd
 
+from .._version import __version__
 from ..rfu import RFURunResult, file_sha256
 
 PathLike = str | Path
@@ -194,6 +196,7 @@ class RFURepoBackend:
         d = self.paths
 
         return {
+            "scrfu_version": __version__,
             "backend": "rfu_repo",
             "rfu_dir": str(d.rfu_dir),
             "rfu_r_sha256": file_sha256(d.rfu_r),
@@ -201,6 +204,7 @@ class RFURepoBackend:
             "km5000_rdata_sha256": file_sha256(d.km5000_rdata),
             "wrapper_r_path": str(self.wrapper_r_path),
             "wrapper_r_sha256": file_sha256(self.wrapper_r_path),
+            "timestamp": datetime.now(UTC).isoformat(),
             "rscript_bin": self.rscript_bin,
             "RFU_DIR_env": os.environ.get("RFU_DIR"),
         }

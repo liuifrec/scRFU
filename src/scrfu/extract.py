@@ -49,7 +49,7 @@ def extract_trb_features(
 
     cell_col = pick("cell_id", "cell", "barcode", "cellid")
     chain_col = pick("chain", "locus")
-    cdr3_col = pick("cdr3aa", "junction_aa", "cdr3_aa")
+    cdr3_col = pick("cdr3aa", "junction_aa", "cdr3_aa", "cdr3")
     v_col = pick("v_call", "v_gene", "trbv", "v")
 
     missing = [

@@ -4,6 +4,7 @@ from pathlib import Path
 
 import pytest
 
+from scrfu._version import __version__
 from scrfu.backends.rfu_repo import RFURepoBackend, RFURepoPaths
 
 
@@ -51,3 +52,23 @@ def test_backend_init_fails_when_wrapper_script_is_missing(tmp_path: Path):
 
     with pytest.raises(FileNotFoundError, match="Wrapper R script not found"):
         RFURepoBackend(rfu_dir=rfu_dir, wrapper_r_path=tmp_path / "missing_wrapper.R")
+
+
+def test_backend_provenance_records_version_hashes_and_timestamp(tmp_path: Path):
+    rfu_dir = tmp_path / "RFU"
+    rfu_dir.mkdir()
+    _write_required_rfu_files(rfu_dir)
+    wrapper = tmp_path / "run_rfu_repo.R"
+    wrapper.write_text("#!/usr/bin/env Rscript\n", encoding="utf-8")
+
+    backend = RFURepoBackend(rfu_dir=rfu_dir, wrapper_r_path=wrapper)
+    provenance = backend.provenance_dict()
+
+    assert provenance["scrfu_version"] == __version__
+    assert provenance["backend"] == "rfu_repo"
+    assert provenance["rfu_dir"] == str(rfu_dir.resolve())
+    assert len(provenance["rfu_r_sha256"]) == 64
+    assert len(provenance["trimer_rdata_sha256"]) == 64
+    assert len(provenance["km5000_rdata_sha256"]) == 64
+    assert len(provenance["wrapper_r_sha256"]) == 64
+    assert provenance["timestamp"].endswith("+00:00")
