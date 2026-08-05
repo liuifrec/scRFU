@@ -30,8 +30,9 @@ def test_call_rfu_rejects_unknown_backend():
         call_rfu(object(), backend="unknown")
 
 
-def test_call_rfu_requires_rfu_dir_for_rfu_repo_backend():
-    with pytest.raises(ValueError, match="requires rfu_dir"):
+def test_call_rfu_requires_backend_configuration(monkeypatch):
+    monkeypatch.delenv("RFU_DIR", raising=False)
+    with pytest.raises(ValueError, match="Pass rfu_dir='/path/to/RFU'.*RFU_DIR"):
         call_rfu(object(), backend="rfu_repo")
 
 
@@ -53,7 +54,8 @@ def test_call_rfu_repo_surfaces_missing_rfu_repo_files(tmp_path):
 def test_call_rfu_repo_respects_custom_out_key_for_empty_features(tmp_path):
     rfu_dir = tmp_path / "RFU"
     rfu_dir.mkdir()
-    for name in ("RFU.R", "trimerMDSfit_small.Rdata", "km5000noMax.Rdata"):
+    (rfu_dir / "RFU.R").write_text("AssignRFUs <- function(ff) {}\n", encoding="utf-8")
+    for name in ("trimerMDSfit_small.Rdata", "km5000noMax.Rdata"):
         (rfu_dir / name).write_text("placeholder", encoding="utf-8")
     wrapper = tmp_path / "run_rfu_repo.R"
     wrapper.write_text("#!/usr/bin/env Rscript\n", encoding="utf-8")
@@ -71,4 +73,5 @@ def test_call_rfu_repo_respects_custom_out_key_for_empty_features(tmp_path):
     assert result.empty
     assert "rfu_custom" in adata.uns["scrfu"]
     assert adata.uns["scrfu"]["rfu_custom"]["out_key"] == "rfu_custom"
+    assert adata.uns["scrfu"]["rfu_custom"]["original_row_count"] == 0
     assert "rfu" not in adata.uns["scrfu"]

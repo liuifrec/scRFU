@@ -41,6 +41,17 @@ def test_cli_parser_requires_subcommand():
         parser.parse_args([])
 
 
+def test_cli_parser_allows_rfu_dir_environment_fallback():
+    parser = build_parser()
+
+    ns = parser.parse_args(["call-rfu", "in.h5ad", "-o", "out.h5ad"])
+
+    assert ns.rfu_dir is None
+    assert ns.mode == "standard"
+    assert ns.threshold == 0.6
+    assert ns.deduplicate is True
+
+
 def test_cli_main_dispatches_current_call_rfu_signature(monkeypatch):
     calls: dict[str, object] = {}
     adata = object()
@@ -83,6 +94,9 @@ def test_cli_main_dispatches_current_call_rfu_signature(monkeypatch):
     assert calls["write"] == (adata, "output.h5ad")
     assert calls["kwargs"] == {
         "rfu_dir": "/rfu",
+        "mode": "standard",
+        "threshold": 0.6,
+        "deduplicate": True,
         "chain": "TRB",
         "airr_key": "airr",
         "out_key": "rfu",

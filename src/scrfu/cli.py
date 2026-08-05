@@ -13,7 +13,25 @@ def build_parser() -> argparse.ArgumentParser:
     c = sub.add_parser("call-rfu", help="Run RFU calling and attach results to AnnData.")
     c.add_argument("input", type=str, help="Input .h5ad")
     c.add_argument("-o", "--output", type=str, required=True, help="Output .h5ad")
-    c.add_argument("--rfu-dir", type=str, required=True, help="Path to upstream RFU checkout")
+    c.add_argument(
+        "--rfu-dir",
+        type=str,
+        default=None,
+        help="Path to upstream RFU checkout (falls back to RFU_DIR)",
+    )
+    c.add_argument(
+        "--mode",
+        choices=("standard", "map_aware"),
+        default="standard",
+        help="RFU backend mode (default: standard)",
+    )
+    c.add_argument("--threshold", type=float, default=0.6, help="RFU threshold (default: 0.6)")
+    c.add_argument(
+        "--no-deduplicate",
+        action="store_false",
+        dest="deduplicate",
+        help="Submit every eligible row instead of unique CDR3 queries",
+    )
     c.add_argument("--chain", type=str, default="TRB", help="Chain/locus (default: TRB)")
     c.add_argument("--airr-key", type=str, default="airr", help="obsm key for AIRR table")
     c.add_argument("--out-key", type=str, default="rfu", help="Output provenance key")
@@ -44,6 +62,9 @@ def main(argv: list[str] | None = None) -> None:
         call_rfu(
             adata,
             rfu_dir=args.rfu_dir,
+            mode=args.mode,
+            threshold=args.threshold,
+            deduplicate=args.deduplicate,
             chain=args.chain,
             airr_key=args.airr_key,
             out_key=args.out_key,

@@ -68,12 +68,15 @@ An official public checkout containing `RFU.R`,
 - the per-encoded-row winning RFU index and maximum correlation; and
 - the official threshold-derived miss count.
 
-Stable per-cell reconstruction is possible in scRFU without private R code when
-the wrapper writes a validated, uniquely identified input table, applies the
-same `^C` eligibility rule before calling R, and reconstructs output by retained
-row position rather than by CDR3 text. Scientific-equivalence tests must cover
-duplicates, filtered sequences, ties, thresholds, and empty or malformed input
-before that reconstruction replaces existing behavior.
+Stable per-cell reconstruction is implemented in scRFU without private R code.
+The Python layer assigns `input_row_id`, applies the same `^C` eligibility rule,
+queries by `unique_sequence_id`, and reconstructs with a validated many-to-one
+mapping. It never joins unrestricted assignment results on CDR3 text.
+
+The previous wrapper wrote a column header named `CDR3` into the intermediate
+file. Because `EncodeRepertoire()` reads with `header=FALSE` and `CDR3` itself
+matches `^C`, that header became a synthetic encoded repertoire row. The current
+wrapper writes the upstream intermediate without column names.
 
 ## Optional local map-aware extension
 
@@ -98,17 +101,24 @@ These functions may be used only as optional capabilities when a user supplies
 a checkout that contains them and their license permits use. Public scRFU must
 not require them.
 
+In `map_aware` mode, scRFU does not accept the extension's `MAP` row identifiers
+as authoritative. It submits only eligible queries with explicit
+`unique_sequence_id` values and reconstructs from the length-checked `TCR` and
+`COR` vectors. A focused integration test places an ineligible row before two
+eligible rows and verifies that both later assignments retain their original
+identifiers.
+
 ## Backend resolution and capability design
 
-The backend design for the next implementation stage is:
+The implemented backend behavior is:
 
 1. Resolve the checkout from an explicit `rfu_dir` argument when supplied.
 2. Otherwise resolve it from the `RFU_DIR` environment variable.
 3. Otherwise raise an actionable error that describes both supported options
    and uses `/path/to/RFU` as its example.
 4. Validate the three files required for standard mode.
-5. Source `RFU.R` in an isolated R process and detect functions with exact
-   function checks. Record at least:
+5. Read `RFU.R` without executing it and detect exact top-level function
+   definitions for:
    `AssignRFUs`, `AssignRFUs_with_map`, and `RFUbatch_with_maps`.
 6. Select `standard` mode by default. Standard mode requires only
    `AssignRFUs`. Optional `map_aware` mode requires
@@ -116,7 +126,7 @@ The backend design for the next implementation stage is:
    raises a capability error that lists the detected functions and explains
    that the official public checkout supports standard mode.
 
-Capability tests must construct temporary fake RFU directories and synthetic
+Capability tests construct temporary fake RFU directories and synthetic
 `RFU.R` files. They must not depend on a developer checkout or an absolute
 machine path.
 
@@ -131,9 +141,29 @@ Each run's provenance should record:
 - the wrapper path/hash, R executable, timestamp, and run parameters already
   tracked by scRFU.
 
-Capability detection, chunk orchestration, and result reconstruction are design
-requirements documented here, not changes included in the Wells-adapter stage.
-The public RFU result schema remains unchanged during this stage.
+Restartable chunk orchestration remains deferred. `standard` is the canonical
+default even when optional functions are detected; capability presence never
+silently changes the selected scientific mode.
+
+## Stable standard mapping and equivalence
+
+The standard mapping path preserves every extracted row and its original order.
+Rows failing `^C` remain in the reconstructed result with
+`eligibility_status="ineligible_cdr3_not_starting_c"` and no RFU assignment.
+Eligible rows receive a `unique_sequence_id`. With deduplication enabled, the
+first occurrence of each exact `cdr3aa` value is submitted and all occurrences
+map back through that identifier. TRBV is preserved per original row but is not
+part of the candidate deduplication key because active `EncodeRepertoire()` does
+not use it.
+
+The external-backend integration test compares repeated-row calls, unique-CDR3
+calls, and reconstructed repeated rows. For every eligible row it requires the
+same nearest RFU ID and label, identical threshold status, and RFU score within
+absolute tolerance `1e-12`. The test includes one CDR3 repeated with different
+TRBV calls, unique sequences, a non-`C` sequence, and at least two below-threshold
+sequences. It separately verifies sequence-level equivalence, restored
+repertoire multiplicity, unique-query upstream `N`, and multiplicity-weighted
+reconstructed miss count.
 
 ## Wells atlas `TCR_IR` adapter
 
@@ -156,7 +186,8 @@ The adapter uses an explicit cell column when available. Otherwise the table
 must have the same number and exact index order as `adata.obs_names`, or have a
 default positional index with one row per observation. Ambiguous alignment and
 duplicate explicit cell identifiers are errors. Missing values (including the
-literal `"nan"` emitted by the atlas preprocessing), non-target chains, and CDR3
-sequences that official `EncodeRepertoire()` would discard are removed before
-backend execution. The adapter returns the existing
+literal `"nan"` emitted by the atlas preprocessing) and non-target chains are
+removed. Non-`C` CDR3 sequences remain in the feature table; the backend retains
+and explicitly marks these rows instead of submitting them to
+`EncodeRepertoire()`. The adapter returns the existing
 `cell_id`/`cdr3aa`/`trbv` feature schema and does not mutate the AnnData object.

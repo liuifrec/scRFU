@@ -41,10 +41,12 @@ pip install -e ".[dev,scirpy]"
 
 ## External RFU Dependency
 
-RFU assignment requires a separate checkout of the upstream RFU repository. Pass
-that location with `rfu_dir` or the example scripts' `--rfu-dir` option. scRFU
-records hashes of upstream RFU files when RFU is run, but the files remain
-outside this repository.
+RFU assignment requires a separate checkout of the upstream RFU repository.
+Pass that location with `rfu_dir`/`--rfu-dir`, or set `RFU_DIR`. An explicit
+argument takes precedence over the environment variable. Standard mode uses the
+official public `AssignRFUs()` implementation and remains the default. scRFU
+records hashes and detected optional capabilities, but the files remain outside
+this repository.
 
 ## Quickstart
 
@@ -56,7 +58,8 @@ qc = scrfu.tl.validate_airr(adata, airr_key="airr", chain="TRB")
 scrfu.tl.call_rfu(
     adata,
     backend="rfu_repo",
-    rfu_dir="~/ext/RFU",
+    rfu_dir="/path/to/RFU",
+    mode="standard",
 )
 
 summary = scrfu.tl.rfu_summary(adata, groupby="sample")

@@ -70,7 +70,13 @@ def test_extract_wells_tcr_ir_from_uns_preserves_verified_cell_alignment():
 
     out = extract_trb_features(adata, airr_key="TCR_IR")
 
-    expected = pd.DataFrame({"cell_id": ["c1"], "cdr3aa": ["CASSA"], "trbv": ["TRBV1"]})
+    expected = pd.DataFrame(
+        {
+            "cell_id": ["c1", "c4"],
+            "cdr3aa": ["CASSA", "ASSQ"],
+            "trbv": ["TRBV1", "TRBV3"],
+        }
+    )
     pd.testing.assert_frame_equal(out, expected)
     pd.testing.assert_frame_equal(adata.uns["TCR_IR"], original)
 

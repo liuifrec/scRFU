@@ -9,6 +9,8 @@ planned compatibility surface.
 ### Reads
 
 - `adata.obsm["airr"]` by default, or another key passed as `airr_key`.
+- With `airr_key="TCR_IR"`, a Wells atlas flattened TCR table from
+  `adata.uns["TCR_IR"]` or `adata.obsm["TCR_IR"]` (`uns` takes precedence).
 - `adata.obs` metadata columns passed to `groupby`, such as `sample`,
   `condition`, or `cell_type`.
 - Existing `adata.obs["rfu_label"]` and `adata.obs["rfu_score"]` for summary,
@@ -37,20 +39,29 @@ planned compatibility surface.
 
 Purpose: unified RFU calling entrypoint.
 
-Required input: AnnData-like object with AIRR data, `backend="rfu_repo"`, and
-`rfu_dir` pointing to a user-provided upstream RFU checkout.
+Required input: AnnData-like object with AIRR data and `backend="rfu_repo"`.
+The RFU checkout is resolved from explicit `rfu_dir`, then `RFU_DIR`; absence of
+both is a configuration error.
 
-Main output: pandas DataFrame with at least `cell_id`, `rfu_label`, and
-`rfu_score`; also mutates `adata` by attaching RFU results.
+Main output: pandas DataFrame preserving every extracted row with `input_row_id`,
+`unique_sequence_id`, `eligibility_status`, `rfu_id`, `rfu_label`, `rfu_score`,
+`pass_thr`, and `rfu_status`; also mutates `adata` by attaching RFU results.
 
-AnnData fields read: `adata.obsm[airr_key]`, `adata.obs_names`.
+AnnData fields read: `adata.obsm[airr_key]`, or the Wells `TCR_IR` locations
+described above, and `adata.obs_names`.
 
 AnnData fields written: `trb_cdr3aa`, `trbv`, `rfu_label`, `rfu_score`, and
 `adata.uns["scrfu"]`.
 
-Common errors: `ValueError` for unknown backend or missing `rfu_dir`; `TypeError`
-when `extra_r_args` is a string; downstream `KeyError` or `ValueError` from AIRR
-extraction; `FileNotFoundError` for incomplete upstream RFU checkout.
+Default mode: `standard`, requiring only official `AssignRFUs()`. Optional
+`mode="map_aware"` requires `AssignRFUs_with_map()` and is never selected
+implicitly. Exact CDR3 deduplication is enabled by default and can be disabled
+with `deduplicate=False`.
+
+Common errors: `ValueError` for unknown backend/mode or missing configuration;
+`RFUCapabilityError` for an unavailable requested mode; `TypeError` when
+`extra_r_args` is a string; downstream extraction errors; `FileNotFoundError`
+for an incomplete checkout.
 
 ### `scrfu.tl.call_rfu_repo`
 
@@ -65,13 +76,30 @@ AnnData fields read: `adata.obsm[airr_key]`, `adata.obs_names`.
 
 AnnData fields written: same as `call_rfu`.
 
-Provenance: stores backend name, scRFU version, upstream RFU directory, hashes of
-`RFU.R` and RFU `.Rdata` files, wrapper R script path/hash, timestamp, chain,
-`airr_key`, and `out_key`.
+Provenance: stores backend name/mode and resolution source, scRFU version,
+resolved directory, detected capabilities, hashes of `RFU.R` and both RFU
+`.Rdata` files, wrapper path/hash, timestamp, eligibility rule, deduplication
+key, row/query/reconstruction counts, RFU threshold, upstream unique-query miss
+count, multiplicity-weighted reconstructed miss count, chain, `airr_key`, and
+`out_key`.
 
 Common errors: `TypeError` for string `extra_r_args`; `FileNotFoundError` for
 missing RFU files or wrapper script; `RuntimeError` if the R backend exits
 non-zero or fails to produce output.
+
+### `scrfu.backends.rfu_repo.RFURepoBackend`
+
+Purpose: resolve and validate the external checkout, expose immutable static
+capabilities through `backend.capabilities`, enforce explicit backend mode, and
+run stable standard or optional map-aware mapping.
+
+Resolution precedence: explicit `rfu_dir`, `RFU_DIR`, actionable configuration
+error. `RFURepoPaths.resolution_source` is `explicit_argument` or
+`environment_variable`.
+
+Capabilities: immutable booleans for `AssignRFUs`,
+`AssignRFUs_with_map`, and `RFUbatch_with_maps`, detected by reading—not
+executing—`RFU.R`.
 
 ## Validation and Extraction
 
@@ -83,12 +111,29 @@ Required input: AnnData-like object with a DataFrame-like AIRR table.
 
 Main output: pandas DataFrame with `cell_id`, `cdr3aa`, and `trbv`.
 
-AnnData fields read: `adata.obsm[airr_key]`, `adata.obs_names`.
+AnnData fields read: `adata.obsm[airr_key]`, or `adata.uns["TCR_IR"]` when
+`airr_key="TCR_IR"`, and `adata.obs_names`.
 
 AnnData fields written: none.
 
 Common errors: `KeyError` for missing AIRR key; `ValueError` for missing cell,
 chain, CDR3, or V-gene columns.
+
+### `scrfu.extract.extract_wells_tcr_ir_features`
+
+Purpose: adapt a Wells atlas flattened primary VDJ table to the existing scRFU
+feature schema without changing RFU result fields.
+
+Required input: `adata.uns["TCR_IR"]` or `adata.obsm["TCR_IR"]` with flattened
+VDJ-1 CDR3 and V-call columns, plus `adata.obs_names`.
+
+Main output: pandas DataFrame with `cell_id`, `cdr3aa`, and `trbv`.
+
+AnnData fields written: none.
+
+Common errors: `KeyError` when neither location exists; `ValueError` for missing
+flattened fields, ambiguous row alignment, length mismatch, or duplicate cell
+identifiers.
 
 ### `scrfu.tl.validate_airr`
 

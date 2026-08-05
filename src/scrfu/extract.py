@@ -150,10 +150,6 @@ def extract_wells_tcr_ir_features(
     trbv = df[v_col].astype("string").str.strip()
     keep &= _present_text(cdr3) & _present_text(trbv)
 
-    # Upstream EncodeRepertoire retains only CDR3 sequences beginning with C.
-    # Filtering here keeps cell identifiers aligned with the encoded rows.
-    keep &= cdr3.str.startswith("C", na=False)
-
     obs_names = set(_obs_names(adata))
     keep &= cell_ids.isin(obs_names)
 

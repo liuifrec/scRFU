@@ -16,7 +16,10 @@ PathLike = str | Path
 def call_rfu_repo(
     adata: Any,
     *,
-    rfu_dir: PathLike,
+    rfu_dir: PathLike | None = None,
+    mode: str = "standard",
+    threshold: float = 0.6,
+    deduplicate: bool = True,
     chain: str = "TRB",
     airr_key: str = "airr",
     prefer_productive: bool = True,
@@ -34,10 +37,21 @@ def call_rfu_repo(
       - adata.obs["rfu_label"], adata.obs["rfu_score"]
       - adata.uns["scrfu"] provenance (merged)
 
-    Returns the result dataframe (at least: cell_id, rfu_label, rfu_score).
+    Standard mode is canonical and requires only public AssignRFUs(). The
+    optional map-aware mode must be requested explicitly.
+
+    Returns one result row per extracted feature row, including stable input and
+    query identifiers, eligibility/assignment status, label, and score.
     """
     if isinstance(extra_r_args, str):
         raise TypeError("extra_r_args must be a sequence of strings, not a single string.")
+
+    backend = RFURepoBackend(
+        rfu_dir=rfu_dir,
+        mode=mode,
+        wrapper_r_path=wrapper_r_path,
+        rscript_bin=rscript_bin,
+    )
 
     features = extract_trb_features(
         adata,
@@ -46,31 +60,10 @@ def call_rfu_repo(
         prefer_productive=prefer_productive,
     )
 
-    backend = RFURepoBackend(
-        rfu_dir=rfu_dir,
-        wrapper_r_path=wrapper_r_path,
-        rscript_bin=rscript_bin,
-    )
-
-    if features.empty:
-        # Attach empty columns + provenance and return
-        attach_rfu_results(
-            adata,
-            features=features,
-            rfu_df=pd.DataFrame({"cell_id": [], "rfu_label": [], "rfu_score": []}),
-            provenance={
-                **backend.provenance_dict(),
-                "chain": chain,
-                "airr_key": airr_key,
-                "out_key": out_key,
-                "note": "No TRB features extracted; RFU not run.",
-            },
-            out_key=out_key,
-        )
-        return pd.DataFrame({"cell_id": [], "rfu_label": [], "rfu_score": []})
-
     run = backend.run(
         features,
+        threshold=threshold,
+        deduplicate=deduplicate,
         extra_args=extra_r_args,
         workdir=workdir,
     )
@@ -82,6 +75,7 @@ def call_rfu_repo(
         rfu_df=run.df,
         provenance={
             **backend.provenance_dict(),
+            **run.metadata,
             "chain": chain,
             "airr_key": airr_key,
             "out_key": out_key,

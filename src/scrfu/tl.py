@@ -18,6 +18,9 @@ def call_rfu(
     *,
     backend: str = "rfu_repo",
     rfu_dir: PathLike | None = None,
+    mode: str = "standard",
+    threshold: float = 0.6,
+    deduplicate: bool = True,
     chain: str = "TRB",
     airr_key: str = "airr",
     prefer_productive: bool = True,
@@ -34,22 +37,28 @@ def call_rfu(
     ----------
     backend
         Currently supported:
-          - "rfu_repo": call upstream RFU repo via r/run_rfu_repo.R (requires rfu_dir)
+          - "rfu_repo": call upstream RFU repo via r/run_rfu_repo.R
     rfu_dir
-        Required when backend="rfu_repo". Path to upstream RFU checkout.
+        Path to upstream RFU checkout. Falls back to RFU_DIR when omitted.
+    mode
+        ``"standard"`` (default) uses public ``AssignRFUs()``. ``"map_aware"``
+        explicitly requests the optional ``AssignRFUs_with_map()`` capability.
+    threshold
+        RFU correlation threshold used for pass status and upstream ``N``.
+    deduplicate
+        Query each exact eligible CDR3 once, then restore row multiplicity.
     """
     backend = backend.lower().strip()
     if isinstance(extra_r_args, str):
         raise TypeError("extra_r_args must be a sequence of strings, not a single string.")
 
     if backend == "rfu_repo":
-        if rfu_dir is None:
-            raise ValueError(
-                "backend='rfu_repo' requires rfu_dir (path to upstream RFU repo checkout)."
-            )
         return call_rfu_repo(
             adata,
             rfu_dir=rfu_dir,
+            mode=mode,
+            threshold=threshold,
+            deduplicate=deduplicate,
             chain=chain,
             airr_key=airr_key,
             prefer_productive=prefer_productive,

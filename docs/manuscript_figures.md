@@ -32,7 +32,7 @@ aggregation, plotting, and export on a CI-safe demo.
 - Required input: user-provided public COVID-19 PBMC AnnData/scirpy h5ad with
   TCR AIRR data and metadata such as disease, severity, sample, and cell type.
 - Script to generate:
-  `python examples/benchmark_scirpy_dataset.py --input input.h5ad --rfu-dir ~/ext/RFU --groupby sample --cell-type-key cell_type --outdir results/scRFU_benchmark`.
+  `python examples/benchmark_scirpy_dataset.py --input input.h5ad --rfu-dir /path/to/RFU --groupby sample --cell-type-key cell_type --outdir results/scRFU_benchmark`.
 - Expected output files: `validate_airr.tsv`, `rfu_summary_by_group.tsv`,
   `rfu_matrix_by_group.tsv`, `rfu_bar_by_group.png`,
   `rfu_heatmap_by_group.png`, `rfu_score_hist.png`, optional cell-type outputs,

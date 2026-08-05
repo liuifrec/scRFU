@@ -36,7 +36,7 @@ plots, and a run manifest from a user-provided AnnData/scirpy h5ad file.
 ```bash
 python examples/benchmark_scirpy_dataset.py \
   --input input.h5ad \
-  --rfu-dir ~/ext/RFU \
+  --rfu-dir /path/to/RFU \
   --groupby sample \
   --cell-type-key cell_type \
   --outdir results/scRFU_benchmark
