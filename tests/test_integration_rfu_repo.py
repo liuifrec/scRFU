@@ -42,7 +42,8 @@ def test_call_rfu_repo_integration(tmp_path: Path):
             "cdr3aa": ["CASSLGQETQYF", "CASSIRSSYEQYF"],
             "v_call": ["TRBV7-9", "TRBV6-5"],
             "productive": [True, True],
-        }
+        },
+        index=adata.obs_names,
     )
 
     result = call_rfu_repo(
