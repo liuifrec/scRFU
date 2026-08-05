@@ -5,7 +5,7 @@ import subprocess
 import tempfile
 from collections.abc import Sequence
 from dataclasses import dataclass
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from pathlib import Path
 
 import pandas as pd
@@ -204,7 +204,7 @@ class RFURepoBackend:
             "km5000_rdata_sha256": file_sha256(d.km5000_rdata),
             "wrapper_r_path": str(self.wrapper_r_path),
             "wrapper_r_sha256": file_sha256(self.wrapper_r_path),
-            "timestamp": datetime.now(UTC).isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
             "rscript_bin": self.rscript_bin,
             "RFU_DIR_env": os.environ.get("RFU_DIR"),
         }

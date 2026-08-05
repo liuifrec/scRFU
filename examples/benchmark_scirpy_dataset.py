@@ -5,7 +5,7 @@ import json
 import os
 import sys
 from collections.abc import Callable
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -132,7 +132,7 @@ def _write_manifest(
         "cell_type_key": cell_type_key,
         "n_cells": n_cells,
         "output_files": [str(p) for p in output_files],
-        "timestamp": datetime.now(UTC).isoformat(),
+        "timestamp": datetime.now(timezone.utc).isoformat(),
         "notes": [
             "scRFU depends on a user-provided upstream RFU checkout; no RFU code or data are bundled.",
             *notes,

@@ -9,7 +9,11 @@ import anndata as ad
 import pandas as pd
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-SCRIPT = "examples/gse190905_prepare.py"
+SCRIPT = REPO_ROOT / "examples" / "gse190905_prepare.py"
+
+
+def _subprocess_output(result: subprocess.CompletedProcess[str]) -> str:
+    return f"stdout:\n{result.stdout}\nstderr:\n{result.stderr}"
 
 
 def _write_csv_gz(path: Path, df: pd.DataFrame) -> None:
@@ -42,7 +46,7 @@ def test_gse190905_prepare_automatic_column_inference(tmp_path: Path) -> None:
     result = subprocess.run(
         [
             sys.executable,
-            SCRIPT,
+            str(SCRIPT),
             "--tcr",
             str(tcr_path),
             "--metadata",
@@ -52,12 +56,12 @@ def test_gse190905_prepare_automatic_column_inference(tmp_path: Path) -> None:
             "--report",
             str(report_path),
         ],
-        cwd=REPO_ROOT,
+        cwd=tmp_path,
         capture_output=True,
         text=True,
     )
 
-    assert result.returncode == 0, result.stderr
+    assert result.returncode == 0, _subprocess_output(result)
     assert out_path.exists()
     assert report_path.exists()
 
@@ -99,7 +103,7 @@ def test_gse190905_prepare_explicit_column_mapping(tmp_path: Path) -> None:
     result = subprocess.run(
         [
             sys.executable,
-            SCRIPT,
+            str(SCRIPT),
             "--tcr",
             str(tcr_path),
             "--metadata",
@@ -121,12 +125,12 @@ def test_gse190905_prepare_explicit_column_mapping(tmp_path: Path) -> None:
             "--metadata-cell-col",
             "BarcodeID",
         ],
-        cwd=REPO_ROOT,
+        cwd=tmp_path,
         capture_output=True,
         text=True,
     )
 
-    assert result.returncode == 0, result.stderr
+    assert result.returncode == 0, _subprocess_output(result)
     report = json.loads(report_path.read_text(encoding="utf-8"))
     assert report["inferred_columns"]["tcr_cell_col"] == "CellBarcode"
     assert report["inferred_columns"]["metadata_cell_col"] == "BarcodeID"
@@ -146,7 +150,7 @@ def test_gse190905_prepare_missing_cdr3_column_fails_clearly(tmp_path: Path) -> 
     result = subprocess.run(
         [
             sys.executable,
-            SCRIPT,
+            str(SCRIPT),
             "--tcr",
             str(tcr_path),
             "--metadata",
@@ -156,10 +160,12 @@ def test_gse190905_prepare_missing_cdr3_column_fails_clearly(tmp_path: Path) -> 
             "--report",
             str(tmp_path / "report.json"),
         ],
-        cwd=REPO_ROOT,
+        cwd=tmp_path,
         capture_output=True,
         text=True,
     )
 
-    assert result.returncode != 0
-    assert "could not infer required TCR column for cdr3" in result.stderr
+    assert result.returncode != 0, _subprocess_output(result)
+    assert "could not infer required TCR column for cdr3" in result.stderr, _subprocess_output(
+        result
+    )
