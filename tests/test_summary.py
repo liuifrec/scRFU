@@ -1,9 +1,10 @@
 from __future__ import annotations
 
+import numpy as np
 import pandas as pd
 import pytest
 
-from scrfu.tl import aggregate_rfu, rfu_summary
+from scrfu.tl import aggregate_rfu, rfu_metrics, rfu_summary
 
 
 class DummyAdata:
@@ -136,3 +137,97 @@ def test_all_cells_unassigned():
     assert summary.loc[0, "top_rfu_count"] == 0
     assert aggregate.empty
     assert aggregate.index.name == "group"
+
+
+def _metrics_frame() -> pd.DataFrame:
+    return pd.DataFrame(
+        {
+            "cell_id": ["c1", "c2", "c3", "c4", "c5", "c6"],
+            "phenotype": ["P1", "P1", "P1", "P1", "P1", "P2"],
+            "cdr3aa": ["A", "A", "B", "C", "D", "E"],
+            "rfu_label": ["RFU1", "RFU1", "RFU1", "RFU2", "RFU2", "RFU1"],
+            "pass_thr": [True, True, False, True, False, True],
+            "donor": ["d1", "d1", "d2", "d2", "d3", "d4"],
+            "sample": ["s1", "s1", "s2", "s2", "s3", "s4"],
+        }
+    )
+
+
+def test_rfu_metrics_cell_weighting_and_prevalence() -> None:
+    result = rfu_metrics(
+        _metrics_frame(),
+        groupby="phenotype",
+        weighting="cell",
+        donor_col="donor",
+        sample_col="sample",
+    )
+    row = result[(result["phenotype"] == "P1") & (result["rfu_label"] == "RFU1")].iloc[0]
+
+    assert row["rfu_cell_count"] == 3
+    assert row["rfu_cell_abundance"] == pytest.approx(3 / 5)
+    assert row["unique_cdr3_richness"] == 2
+    assert row["sequence_convergence_ratio"] == pytest.approx(2 / 4)
+    assert row["multiplicity"] == pytest.approx(3 / 2)
+    assert row["weighted_abundance"] == pytest.approx(3 / 5)
+    assert row["clonotype_entropy"] == pytest.approx(
+        -(2 / 3) * np.log(2 / 3) - (1 / 3) * np.log(1 / 3)
+    )
+    assert row["dominant_clonotype_fraction"] == pytest.approx(2 / 3)
+    assert row["rfu_threshold_pass_rate"] == pytest.approx(2 / 3)
+    assert row["donor_count"] == 2
+    assert row["donor_prevalence"] == pytest.approx(2 / 3)
+    assert row["sample_count"] == 2
+    assert row["sample_prevalence"] == pytest.approx(2 / 3)
+
+
+def test_rfu_metrics_unique_sequence_weighting_is_explicit() -> None:
+    result = rfu_metrics(_metrics_frame(), groupby=["phenotype"], weighting="unique_sequence")
+    row = result[(result["phenotype"] == "P1") & (result["rfu_label"] == "RFU1")].iloc[0]
+
+    assert row["weighting"] == "unique_sequence"
+    assert row["weighted_abundance"] == pytest.approx(2 / 4)
+    assert row["rfu_threshold_pass_rate"] == pytest.approx(0.5)
+
+
+def test_rfu_metrics_prevalence_denominator_includes_unassigned_metadata() -> None:
+    frame = pd.concat(
+        [
+            _metrics_frame(),
+            pd.DataFrame(
+                {
+                    "cell_id": ["c7"],
+                    "phenotype": ["P1"],
+                    "cdr3aa": [pd.NA],
+                    "rfu_label": [pd.NA],
+                    "pass_thr": [pd.NA],
+                    "donor": ["d5"],
+                    "sample": ["s5"],
+                }
+            ),
+        ],
+        ignore_index=True,
+    )
+    result = rfu_metrics(
+        frame,
+        groupby="phenotype",
+        weighting="cell",
+        donor_col="donor",
+        sample_col="sample",
+    )
+    row = result[(result["phenotype"] == "P1") & (result["rfu_label"] == "RFU1")].iloc[0]
+
+    assert row["group_donor_count"] == 4
+    assert row["donor_prevalence"] == pytest.approx(2 / 4)
+    assert row["group_sample_count"] == 4
+    assert row["sample_prevalence"] == pytest.approx(2 / 4)
+
+
+@pytest.mark.parametrize("weighting", [None, "", "automatic", "cells"])
+def test_rfu_metrics_rejects_implicit_or_unknown_weighting(weighting: object) -> None:
+    with pytest.raises(ValueError, match="explicitly 'cell' or 'unique_sequence'"):
+        rfu_metrics(_metrics_frame(), groupby="phenotype", weighting=weighting)  # type: ignore[arg-type]
+
+
+def test_rfu_metrics_requires_explicit_grouping() -> None:
+    with pytest.raises(ValueError, match="at least one explicit phenotype"):
+        rfu_metrics(_metrics_frame(), groupby=[], weighting="cell")

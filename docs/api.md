@@ -19,3 +19,7 @@ scRFU calls a user-provided upstream RFU repository through
 The exact public upstream behavior, optional map-aware capability boundary, and
 Wells atlas adapter are documented in
 [upstream_rfu_semantics.md](upstream_rfu_semantics.md).
+Memory-efficient Wells extraction and cache validation are documented in
+[wells_receptor_cache.md](wells_receptor_cache.md). Stable descriptive RFU
+metrics and their explicit grouping and weighting definitions are documented in
+[rfu_metrics.md](rfu_metrics.md).

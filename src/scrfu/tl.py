@@ -6,7 +6,7 @@ from typing import Any
 
 import pandas as pd
 
-from .summary import aggregate_rfu, rfu_summary
+from .summary import aggregate_rfu, rfu_metrics, rfu_summary
 from .tl_rfu_repo import call_rfu_repo
 from .validation import validate_airr
 
@@ -86,4 +86,11 @@ def call_rfu(
     raise ValueError(f"Unknown backend: {backend}. Supported: 'rfu_repo'")
 
 
-__all__ = ["aggregate_rfu", "call_rfu", "call_rfu_repo", "rfu_summary", "validate_airr"]
+__all__ = [
+    "aggregate_rfu",
+    "call_rfu",
+    "call_rfu_repo",
+    "rfu_metrics",
+    "rfu_summary",
+    "validate_airr",
+]

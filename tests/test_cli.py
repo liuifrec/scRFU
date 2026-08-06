@@ -115,3 +115,31 @@ def test_cli_main_dispatches_current_call_rfu_signature(monkeypatch):
         "extra_r_args": ["--vanilla"],
         "workdir": ".scrfu/test-run",
     }
+
+
+def test_cli_prepare_wells_dispatch(monkeypatch):
+    calls: list[tuple[object, ...]] = []
+
+    def fake_prepare(
+        source: str, output: str, *, obs_columns: list[str], max_cells: int | None
+    ) -> None:
+        calls.append((source, output, obs_columns, max_cells))
+
+    monkeypatch.setattr("scrfu.cli.prepare_wells_receptor_cache", fake_prepare)
+
+    main(
+        [
+            "prepare-wells",
+            "atlas.h5ad",
+            "--output-dir",
+            "cache",
+            "--obs-column",
+            "donor_id",
+            "--obs-column",
+            "sample_id",
+            "--max-cells",
+            "1000",
+        ]
+    )
+
+    assert calls == [("atlas.h5ad", "cache", ["donor_id", "sample_id"], 1000)]

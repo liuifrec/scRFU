@@ -4,6 +4,7 @@ import argparse
 
 from .io import read_h5ad, write_h5ad
 from .tl import call_rfu
+from .wells import prepare_wells_receptor_cache
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -67,6 +68,25 @@ def build_parser() -> argparse.ArgumentParser:
         help="Extra arg passed to R script (repeatable)",
     )
 
+    w = sub.add_parser(
+        "prepare-wells",
+        help="Extract a compact Wells TCR_IR/metadata cache without reading expression matrices.",
+    )
+    w.add_argument("input", type=str, help="Source Wells atlas .h5ad")
+    w.add_argument("-o", "--output-dir", type=str, required=True, help="Cache output directory")
+    w.add_argument(
+        "--obs-column",
+        action="append",
+        default=[],
+        help="Observation metadata column to retain (repeatable)",
+    )
+    w.add_argument(
+        "--max-cells",
+        type=int,
+        default=None,
+        help="Optional prefix limit for a smoke-test cache",
+    )
+
     return p
 
 
@@ -94,5 +114,12 @@ def main(argv: list[str] | None = None) -> None:
             workdir=args.workdir,
         )
         write_h5ad(adata, args.output)
+    elif args.cmd == "prepare-wells":
+        prepare_wells_receptor_cache(
+            args.input,
+            args.output_dir,
+            obs_columns=args.obs_column,
+            max_cells=args.max_cells,
+        )
     else:
         raise SystemExit(f"Unknown command: {args.cmd}")

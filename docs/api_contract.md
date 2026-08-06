@@ -163,6 +163,33 @@ Common errors: `KeyError` when neither location exists; `ValueError` for missing
 flattened fields, ambiguous row alignment, length mismatch, or duplicate cell
 identifiers.
 
+### `scrfu.wells.read_wells_receptors_h5ad`
+
+Purpose: read row-aligned Wells `TCR_IR`, observation names, and explicitly
+selected metadata without materializing expression or unrelated H5AD elements.
+
+Required input: an AnnData-encoded H5AD containing an encoded `obs` dataframe
+and row-aligned `uns["TCR_IR"]` or `obsm["TCR_IR"]` dataframe.
+
+Main output: `WellsReceptorData` containing only `obs`, `tcr_ir`, atlas shape,
+container provenance, and source identity.
+
+H5AD fields read: root encoding and `X` shape metadata, selected `obs` fields,
+and the selected `TCR_IR` encoded dataframe. `X` values, `raw`, `layers`, `obsp`,
+and unrelated `uns` fields are not read.
+
+Common errors: `UnsupportedWellsH5ADLayout` for missing, unsupported, or
+misaligned encodings; `ValueError` for invalid selection arguments or metadata
+columns.
+
+### `scrfu.wells.prepare_wells_receptor_cache`
+
+Purpose: write checksummed `tcr_ir.tsv.gz`, `obs_metadata.tsv.gz`, and a
+fingerprinted `preparation_manifest.json` without copying expression data.
+
+The cache contract and source invalidation semantics are documented in
+[wells_receptor_cache.md](wells_receptor_cache.md).
+
 ### `scrfu.tl.validate_airr`
 
 Purpose: read-only QC for AIRR-like input before RFU calling.
@@ -219,6 +246,27 @@ AnnData fields read: `adata.obs`.
 AnnData fields written: none.
 
 Common errors: `ValueError` for missing RFU or grouping columns.
+
+### `scrfu.tl.rfu_metrics`
+
+Purpose: calculate stable descriptive RFU abundance, exact-CDR3 richness,
+multiplicity, convergence, entropy, dominance, threshold-pass, and optional
+donor/sample prevalence metrics.
+
+Required input: a pandas DataFrame or AnnData-like `.obs`, explicit `groupby`
+phenotype columns, and explicit `weighting="cell"` or
+`weighting="unique_sequence"`.
+
+Main output: one pandas DataFrame row per phenotype-group/RFU combination.
+
+Input fields read: grouping columns plus configurable cell, CDR3, RFU, threshold,
+donor, and sample columns.
+
+Input fields written: none.
+
+Common errors: `TypeError` for unsupported input objects; `ValueError` for
+implicit/unknown weighting, empty grouping, or missing columns. Exact metric
+definitions are in [rfu_metrics.md](rfu_metrics.md).
 
 ### `scrfu.tl.aggregate_rfu`
 

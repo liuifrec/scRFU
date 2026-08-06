@@ -105,7 +105,8 @@ The public analysis layer includes `scrfu.tl.rfu_summary`,
 - [examples/radiation_pbmc_workflow.py](examples/radiation_pbmc_workflow.py):
   radiation-associated PBMC workflow template without bundled data.
 - [examples/wells_atlas_workflow.py](examples/wells_atlas_workflow.py):
-  restartable Wells public-atlas workflow for a user-supplied H5AD.
+  restartable Wells public-atlas workflow for a user-supplied H5AD or compact
+  expression-free receptor cache.
 
 For large inputs, chunking occurs after exact-CDR3 deduplication. Completed
 chunks are reused only after their manifest, scientific inputs, hashes, output

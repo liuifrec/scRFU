@@ -63,10 +63,10 @@ and metadata barcode, chain, CDR3, V-gene, and productive columns.
 
 ## Wells public-atlas workflow
 
-`wells_atlas_workflow.py` reads a user-supplied H5AD containing the Wells
-`TCR_IR` table, extracts productive TRB data, and runs serial restartable RFU
-assignment after exact-CDR3 deduplication. It does not download or bundle the
-atlas.
+`wells_atlas_workflow.py` accepts either a user-supplied H5AD containing the
+Wells `TCR_IR` table or an expression-free prepared receptor cache. Its targeted
+HDF5 path reads only selected observation metadata and `TCR_IR`; it does not
+materialize `X`, `raw`, layers, or unrelated `uns` fields.
 
 ```bash
 python examples/wells_atlas_workflow.py \
@@ -76,6 +76,27 @@ python examples/wells_atlas_workflow.py \
   --chunk-size 20000 \
   --primary-chain
 ```
+
+Prepare a reusable cache first when the same receptor data will be analyzed
+repeatedly:
+
+```bash
+scrfu prepare-wells /path/to/wells_atlas.h5ad \
+  --output-dir /path/to/wells_receptor_cache \
+  --obs-column donor_id \
+  --obs-column library_id \
+  --obs-column cell_type
+
+python examples/wells_atlas_workflow.py \
+  --input /path/to/wells_receptor_cache \
+  --source-h5ad /path/to/wells_atlas.h5ad \
+  --rfu-dir /path/to/RFU \
+  --outdir results/wells_scrfu \
+  --chunk-size 20000
+```
+
+The optional `--source-h5ad` verifies that the cache fingerprint still matches
+the source. See [the cache design](../docs/wells_receptor_cache.md).
 
 `--rfu-dir` may be omitted when `RFU_DIR` is set. Use `--max-cells 1000` for a
 small integration smoke test, `--no-resume` to ignore completed chunks, or
@@ -88,6 +109,8 @@ The workflow writes `extracted_trb.tsv.gz`, `adapter_qc.json`,
 `unique_sequence_map.tsv.gz` (one mapping row per extracted input row),
 sequence- and cell-level RFU result tables, and a top-level `run_manifest.json`.
 Backend chunk artifacts are retained below `<outdir>/backend/runs/<run_id>/`.
+`--write-annotated` requires original H5AD input and explicitly opts into
+expression loading; a receptor cache cannot produce an annotated H5AD.
 
 A 1,000-cell smoke test and a complete restartable run differ only by the
 optional cell limit:
