@@ -1,13 +1,18 @@
 # scRFU
 
-scRFU is an AnnData/scirpy-compatible Python framework for applying established
-RFU-based TCR functional annotation inside single-cell immune profiling
-workflows.
+scRFU is a receptor-table and AnnData/scirpy-compatible Python framework for
+applying established RFU-based TCR functional annotation inside single-cell
+immune profiling workflows. Its core is dataset-independent; Wells is a named
+adapter, benchmark, and reproducible case study rather than the data model.
 
 ## What scRFU Does
 
 - Extracts TRB CDR3 amino-acid and TRBV features from AnnData/scirpy-style AIRR
   tables.
+- Prepares canonical receptor rows through Wells, scirpy/AIRR, and generic
+  DataFrame adapters while keeping cell metadata separate.
+- Selectively reads receptor and observation data without loading expression
+  matrices and writes portable checksummed receptor caches.
 - Calls a user-provided upstream RFU repository backend.
 - Attaches RFU labels, RFU scores, extracted TRB features, and provenance into
   AnnData.
@@ -53,6 +58,17 @@ this repository.
 ```python
 import scrfu
 
+prepared = scrfu.adapters.prepare_receptors(
+    airr_dataframe,
+    adapter="generic_airr_dataframe",
+    chain="TRB",
+)
+table_run = scrfu.tl.call_rfu_table(
+    prepared.receptors,
+    rfu_dir="/path/to/RFU",
+    chunk_size=20_000,
+)
+
 qc = scrfu.tl.validate_airr(adata, airr_key="airr", chain="TRB")
 
 scrfu.tl.call_rfu(
@@ -90,6 +106,12 @@ RFU results are written to:
 See [docs/api_contract.md](docs/api_contract.md) for the stable API and AnnData
 contract.
 
+The canonical schema, adapters, and expression-free cache are documented in
+[docs/receptor_schema.md](docs/receptor_schema.md),
+[docs/adapters.md](docs/adapters.md), and
+[docs/receptor_cache.md](docs/receptor_cache.md). Expression matrices are not
+required after receptor preparation.
+
 ## Analysis Utilities
 
 The public analysis layer includes `scrfu.tl.rfu_summary`,
@@ -107,6 +129,8 @@ The public analysis layer includes `scrfu.tl.rfu_summary`,
 - [examples/wells_atlas_workflow.py](examples/wells_atlas_workflow.py):
   restartable Wells public-atlas workflow for a user-supplied H5AD or compact
   expression-free receptor cache.
+- [examples/receptor_table_workflow.py](examples/receptor_table_workflow.py):
+  dataset-independent cache, canonical TSV, or named-H5AD-adapter workflow.
 
 For large inputs, chunking occurs after exact-CDR3 deduplication. Completed
 chunks are reused only after their manifest, scientific inputs, hashes, output

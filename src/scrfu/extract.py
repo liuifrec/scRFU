@@ -137,30 +137,23 @@ def extract_wells_tcr_ir_features(
 
     cell_ids = _wells_cell_ids(adata, df, cell_col)
     keep = pd.Series(True, index=df.index)
-
     if chain_col is not None:
         keep &= df[chain_col].astype("string").str.upper().eq(str(chain).upper()).fillna(False)
-
     if prefer_productive and productive_col is not None:
         productive = _truthy(df[productive_col])
         if productive.any():
             keep &= productive
-
     cdr3 = df[cdr3_col].astype("string").str.strip()
     trbv = df[v_col].astype("string").str.strip()
     keep &= _present_text(cdr3) & _present_text(trbv)
-
-    obs_names = set(_obs_names(adata))
-    keep &= cell_ids.isin(obs_names)
-
-    out = pd.DataFrame(
+    keep &= cell_ids.isin(set(_obs_names(adata)))
+    return pd.DataFrame(
         {
             "cell_id": cell_ids.loc[keep].astype(str).to_numpy(),
             "cdr3aa": cdr3.loc[keep].astype(str).to_numpy(),
             "trbv": trbv.loc[keep].astype(str).to_numpy(),
         }
-    )
-    return out.reset_index(drop=True)
+    ).reset_index(drop=True)
 
 
 def extract_trb_features(
@@ -190,71 +183,17 @@ def extract_trb_features(
             prefer_productive=prefer_productive,
         )
 
-    if not hasattr(adata, "obsm") or airr_key not in adata.obsm:
-        raise KeyError(f"AnnData missing obsm['{airr_key}']; cannot extract AIRR features.")
+    from .adapters import adapt_airr_dataframe
 
-    airr_obj = adata.obsm[airr_key]
-    df = airr_obj.copy() if isinstance(airr_obj, pd.DataFrame) else pd.DataFrame(airr_obj)
-
-    cols = {str(c).lower(): c for c in df.columns}
-
-    def pick(*cands: str) -> Any | None:
-        for candidate in cands:
-            if candidate in cols:
-                return cols[candidate]
-        return None
-
-    cell_col = pick("cell_id", "cell", "barcode", "cellid")
-    chain_col = pick("chain", "locus")
-    cdr3_col = pick("cdr3aa", "junction_aa", "cdr3_aa", "cdr3")
-    v_col = pick("v_call", "v_gene", "trbv", "v")
-
-    missing = [
-        name
-        for name, col in [
-            ("cell_id", cell_col),
-            ("chain/locus", chain_col),
-            ("cdr3aa/junction_aa", cdr3_col),
-            ("v_call/v_gene", v_col),
-        ]
-        if col is None
-    ]
-    if missing:
-        raise ValueError(f"AIRR table missing columns: {missing}. Columns seen: {list(df.columns)}")
-
-    chain_upper = str(chain).upper()
-    chain_series = df[chain_col].astype(str).str.upper()
-    df = df.loc[chain_series == chain_upper].copy()
-
-    if df.empty:
-        return pd.DataFrame({"cell_id": [], "cdr3aa": [], "trbv": []})
-
-    if prefer_productive:
-        prod_col = pick("productive")
-        if prod_col is not None:
-            prod = _truthy(df[prod_col])
-            if prod.any():
-                df = df.loc[prod].copy()
-
-    umi_col = pick("umis", "umi", "reads", "read_count", "junction_reads")
-    if umi_col is not None:
-        df["_rank"] = pd.to_numeric(df[umi_col], errors="coerce").fillna(0)
-        df = df.sort_values(["_rank"], ascending=False).drop(columns=["_rank"])
-    df = df.drop_duplicates(subset=[cell_col], keep="first")
-
-    out = pd.DataFrame(
-        {
-            "cell_id": df[cell_col].astype(str).values,
-            "cdr3aa": df[cdr3_col].astype(str).values,
-            "trbv": df[v_col].astype(str).values,
-        }
+    result = adapt_airr_dataframe(
+        adata,
+        adapter_name="scirpy_airr",
+        airr_key=airr_key,
+        chain=chain,
+        productive_only=prefer_productive,
+        primary_chain=True,
     )
-
-    if hasattr(adata, "obs_names"):
-        obs_names = set(map(str, list(adata.obs_names)))
-        out = out[out["cell_id"].isin(obs_names)].copy()
-
-    return out
+    return result.receptors.rename(columns={"v_call": "trbv"}).loc[:, ["cell_id", "cdr3aa", "trbv"]]
 
 
 __all__ = ["extract_trb_features", "extract_wells_tcr_ir_features"]

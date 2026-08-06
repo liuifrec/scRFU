@@ -127,6 +127,9 @@ def rfu_metrics(
     threshold_col: str = "pass_thr",
     donor_col: str | None = None,
     sample_col: str | None = None,
+    chain: str | None = None,
+    chain_col: str = "chain",
+    assignment_policy: str = "nearest",
 ) -> pd.DataFrame:
     """Calculate descriptive RFU metrics with explicit phenotype and weighting semantics.
 
@@ -140,7 +143,15 @@ def rfu_metrics(
         raise ValueError("groupby must name at least one explicit phenotype column.")
     if weighting not in {"cell", "unique_sequence"}:
         raise ValueError("weighting must be explicitly 'cell' or 'unique_sequence'.")
+    if assignment_policy not in {"nearest", "threshold_pass"}:
+        raise ValueError("assignment_policy must be 'nearest' or 'threshold_pass'.")
     frame = _analysis_frame(data)
+    if chain is not None:
+        if chain_col not in frame:
+            raise ValueError(f"RFU metrics chain selection requires column {chain_col!r}.")
+        frame = frame.loc[
+            frame[chain_col].astype("string").str.upper().eq(str(chain).upper()).fillna(False)
+        ].copy()
     if cell_col not in frame.columns:
         if frame.index.is_unique and frame.index.notna().all():
             frame[cell_col] = frame.index.astype(str)
@@ -152,11 +163,15 @@ def rfu_metrics(
     if missing:
         raise ValueError(f"RFU metrics input is missing required columns: {missing}")
 
-    work = frame.loc[frame[rfu_col].notna() & frame[cdr3_col].notna(), :].copy()
+    assigned = frame[rfu_col].notna() & frame[cdr3_col].notna()
+    if assignment_policy == "threshold_pass":
+        assigned &= frame[threshold_col].astype("boolean").fillna(False)
+    work = frame.loc[assigned, :].copy()
     output_columns = [
         *groups,
         rfu_col,
         "weighting",
+        "assignment_policy",
         "rfu_cell_count",
         "rfu_cell_abundance",
         "unique_cdr3_richness",
@@ -222,6 +237,7 @@ def rfu_metrics(
             **dict(zip(groups, phenotype_values, strict=True)),
             rfu_col: values_tuple[-1],
             "weighting": weighting,
+            "assignment_policy": assignment_policy,
             "rfu_cell_count": cell_count,
             "rfu_cell_abundance": cell_count / total["cells"] if total["cells"] else 0.0,
             "unique_cdr3_richness": richness,

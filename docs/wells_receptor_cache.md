@@ -1,5 +1,10 @@
 # Memory-Efficient Wells Receptor Preparation
 
+> Compatibility note: this page describes legacy Wells cache schema 1.
+> Dataset-independent cache schema 2 uses `receptors.tsv.gz`; see
+> [receptor_cache.md](receptor_cache.md). Legacy reading remains supported and
+> migration is explicit and non-overwriting.
+
 ## Why ordinary H5AD loading is expensive
 
 The Wells atlas H5AD is compressed on disk, but ordinary

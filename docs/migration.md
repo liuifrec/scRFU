@@ -22,3 +22,14 @@ formal versioning policy beyond its current pre-alpha `0.x` status. A minor
 version increment from `0.1.x` to `0.2.0` is recommended for the release that
 includes them; this documentation change does not itself change the package
 version.
+
+# Receptor architecture migration
+
+The AnnData APIs `scrfu.tl.call_rfu()` and `call_rfu_repo()` remain available
+and delegate RFU execution to the canonical table core. Wells extraction and
+legacy cache helpers remain compatibility wrappers.
+
+New code should prepare rows through a named adapter and call
+`scrfu.tl.call_rfu_table()`. Migrate a Wells cache explicitly with
+`scrfu migrate-receptor-cache OLD --outdir NEW`; migration writes a new
+directory and never modifies the legacy cache by default.

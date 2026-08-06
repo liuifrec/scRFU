@@ -50,3 +50,19 @@ row-aligned representation is created.
 
 The radiation workflow is currently a template. It does not by itself establish
 radiation-associated biological findings.
+# Canonical receptor refactor acceptance (1,000 Wells cells)
+
+The restricted 1,000-cell acceptance run used the `wells_tcr_ir` adapter and
+official-compatible standard RFU mode. It produced 522 primary productive TRB
+rows and 497 unique exact CDR3 sequences. Direct targeted-H5AD preparation plus
+RFU execution took 5.83 seconds wall time with 358,252 KB peak RSS. Cache
+preparation alone took 2.00 seconds and 294,208 KB peak RSS; execution from
+portable cache schema 2 took 4.98 seconds and 358,092 KB peak RSS.
+
+Against the preserved pre-refactor outputs, RFU IDs, labels, threshold status,
+eligibility status, unique-sequence mapping, cell/row order, and constant-group
+cell-weighted RFU metrics were identical. RFU score maximum absolute difference
+was `0.0` (acceptance tolerance `1e-12`). The earlier optimized reference was
+approximately 8.77 seconds and 361,580 KB peak RSS; ordinary AnnData loading was
+approximately 27.4 GB peak RSS. Timings are environment-dependent, while the
+scientific parity assertions are exact.

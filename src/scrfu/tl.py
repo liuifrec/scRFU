@@ -7,7 +7,7 @@ from typing import Any
 import pandas as pd
 
 from .summary import aggregate_rfu, rfu_metrics, rfu_summary
-from .tl_rfu_repo import call_rfu_repo
+from .tl_rfu_repo import RFUTableResult, call_rfu_repo, call_rfu_table
 from .validation import validate_airr
 
 PathLike = str | Path
@@ -90,6 +90,8 @@ __all__ = [
     "aggregate_rfu",
     "call_rfu",
     "call_rfu_repo",
+    "call_rfu_table",
+    "RFUTableResult",
     "rfu_metrics",
     "rfu_summary",
     "validate_airr",

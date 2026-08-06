@@ -1,5 +1,16 @@
 # Examples
 
+## Dataset-independent receptor workflow
+
+`receptor_table_workflow.py` accepts a canonical receptor cache, canonical TSV,
+or H5AD plus an explicit `wells_tcr_ir`/`scirpy_airr` adapter. It writes
+canonical receptors, sequence mapping, per-sequence and per-row RFU results,
+optional metrics, and a run manifest. `--skip-rfu` supports offline preparation
+and output-contract checks without an external RFU checkout.
+
+The Wells workflow remains a case-study wrapper and compatibility output
+surface; it now uses the same canonical adapter and table-level RFU engine.
+
 ## Synthetic demo
 
 `synthetic_scirpy_demo.py` builds a tiny synthetic AnnData object with a

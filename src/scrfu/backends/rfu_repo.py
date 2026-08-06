@@ -170,7 +170,11 @@ def _prepare_queries(
         )
 
     original = features.copy().reset_index(drop=True)
-    original["input_row_id"] = range(len(original))
+    original["_scrfu_row_order"] = range(len(original))
+    if "input_row_id" not in original:
+        original["input_row_id"] = range(len(original))
+    elif original["input_row_id"].isna().any() or original["input_row_id"].duplicated().any():
+        raise ValueError("features input_row_id values must be unique and non-missing.")
     cdr3 = original["cdr3aa"].astype("string")
     eligible = cdr3.notna() & cdr3.str.startswith("C", na=False)
     original["eligibility_status"] = "ineligible_cdr3_not_starting_c"
@@ -223,7 +227,7 @@ def _reconstruct_results(
         sort=False,
         validate="many_to_one",
     )
-    result = result.sort_values("input_row_id", kind="stable").reset_index(drop=True)
+    result = result.sort_values("_scrfu_row_order", kind="stable").reset_index(drop=True)
 
     eligible = result["eligibility_status"].eq("eligible")
     returned_ids = set(assignments["unique_sequence_id"].astype(str))
@@ -242,7 +246,7 @@ def _reconstruct_results(
     result.loc[assigned & ~result["pass_thr"].fillna(False), "rfu_status"] = (
         "assigned_below_threshold"
     )
-    return result
+    return result.drop(columns="_scrfu_row_order")
 
 
 class RFURepoBackend:

@@ -62,6 +62,11 @@ Both named abundance columns, richness, multiplicity, entropy, and dominant
 fraction are always returned so a manuscript can state exactly which unit was
 used. Phenotype groups are never inferred from clustering fields or labels.
 
+`assignment_policy="nearest"` includes every non-missing nearest assignment;
+`assignment_policy="threshold_pass"` restricts metrics to threshold-qualified
+assignments. An explicit `chain` filters canonical result tables through their
+chain column. These controls are dataset-independent.
+
 ## Why B-cell ALFU is separate future work
 
 RFU is defined here for T-cell receptor sequence representations and the

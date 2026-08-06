@@ -4,6 +4,27 @@ This document describes the intended stable public API for manuscript reviewers
 and future users. scRFU is currently pre-alpha, but these functions are the
 planned compatibility surface.
 
+## Canonical receptor contract
+
+`scrfu.pp.validate_receptor_table()` validates schema-versioned canonical
+receptor rows. `scrfu.adapters.prepare_receptors()` resolves an explicit named
+adapter and returns receptor rows, separate cell metadata, QC, and provenance.
+Built-ins are `wells_tcr_ir`, `scirpy_airr`, and `generic_airr_dataframe`.
+
+`scrfu.io.read_h5ad_dataframe()` and `read_h5ad_obs()` selectively read encoded
+dataframes without materializing expression payloads. Generic cache schema 2 is
+implemented by `write_receptor_cache()`, `read_receptor_cache()`, and
+`validate_receptor_cache()`.
+
+### `scrfu.tl.call_rfu_table`
+
+This is the dataset-independent RFU center. It accepts canonical rows, selects
+the requested chain, applies the validated eligibility/deduplication/chunking
+backend, and returns `RFUTableResult(per_sequence, per_row, mapping,
+provenance)`. Canonical row IDs and source provenance are preserved. AnnData
+entry points delegate RFU execution to this function and retain attachment
+compatibility.
+
 ## AnnData Contract
 
 ### Reads

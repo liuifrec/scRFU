@@ -180,53 +180,18 @@ def _truthy(values: pd.Series) -> pd.Series:
 def extract_wells_features(
     adata: Any, *, primary_chain: bool
 ) -> tuple[pd.DataFrame, dict[str, Any]]:
-    from scrfu.extract import extract_wells_tcr_ir_features
+    from scrfu.adapters import adapt_wells_tcr_ir
 
-    frame, source = _tcr_ir_frame(adata)
-    if primary_chain:
-        features = extract_wells_tcr_ir_features(adata)
-        features["chain_slot"] = "VDJ_1"
-    else:
-        tables: list[pd.DataFrame] = []
-        for slot in (1, 2):
-            cdr3_col = _column(frame, slot, "junction_aa")
-            v_col = _column(frame, slot, "v_call")
-            if cdr3_col is None or v_col is None:
-                if slot == 1:
-                    raise ValueError("TCR_IR is missing primary VDJ_1 CDR3 or V-call fields.")
-                continue
-            cdr3 = frame[cdr3_col].astype("string").str.strip()
-            trbv = frame[v_col].astype("string").str.strip()
-            keep = cdr3.notna() & trbv.notna() & cdr3.ne("") & trbv.ne("")
-            keep &= ~cdr3.str.lower().isin(["nan", "none", "na", "<na>"])
-            keep &= ~trbv.str.lower().isin(["nan", "none", "na", "<na>"])
-            locus_col = _column(frame, slot, "locus")
-            if locus_col is not None:
-                keep &= frame[locus_col].astype("string").str.upper().eq("TRB").fillna(False)
-            productive_col = _column(frame, slot, "productive")
-            if productive_col is not None:
-                keep &= _truthy(frame[productive_col])
-            tables.append(
-                pd.DataFrame(
-                    {
-                        "cell_id": frame.index[keep].astype(str),
-                        "cdr3aa": cdr3.loc[keep].astype(str).to_numpy(),
-                        "trbv": trbv.loc[keep].astype(str).to_numpy(),
-                        "chain_slot": f"VDJ_{slot}",
-                    }
-                )
-            )
-        features = pd.concat(tables, ignore_index=True) if tables else pd.DataFrame()
+    result = adapt_wells_tcr_ir(adata, chain="TRB", primary_chain=primary_chain)
+    features = result.receptors.rename(columns={"v_call": "trbv", "source_slot": "chain_slot"}).loc[
+        :, ["cell_id", "cdr3aa", "trbv", "chain_slot"]
+    ]
     qc = {
-        "tcr_ir_source": source,
-        "primary_chain": primary_chain,
+        **result.qc,
         "n_obs": len(adata.obs_names),
-        "tcr_ir_rows": len(frame),
+        "tcr_ir_rows": result.qc["source_row_count"],
         "extracted_trb_rows": len(features),
         "extracted_cells": int(features["cell_id"].nunique()) if not features.empty else 0,
-        "non_c_rows": int((~features["cdr3aa"].astype(str).str.startswith("C")).sum())
-        if not features.empty
-        else 0,
     }
     return features, qc
 
@@ -234,7 +199,8 @@ def extract_wells_features(
 def run_workflow(args: argparse.Namespace) -> int:
     _add_repo_src_to_path()
 
-    from scrfu.backends.rfu_repo import RFURepoBackend
+    from scrfu.adapters import adapt_wells_tcr_ir
+    from scrfu.tl import call_rfu_table
     from scrfu.wells import load_wells_receptor_cache, read_wells_receptors_h5ad
 
     input_path = args.input.expanduser().resolve()
@@ -260,7 +226,12 @@ def run_workflow(args: argparse.Namespace) -> int:
         raise ValueError("--write-annotated requires original H5AD input, not a receptor cache.")
     outdir = args.outdir.expanduser().resolve()
     outdir.mkdir(parents=True, exist_ok=True)
-    features, adapter_qc = extract_wells_features(receptor_data, primary_chain=args.primary_chain)
+    adapted = adapt_wells_tcr_ir(receptor_data, chain="TRB", primary_chain=args.primary_chain)
+    receptors = adapted.receptors
+    adapter_qc = adapted.qc
+    features = receptors.rename(columns={"v_call": "trbv", "source_slot": "chain_slot"}).loc[
+        :, ["cell_id", "cdr3aa", "trbv", "chain_slot"]
+    ]
     if features.empty:
         raise ValueError("Wells TCR_IR adapter extracted no productive TRB rows.")
     if args.write_annotated and not args.primary_chain:
@@ -268,24 +239,24 @@ def run_workflow(args: argparse.Namespace) -> int:
 
     extracted_path = outdir / "extracted_trb.tsv.gz"
     features.to_csv(extracted_path, sep="\t", index=False, compression="gzip")
+    receptors.to_csv(outdir / "receptors.tsv.gz", sep="\t", index=False, compression="gzip")
     _atomic_write_json(outdir / "adapter_qc.json", adapter_qc)
 
     wrapper = Path(__file__).resolve().parents[1] / "r" / "run_rfu_repo.R"
-    backend = RFURepoBackend(
+    table_run = call_rfu_table(
+        receptors,
         rfu_dir=args.rfu_dir,
+        chain="TRB",
         mode=args.mode,
-        wrapper_r_path=wrapper,
-    )
-    run = backend.run(
-        features,
         threshold=args.threshold,
         deduplicate=True,
         chunk_size=args.chunk_size,
         resume=args.resume,
         force_recompute=args.force_recompute,
         workdir=outdir / "backend",
+        wrapper_r_path=wrapper,
     )
-    per_cell = run.df
+    per_cell = table_run.per_row
     eligible = per_cell[per_cell["eligibility_status"].eq("eligible")]
     sequence_map = per_cell.loc[
         :,
@@ -331,10 +302,12 @@ def run_workflow(args: argparse.Namespace) -> int:
     per_cell.to_csv(
         outdir / "rfu_results_per_cell.tsv.gz", sep="\t", index=False, compression="gzip"
     )
+    per_cell.to_csv(
+        outdir / "rfu_results_per_row.tsv.gz", sep="\t", index=False, compression="gzip"
+    )
 
     provenance = {
-        **backend.provenance_dict(),
-        **run.metadata,
+        **table_run.provenance,
         "workflow": "wells_atlas",
         "input": str(input_path),
         "input_kind": input_kind,
@@ -344,10 +317,12 @@ def run_workflow(args: argparse.Namespace) -> int:
         "max_cells": args.max_cells,
         "outputs": [
             "extracted_trb.tsv.gz",
+            "receptors.tsv.gz",
             "adapter_qc.json",
             "unique_sequence_map.tsv.gz",
             "rfu_results_per_sequence.tsv.gz",
             "rfu_results_per_cell.tsv.gz",
+            "rfu_results_per_row.tsv.gz",
         ],
     }
     _atomic_write_json(outdir / "run_manifest.json", provenance)

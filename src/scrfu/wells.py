@@ -325,28 +325,28 @@ def read_wells_receptors_h5ad(
                 "row alignment is unsupported."
             )
 
-        positions = _select_positions(
-            obs_group,
-            obs_count=obs_count,
-            max_cells=max_cells,
-            selected_obs_names=selected_obs_names,
-        )
-        obs = _read_dataframe(
-            obs_group,
-            logical_name="obs",
-            positions=positions,
+    # Interpretation remains Wells-specific, while byte-level dataframe reading is generic.
+    from .io import UnsupportedH5ADLayout, read_h5ad_dataframe, read_h5ad_obs
+
+    try:
+        obs = read_h5ad_obs(
+            path,
             columns=obs_columns,
+            selected_names=selected_obs_names,
+            max_rows=max_cells,
         )
-        tcr_ir = _read_dataframe(
-            tcr_group,
-            logical_name=f"{container}['TCR_IR']",
-            positions=positions,
-            columns=None,
+        tcr_ir = read_h5ad_dataframe(
+            path,
+            location=container,
+            key="TCR_IR",
+            selected_names=obs.index.astype(str).tolist(),
         )
-        if not tcr_ir.index.equals(obs.index):
-            raise UnsupportedWellsH5ADLayout(
-                f"{container}['TCR_IR'] index does not exactly match the selected obs index."
-            )
+    except UnsupportedH5ADLayout as exc:
+        raise UnsupportedWellsH5ADLayout(str(exc)) from exc
+    if not tcr_ir.index.equals(obs.index):
+        raise UnsupportedWellsH5ADLayout(
+            f"{container}['TCR_IR'] index does not exactly match the selected obs index."
+        )
     return WellsReceptorData(
         obs=obs,
         tcr_ir=tcr_ir,
