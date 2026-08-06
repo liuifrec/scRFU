@@ -60,3 +60,49 @@ python examples/gse190905_prepare.py \
 
 The script infers common column names and supports explicit overrides for TCR
 and metadata barcode, chain, CDR3, V-gene, and productive columns.
+
+## Wells public-atlas workflow
+
+`wells_atlas_workflow.py` reads a user-supplied H5AD containing the Wells
+`TCR_IR` table, extracts productive TRB data, and runs serial restartable RFU
+assignment after exact-CDR3 deduplication. It does not download or bundle the
+atlas.
+
+```bash
+python examples/wells_atlas_workflow.py \
+  --input /path/to/wells_atlas.h5ad \
+  --rfu-dir /path/to/RFU \
+  --outdir results/wells_scrfu \
+  --chunk-size 20000 \
+  --primary-chain
+```
+
+`--rfu-dir` may be omitted when `RFU_DIR` is set. Use `--max-cells 1000` for a
+small integration smoke test, `--no-resume` to ignore completed chunks, or
+`--force-recompute` to force all chunks to be replaced. `--all-productive-chains`
+retains productive TRB rows from both VDJ slots; its per-cell output can contain
+more than one row for a cell. `--write-annotated` is currently limited to the
+primary-chain workflow.
+
+The workflow writes `extracted_trb.tsv.gz`, `adapter_qc.json`,
+`unique_sequence_map.tsv.gz` (one mapping row per extracted input row),
+sequence- and cell-level RFU result tables, and a top-level `run_manifest.json`.
+Backend chunk artifacts are retained below `<outdir>/backend/runs/<run_id>/`.
+
+A 1,000-cell smoke test and a complete restartable run differ only by the
+optional cell limit:
+
+```bash
+RFU_DIR=/path/to/RFU python examples/wells_atlas_workflow.py \
+  --input /path/to/wells_atlas.h5ad \
+  --outdir results/wells_scrfu_smoke \
+  --chunk-size 20000 \
+  --max-cells 1000 \
+  --primary-chain
+
+RFU_DIR=/path/to/RFU python examples/wells_atlas_workflow.py \
+  --input /path/to/wells_atlas.h5ad \
+  --outdir results/wells_scrfu \
+  --chunk-size 20000 \
+  --primary-chain
+```

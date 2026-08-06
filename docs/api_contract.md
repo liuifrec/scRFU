@@ -56,7 +56,11 @@ AnnData fields written: `trb_cdr3aa`, `trbv`, `rfu_label`, `rfu_score`, and
 Default mode: `standard`, requiring only official `AssignRFUs()`. Optional
 `mode="map_aware"` requires `AssignRFUs_with_map()` and is never selected
 implicitly. Exact CDR3 deduplication is enabled by default and can be disabled
-with `deduplicate=False`.
+with `deduplicate=False`. `chunk_size=None` preserves single-call execution.
+Supplying a positive integer enables deterministic serial chunks after
+eligibility filtering and deduplication. `resume=True` reuses only fully
+validated chunks; `resume=False` reruns them, and `force_recompute=True` takes
+precedence over resume.
 
 Common errors: `ValueError` for unknown backend/mode or missing configuration;
 `RFUCapabilityError` for an unavailable requested mode; `TypeError` when
@@ -81,7 +85,9 @@ resolved directory, detected capabilities, hashes of `RFU.R` and both RFU
 `.Rdata` files, wrapper path/hash, timestamp, eligibility rule, deduplication
 key, row/query/reconstruction counts, RFU threshold, upstream unique-query miss
 count, multiplicity-weighted reconstructed miss count, chain, `airr_key`, and
-`out_key`.
+`out_key`. Chunked runs additionally record the deterministic run ID, chunk
+size/count, completed/reused/recomputed/invalidated/failed counts, total elapsed
+time, optional maximum resident memory, and run-manifest path.
 
 Common errors: `TypeError` for string `extra_r_args`; `FileNotFoundError` for
 missing RFU files or wrapper script; `RuntimeError` if the R backend exits
@@ -100,6 +106,28 @@ error. `RFURepoPaths.resolution_source` is `explicit_argument` or
 Capabilities: immutable booleans for `AssignRFUs`,
 `AssignRFUs_with_map`, and `RFUbatch_with_maps`, detected by reading—not
 executing—`RFU.R`.
+
+Restartable arguments: `RFURepoBackend.run(..., chunk_size=None, resume=True,
+force_recompute=False)`. Chunk sizes must be positive integers. Chunking is
+serial and applies to the unique query table, not the original per-cell rows.
+
+### Restartable run layout and cache contract
+
+For chunked execution, `<workdir>/runs/<run_id>/run_manifest.json` indexes
+zero-padded directories under `chunks/`. Each chunk directory holds `input.tsv`,
+`output.tsv`, `stdout.log`, `stderr.log`, and `manifest.json`. A chunk is reused
+only if its manifest parses and is complete; run/chunk identity, offsets, row
+count, input and identifier hashes, wrapper/backend/atlas hashes, mode,
+threshold, eligibility rule, and deduplication key match; and its output hash,
+required columns, row count, unique identifiers, and exact identifier order all
+validate. An `output.tsv` by itself is never a cache hit.
+
+The run fingerprint hashes the ordered unique-sequence identifiers and CDR3s,
+mode, threshold, deduplication and eligibility rules, RFU and atlas hashes,
+wrapper hash/schema, scRFU version, chunk size, and extra R arguments. It omits
+timestamps and temporary paths. A chunk ID is
+`<run-id-prefix>-<zero-padded-index>-<input-hash-prefix>`. Runtime timestamps do
+not affect either identifier.
 
 ## Validation and Extraction
 

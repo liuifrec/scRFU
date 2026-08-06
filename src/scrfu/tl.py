@@ -21,6 +21,9 @@ def call_rfu(
     mode: str = "standard",
     threshold: float = 0.6,
     deduplicate: bool = True,
+    chunk_size: int | None = None,
+    resume: bool = True,
+    force_recompute: bool = False,
     chain: str = "TRB",
     airr_key: str = "airr",
     prefer_productive: bool = True,
@@ -47,6 +50,14 @@ def call_rfu(
         RFU correlation threshold used for pass status and upstream ``N``.
     deduplicate
         Query each exact eligible CDR3 once, then restore row multiplicity.
+    chunk_size
+        Number of unique eligible CDR3 queries per serial chunk. ``None`` keeps
+        the existing single-call behavior.
+    resume
+        Reuse only fully validated completed chunks when chunking is enabled.
+    force_recompute
+        Recompute every chunk even if a valid cache exists. Takes precedence
+        over ``resume``.
     """
     backend = backend.lower().strip()
     if isinstance(extra_r_args, str):
@@ -59,6 +70,9 @@ def call_rfu(
             mode=mode,
             threshold=threshold,
             deduplicate=deduplicate,
+            chunk_size=chunk_size,
+            resume=resume,
+            force_recompute=force_recompute,
             chain=chain,
             airr_key=airr_key,
             prefer_productive=prefer_productive,

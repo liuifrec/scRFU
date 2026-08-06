@@ -16,37 +16,34 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 WRAPPER = REPO_ROOT / "r" / "run_rfu_repo.R"
 
 
-def _integration_requirements() -> tuple[bool, str]:
+def _checkout_requirements(environment_variable: str, capability: str) -> tuple[bool, str]:
     rscript = shutil.which("Rscript")
     if rscript is None:
         return False, "Rscript not available"
 
-    rfu_dir_value = os.environ.get("RFU_DIR")
+    rfu_dir_value = os.environ.get(environment_variable)
     if not rfu_dir_value:
-        return False, "RFU_DIR is not set"
+        return False, f"{environment_variable} is not set"
 
     rfu_dir = Path(rfu_dir_value).expanduser()
     required = ["RFU.R", "trimerMDSfit_small.Rdata", "km5000noMax.Rdata"]
     missing = [name for name in required if not (rfu_dir / name).exists()]
     if missing:
-        return False, f"RFU_DIR is missing required files: {', '.join(missing)}"
+        return False, f"{environment_variable} is missing required files: {', '.join(missing)}"
+
+    capabilities = RFUCapabilities.from_rfu_r(rfu_dir / "RFU.R")
+    if not getattr(capabilities, capability):
+        function = {
+            "assign_rfus": "AssignRFUs()",
+            "assign_rfus_with_map": "AssignRFUs_with_map()",
+        }[capability]
+        return False, f"{environment_variable} does not provide {function}"
 
     return True, ""
 
 
-_READY, _REASON = _integration_requirements()
-
-
-def _map_aware_requirements() -> tuple[bool, str]:
-    if not _READY:
-        return False, _REASON
-    rfu_r = Path(os.environ["RFU_DIR"]).expanduser() / "RFU.R"
-    if not RFUCapabilities.from_rfu_r(rfu_r).assign_rfus_with_map:
-        return False, "RFU_DIR does not provide AssignRFUs_with_map()"
-    return True, ""
-
-
-_MAP_READY, _MAP_REASON = _map_aware_requirements()
+_READY, _REASON = _checkout_requirements("RFU_DIR", "assign_rfus")
+_MAP_READY, _MAP_REASON = _checkout_requirements("SCRFU_MAP_AWARE_RFU_DIR", "assign_rfus_with_map")
 
 
 @pytest.mark.skipif(not _READY, reason=_REASON)
@@ -171,6 +168,50 @@ def test_unique_cdr3_scientific_equivalence_and_multiplicity_reconstruction(
     assert int((~eligible["pass_thr"].fillna(False)).sum()) >= 2
 
 
+@pytest.mark.skipif(not _READY, reason=_REASON)
+def test_official_standard_chunked_matches_unchunked(tmp_path: Path) -> None:
+    features = pd.DataFrame(
+        {
+            "cell_id": ["c1", "c2", "c3", "c4", "c5"],
+            "cdr3aa": [
+                "CASSLGQETQYF",
+                "CASSLGQETQYF",
+                "CASSIRSSYEQYF",
+                "CYYYYYYYYYYYF",
+                "ASS_NOT_ELIGIBLE",
+            ],
+            "trbv": ["TRBV7-9", "TRBV1", "TRBV6-5", "TRBV2", "TRBV4"],
+        }
+    )
+    backend = RFURepoBackend(
+        rfu_dir=Path(os.environ["RFU_DIR"]),
+        mode="standard",
+        wrapper_r_path=WRAPPER,
+    )
+
+    unchunked = backend.run(features, workdir=tmp_path / "unchunked")
+    chunked = backend.run(features, chunk_size=2, workdir=tmp_path / "chunked")
+
+    columns = [
+        "input_row_id",
+        "unique_sequence_id",
+        "cell_id",
+        "rfu_id",
+        "rfu_label",
+        "rfu_score",
+        "pass_thr",
+        "eligibility_status",
+        "rfu_status",
+    ]
+    pd.testing.assert_frame_equal(
+        unchunked.df[columns],
+        chunked.df[columns],
+        check_exact=False,
+        atol=1e-12,
+        rtol=0.0,
+    )
+
+
 @pytest.mark.skipif(not _MAP_READY, reason=_MAP_REASON)
 def test_map_aware_mode_does_not_trust_shifted_map_identifiers(tmp_path: Path) -> None:
     features = pd.DataFrame(
@@ -181,12 +222,12 @@ def test_map_aware_mode_does_not_trust_shifted_map_identifiers(tmp_path: Path) -
         }
     )
     standard = RFURepoBackend(
-        rfu_dir=Path(os.environ["RFU_DIR"]),
+        rfu_dir=Path(os.environ["SCRFU_MAP_AWARE_RFU_DIR"]),
         mode="standard",
         wrapper_r_path=WRAPPER,
     ).run(features, deduplicate=False, workdir=tmp_path / "standard")
     map_aware = RFURepoBackend(
-        rfu_dir=Path(os.environ["RFU_DIR"]),
+        rfu_dir=Path(os.environ["SCRFU_MAP_AWARE_RFU_DIR"]),
         mode="map_aware",
         wrapper_r_path=WRAPPER,
     ).run(features, deduplicate=False, workdir=tmp_path / "map-aware")

@@ -32,6 +32,23 @@ def build_parser() -> argparse.ArgumentParser:
         dest="deduplicate",
         help="Submit every eligible row instead of unique CDR3 queries",
     )
+    c.add_argument(
+        "--chunk-size",
+        type=int,
+        default=None,
+        help="Unique eligible CDR3 queries per serial chunk",
+    )
+    c.add_argument(
+        "--no-resume",
+        action="store_false",
+        dest="resume",
+        help="Do not reuse previously completed chunks",
+    )
+    c.add_argument(
+        "--force-recompute",
+        action="store_true",
+        help="Recompute every chunk; takes precedence over resume",
+    )
     c.add_argument("--chain", type=str, default="TRB", help="Chain/locus (default: TRB)")
     c.add_argument("--airr-key", type=str, default="airr", help="obsm key for AIRR table")
     c.add_argument("--out-key", type=str, default="rfu", help="Output provenance key")
@@ -65,6 +82,9 @@ def main(argv: list[str] | None = None) -> None:
             mode=args.mode,
             threshold=args.threshold,
             deduplicate=args.deduplicate,
+            chunk_size=args.chunk_size,
+            resume=args.resume,
+            force_recompute=args.force_recompute,
             chain=args.chain,
             airr_key=args.airr_key,
             out_key=args.out_key,

@@ -23,6 +23,10 @@ def test_cli_parser():
             "r/run_rfu_repo.R",
             "--rscript-bin",
             "/usr/bin/Rscript",
+            "--chunk-size",
+            "7",
+            "--no-resume",
+            "--force-recompute",
             "--extra-r-arg=--vanilla",
             "--extra-r-arg=--quiet",
         ]
@@ -32,6 +36,9 @@ def test_cli_parser():
     assert ns.rfu_dir == "/tmp/RFU"
     assert ns.wrapper_r_path == "r/run_rfu_repo.R"
     assert ns.rscript_bin == "/usr/bin/Rscript"
+    assert ns.chunk_size == 7
+    assert ns.resume is False
+    assert ns.force_recompute is True
     assert ns.extra_r_arg == ["--vanilla", "--quiet"]
 
 
@@ -97,6 +104,9 @@ def test_cli_main_dispatches_current_call_rfu_signature(monkeypatch):
         "mode": "standard",
         "threshold": 0.6,
         "deduplicate": True,
+        "chunk_size": None,
+        "resume": True,
+        "force_recompute": False,
         "chain": "TRB",
         "airr_key": "airr",
         "out_key": "rfu",

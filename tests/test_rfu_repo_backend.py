@@ -242,7 +242,7 @@ def test_standard_mapping_preserves_rows_order_and_duplicate_multiplicity(
     assert run.df.loc[[0, 2, 4], "trbv"].tolist() == ["TRBV1", "TRBV3", "TRBV5"]
     assert run.df.loc[1, "eligibility_status"] == "ineligible_cdr3_not_starting_c"
     assert pd.isna(run.df.loc[1, "rfu_id"])
-    assert run.metadata == {
+    expected_metadata = {
         "eligibility_rule": "^C",
         "deduplication_key": "cdr3aa",
         "original_row_count": 5,
@@ -253,6 +253,7 @@ def test_standard_mapping_preserves_rows_order_and_duplicate_multiplicity(
         "upstream_threshold_miss_count": 0,
         "reconstructed_threshold_miss_count": 0,
     }
+    assert {key: run.metadata[key] for key in expected_metadata} == expected_metadata
 
 
 def test_non_deduplicated_queries_preserve_one_query_per_eligible_row(

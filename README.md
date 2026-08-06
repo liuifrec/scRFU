@@ -60,6 +60,8 @@ scrfu.tl.call_rfu(
     backend="rfu_repo",
     rfu_dir="/path/to/RFU",
     mode="standard",
+    chunk_size=20_000,
+    workdir="results/rfu_work",
 )
 
 summary = scrfu.tl.rfu_summary(adata, groupby="sample")
@@ -102,6 +104,15 @@ The public analysis layer includes `scrfu.tl.rfu_summary`,
   template for user-provided real h5ad input.
 - [examples/radiation_pbmc_workflow.py](examples/radiation_pbmc_workflow.py):
   radiation-associated PBMC workflow template without bundled data.
+- [examples/wells_atlas_workflow.py](examples/wells_atlas_workflow.py):
+  restartable Wells public-atlas workflow for a user-supplied H5AD.
+
+For large inputs, chunking occurs after exact-CDR3 deduplication. Completed
+chunks are reused only after their manifest, scientific inputs, hashes, output
+schema, row count, and identifiers all validate. `chunk_size=None` retains the
+existing one-call behavior; `resume=False` reruns every chunk, and
+`force_recompute=True` takes precedence and forces every chunk to run again.
+Chunk execution is currently serial.
 
 ## Manuscript and Benchmark Workflows
 

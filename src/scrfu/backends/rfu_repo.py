@@ -4,6 +4,7 @@ import os
 import re
 import subprocess
 import tempfile
+import time
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from datetime import datetime, timezone
@@ -14,6 +15,12 @@ import pandas as pd
 
 from .._version import __version__
 from ..rfu import RFURunResult, file_sha256
+from .rfu_chunks import (
+    RFUChunkError,
+    RFURunIdentity,
+    deterministic_run_id,
+    execute_restartable_chunks,
+)
 
 PathLike = str | Path
 RFUBackendMode = Literal["standard", "map_aware"]
@@ -265,27 +272,136 @@ class RFURepoBackend:
             )
         self.rscript_bin = rscript_bin
 
+    def _run_query_file(
+        self,
+        queries: pd.DataFrame,
+        input_path: Path,
+        output_path: Path,
+        execution_dir: Path,
+        *,
+        threshold: float,
+        extra_args: Sequence[str],
+    ) -> RFURunResult:
+        cmd = [
+            self.rscript_bin,
+            str(self.wrapper_r_path),
+            "--in",
+            str(input_path),
+            "--out",
+            str(output_path),
+            "--rfu_dir",
+            str(self.paths.rfu_dir),
+            "--workdir",
+            str(execution_dir),
+            "--mode",
+            self.mode,
+            "--threshold",
+            str(float(threshold)),
+        ] + list(extra_args)
+        proc = subprocess.run(cmd, capture_output=True, text=True)
+        if proc.returncode != 0:
+            raise RFUChunkError(
+                "RFURepoBackend execution failed.\n"
+                f"Workdir: {execution_dir}\nCommand: {' '.join(cmd)}\n"
+                f"Return code: {proc.returncode}\nstdout:\n{proc.stdout}\nstderr:\n{proc.stderr}",
+                returncode=proc.returncode,
+                stdout=proc.stdout,
+                stderr=proc.stderr,
+            )
+        if not output_path.is_file():
+            raise RFUChunkError(
+                f"RFU wrapper did not produce expected output file: {output_path}",
+                stdout=proc.stdout,
+                stderr=proc.stderr,
+            )
+        assignments = pd.read_csv(output_path, sep="\t")
+        required = {
+            "unique_sequence_id",
+            "rfu_id",
+            "rfu_label",
+            "rfu_score",
+            "pass_thr",
+            "upstream_n_miss",
+        }
+        missing = required.difference(assignments.columns)
+        if missing:
+            raise RFUChunkError(
+                f"RFU wrapper output is missing required columns: {sorted(missing)}",
+                stdout=proc.stdout,
+                stderr=proc.stderr,
+            )
+        expected_ids = queries["unique_sequence_id"].astype(str).tolist()
+        actual_ids = assignments["unique_sequence_id"].astype(str).tolist()
+        if assignments["unique_sequence_id"].duplicated().any() or actual_ids != expected_ids:
+            raise RFUChunkError(
+                "RFU wrapper output identifiers are duplicated, missing, or out of order.",
+                stdout=proc.stdout,
+                stderr=proc.stderr,
+            )
+        return RFURunResult(
+            df=assignments,
+            stdout=proc.stdout,
+            stderr=proc.stderr,
+            returncode=proc.returncode,
+        )
+
     def run(
         self,
         features: pd.DataFrame,
         *,
         threshold: float = 0.6,
         deduplicate: bool = True,
+        chunk_size: int | None = None,
+        resume: bool = True,
+        force_recompute: bool = False,
         extra_args: Sequence[str] | None = None,
         workdir: PathLike | None = None,
     ) -> RFURunResult:
+        started = time.perf_counter()
         if isinstance(extra_args, str):
             raise TypeError("extra_args must be a sequence of strings, not a single string.")
+        if chunk_size is not None and (
+            isinstance(chunk_size, bool) or not isinstance(chunk_size, int) or chunk_size <= 0
+        ):
+            raise ValueError("chunk_size must be a positive integer or None.")
         original, queries = _prepare_queries(features, deduplicate=deduplicate)
         extra_args = list(extra_args or [])
 
+        artifact_hashes = {
+            "rfu_r_sha256": file_sha256(self.paths.rfu_r),
+            "trimer_rdata_sha256": file_sha256(self.paths.trimer_rdata),
+            "km5000_rdata_sha256": file_sha256(self.paths.km5000_rdata),
+            "wrapper_r_sha256": file_sha256(self.wrapper_r_path),
+        }
+        identity = RFURunIdentity(
+            mode=self.mode,
+            threshold=float(threshold),
+            deduplication_key="cdr3aa" if deduplicate else None,
+            eligibility_rule="^C",
+            rfu_r_sha256=artifact_hashes["rfu_r_sha256"],
+            trimer_rdata_sha256=artifact_hashes["trimer_rdata_sha256"],
+            km5000_rdata_sha256=artifact_hashes["km5000_rdata_sha256"],
+            wrapper_r_sha256=artifact_hashes["wrapper_r_sha256"],
+            scrfu_version=__version__,
+            chunk_size=chunk_size or 0,
+            extra_r_args=tuple(extra_args),
+        )
+        run_id = deterministic_run_id(queries, identity)
+
         metadata = {
+            "run_id": run_id,
             "eligibility_rule": "^C",
             "deduplication_key": "cdr3aa" if deduplicate else None,
             "original_row_count": len(original),
             "eligible_row_count": int(original["eligibility_status"].eq("eligible").sum()),
             "unique_query_count": len(queries),
+            "deduplication_ratio": len(queries)
+            / len(original.loc[original["eligibility_status"].eq("eligible")])
+            if original["eligibility_status"].eq("eligible").any()
+            else None,
             "rfu_threshold": float(threshold),
+            "chunking_enabled": chunk_size is not None,
+            "chunk_size": chunk_size,
         }
 
         if queries.empty:
@@ -298,6 +414,18 @@ class RFURepoBackend:
                     "reconstructed_output_row_count": len(reconstructed),
                     "upstream_threshold_miss_count": 0,
                     "reconstructed_threshold_miss_count": 0,
+                    "chunk_count": 0,
+                    "completed_chunk_count": 0,
+                    "reused_chunk_count": 0,
+                    "recomputed_chunk_count": 0,
+                    "invalidated_chunk_count": 0,
+                    "failed_chunk_count": 0,
+                    "cache_hit_count": 0,
+                    "cache_miss_count": 0,
+                    "forced_recompute_count": 0,
+                    "total_elapsed_seconds": time.perf_counter() - started,
+                    "run_manifest_path": None,
+                    "process_max_rss_kb": None,
                 }
             )
             return RFURunResult(
@@ -308,65 +436,92 @@ class RFURepoBackend:
                 metadata=metadata,
             )
 
-        if workdir is None:
-            base = Path(".scrfu") / "rfu_repo_runs"
-            base.mkdir(parents=True, exist_ok=True)
-            work_path = Path(tempfile.mkdtemp(prefix="run_", dir=str(base))).resolve()
-        else:
-            work_path = Path(workdir).expanduser().resolve()
+        if chunk_size is not None:
+            work_path = (
+                Path(workdir).expanduser().resolve()
+                if workdir is not None
+                else (Path(".scrfu") / "rfu_repo_runs").resolve()
+            )
             work_path.mkdir(parents=True, exist_ok=True)
 
-        in_tsv = work_path / "rfu_in.tsv"
-        out_tsv = work_path / "rfu_out.tsv"
-        stdout_log = work_path / "stdout.log"
-        stderr_log = work_path / "stderr.log"
-        queries.to_csv(in_tsv, sep="\t", index=False)
+            def runner(
+                chunk: pd.DataFrame,
+                input_path: Path,
+                pending_output: Path,
+                chunk_dir: Path,
+            ) -> RFURunResult:
+                return self._run_query_file(
+                    chunk,
+                    input_path,
+                    pending_output,
+                    chunk_dir,
+                    threshold=threshold,
+                    extra_args=extra_args,
+                )
 
-        cmd = [
-            self.rscript_bin,
-            str(self.wrapper_r_path),
-            "--in",
-            str(in_tsv),
-            "--out",
-            str(out_tsv),
-            "--rfu_dir",
-            str(self.paths.rfu_dir),
-            "--workdir",
-            str(work_path),
-            "--mode",
-            self.mode,
-            "--threshold",
-            str(float(threshold)),
-        ] + extra_args
-        proc = subprocess.run(cmd, capture_output=True, text=True)
-        stdout_log.write_text(proc.stdout or "")
-        stderr_log.write_text(proc.stderr or "")
-
-        if proc.returncode != 0:
-            raise RuntimeError(
-                "RFURepoBackend execution failed.\n"
-                f"Workdir: {work_path}\nCommand: {' '.join(cmd)}\n"
-                f"Return code: {proc.returncode}\nstdout:\n{proc.stdout}\nstderr:\n{proc.stderr}\n"
-                f"stdout log: {stdout_log}\nstderr log: {stderr_log}"
+            query_run = execute_restartable_chunks(
+                queries,
+                workdir=work_path,
+                identity=identity,
+                runner=runner,
+                resume=resume,
+                force_recompute=force_recompute,
+                run_context={
+                    "original_row_count": len(original),
+                    "eligible_row_count": metadata["eligible_row_count"],
+                    "reconstructed_output_row_count": len(original),
+                    "deduplication_ratio": metadata["deduplication_ratio"],
+                    "rfu_threshold": float(threshold),
+                },
             )
-        if not out_tsv.is_file():
-            raise RuntimeError(
-                "RFU wrapper did not produce expected output file.\n"
-                f"Workdir: {work_path}\nstdout log: {stdout_log}\nstderr log: {stderr_log}"
+            assignments = query_run.df
+            upstream_n = int(query_run.metadata["upstream_threshold_miss_count"])
+            metadata.update(query_run.metadata)
+            stdout = query_run.stdout
+            stderr = query_run.stderr
+        else:
+            if workdir is None:
+                base = Path(".scrfu") / "rfu_repo_runs"
+                base.mkdir(parents=True, exist_ok=True)
+                work_path = Path(tempfile.mkdtemp(prefix="run_", dir=str(base))).resolve()
+            else:
+                work_path = Path(workdir).expanduser().resolve()
+                work_path.mkdir(parents=True, exist_ok=True)
+            in_tsv = work_path / "rfu_in.tsv"
+            out_tsv = work_path / "rfu_out.tsv"
+            queries.to_csv(in_tsv, sep="\t", index=False)
+            query_run = self._run_query_file(
+                queries,
+                in_tsv,
+                out_tsv,
+                work_path,
+                threshold=threshold,
+                extra_args=extra_args,
             )
-
-        assignments = pd.read_csv(out_tsv, sep="\t")
-        if len(assignments) != len(queries):
-            raise RuntimeError(
-                "RFU wrapper output row count does not match the submitted unique query count: "
-                f"{len(assignments)} versus {len(queries)}."
-            )
-        upstream_n = 0
-        if "upstream_n_miss" in assignments.columns and not assignments.empty:
+            (work_path / "stdout.log").write_text(query_run.stdout or "")
+            (work_path / "stderr.log").write_text(query_run.stderr or "")
+            assignments = query_run.df
             values = assignments["upstream_n_miss"].dropna().unique()
             if len(values) != 1:
                 raise RuntimeError("RFU wrapper returned inconsistent upstream_n_miss values.")
             upstream_n = int(values[0])
+            stdout = query_run.stdout
+            stderr = query_run.stderr
+            metadata.update(
+                {
+                    "chunk_count": 1,
+                    "completed_chunk_count": 1,
+                    "reused_chunk_count": 0,
+                    "recomputed_chunk_count": 1,
+                    "invalidated_chunk_count": 0,
+                    "failed_chunk_count": 0,
+                    "cache_hit_count": 0,
+                    "cache_miss_count": 0,
+                    "forced_recompute_count": 0,
+                    "run_manifest_path": None,
+                    "process_max_rss_kb": None,
+                }
+            )
 
         reconstructed = _reconstruct_results(original, assignments)
         eligible_result = reconstructed[reconstructed["eligibility_status"].eq("eligible")]
@@ -376,13 +531,14 @@ class RFURepoBackend:
                 "reconstructed_output_row_count": len(reconstructed),
                 "upstream_threshold_miss_count": upstream_n,
                 "reconstructed_threshold_miss_count": reconstructed_n,
+                "total_elapsed_seconds": time.perf_counter() - started,
             }
         )
         return RFURunResult(
             df=reconstructed,
-            stdout=proc.stdout,
-            stderr=proc.stderr,
-            returncode=proc.returncode,
+            stdout=stdout,
+            stderr=stderr,
+            returncode=0,
             metadata=metadata,
         )
 

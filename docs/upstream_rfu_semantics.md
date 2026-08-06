@@ -141,9 +141,24 @@ Each run's provenance should record:
 - the wrapper path/hash, R executable, timestamp, and run parameters already
   tracked by scRFU.
 
-Restartable chunk orchestration remains deferred. `standard` is the canonical
-default even when optional functions are detected; capability presence never
-silently changes the selected scientific mode.
+`standard` is the canonical default even when optional functions are detected;
+capability presence never silently changes the selected scientific mode.
+
+Public-standard integration tests use only `Rscript`, `RFU_DIR`, the three
+required backend files, and `AssignRFUs()`. Optional map-aware tests use the
+separate `SCRFU_MAP_AWARE_RFU_DIR`; they cannot make a standard test available
+or unavailable. Run the two groups independently with neutral user paths:
+
+```bash
+RFU_DIR=/path/to/RFU python -m pytest -q \
+  tests/test_integration_rfu_repo.py -k "not map_aware"
+
+SCRFU_MAP_AWARE_RFU_DIR=/path/to/map-aware-RFU python -m pytest -q \
+  tests/test_integration_rfu_repo.py -k map_aware
+```
+
+Skip messages distinguish an unavailable `Rscript`, an unset or incomplete
+environment-specific checkout, and a missing requested capability.
 
 ## Stable standard mapping and equivalence
 
@@ -164,6 +179,78 @@ TRBV calls, unique sequences, a non-`C` sequence, and at least two below-thresho
 sequences. It separately verifies sequence-level equivalence, restored
 repertoire multiplicity, unique-query upstream `N`, and multiplicity-weighted
 reconstructed miss count.
+
+## Restartable unique-sequence chunking
+
+The execution order is fixed: original rows receive `input_row_id`; the `^C`
+eligibility rule is applied; eligible rows are deduplicated by exact `cdr3aa`;
+the ordered unique-sequence table is divided into deterministic chunks; chunk
+outputs are validated; unique-sequence results are concatenated in chunk order;
+and the existing validated many-to-one map restores original order and
+multiplicity. Original per-cell rows are never chunked before equivalent CDR3
+queries are deduplicated.
+
+`chunk_size=None` keeps the existing one-call path. A positive `chunk_size`
+enables serial restartable execution. `resume=True` is the default;
+`resume=False` reruns all chunks without reusing cached output, and
+`force_recompute=True` takes precedence and forces recomputation. The Wells
+workflow chooses 20,000 unique CDR3s by default without changing small calls to
+the core API.
+
+### Deterministic identity
+
+The run ID is a SHA-256 digest over canonical JSON containing ordered
+`unique_sequence_id` values, ordered CDR3 sequences, backend mode, threshold,
+deduplication key, eligibility rule, hashes of `RFU.R`, both atlas files, and
+the R wrapper, the wrapper schema and scRFU versions, chunk size, and extra R
+arguments. Runtime timestamps, work directories, and temporary names are not
+included.
+
+For each chunk, scRFU records its zero-based index, start and exclusive end
+offsets, expected row count, ordered identifiers and their hash, and the hash of
+the exact TSV input bytes. Its ID is
+`<first-12-run-hash>-<five-digit-index>-<first-12-input-hash>`.
+
+### Run directory and cache validation
+
+Chunked runs use this stable structure:
+
+```text
+<workdir>/runs/<run_id>/
+  run_manifest.json
+  chunks/
+    chunk_00000/
+      input.tsv
+      output.tsv
+      stdout.log
+      stderr.log
+      manifest.json
+```
+
+Manifest and output writes use temporary sibling files followed by atomic
+replacement. A chunk is a cache hit only when the manifest parses, uses the
+supported schema, is complete, and matches the run/chunk IDs, index, offsets,
+expected count, input and ordered-identifier hashes, wrapper and backend hashes,
+mode, threshold, eligibility rule, and deduplication key. The output must exist,
+match its recorded hash, contain every required column, contain the expected
+number of rows, have unique identifiers, and match the exact expected identifier
+order. The presence of `output.tsv` alone is never sufficient.
+
+Invalid entries are retained as diagnostics, classified with an invalidation
+reason, and recomputed. A failed chunk retains stdout, stderr, its exit code,
+and a failed manifest; earlier valid chunks remain intact. A resumed run can
+therefore reuse earlier chunks and restart at the failed chunk. Concatenation
+occurs only after every chunk validates, in chunk-index order, with a final
+global identifier/order check.
+
+Synthetic tests compare unchunked execution with chunk sizes 1, 2, and a
+non-divisible final chunk and require identical IDs, labels, statuses,
+identifiers, and row order, with RFU scores equal to absolute tolerance
+`1e-12`. The official-compatible integration test independently compares
+chunked and unchunked standard `AssignRFUs()` execution under the same
+tolerance. These checks demonstrate sequence-assignment and reconstructed-row
+equivalence for the tested inputs; they do not assert behavior for a different
+upstream implementation.
 
 ## Wells atlas `TCR_IR` adapter
 
