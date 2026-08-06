@@ -181,6 +181,12 @@ def rfu_metrics(
         "clonotype_entropy",
         "dominant_clonotype_fraction",
         "rfu_threshold_pass_rate",
+        "cell_abundance",
+        "convergence_richness",
+        "mean_sequence_multiplicity",
+        "normalized_convergence",
+        "dominant_sequence_fraction",
+        "threshold_pass_rate",
     ]
     for label, column in (("donor", donor_col), ("sample", sample_col)):
         if column is not None:
@@ -251,6 +257,16 @@ def rfu_metrics(
                 float(clone_counts.max() / clone_counts.sum()) if not clone_counts.empty else 0.0
             ),
             "rfu_threshold_pass_rate": pass_rate,
+            "cell_abundance": cell_count,
+            "convergence_richness": richness,
+            "mean_sequence_multiplicity": observation_count / richness if richness else 0.0,
+            "normalized_convergence": (
+                richness / total["sequences"] if total["sequences"] else 0.0
+            ),
+            "dominant_sequence_fraction": (
+                float(clone_counts.max() / clone_counts.sum()) if not clone_counts.empty else 0.0
+            ),
+            "threshold_pass_rate": pass_rate,
         }
         for label, column in (("donor", donor_col), ("sample", sample_col)):
             if column is not None:

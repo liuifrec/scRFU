@@ -8,8 +8,11 @@ is an integration framework that makes sequence-derived functional units usable
 alongside transcriptomic metadata, sample annotations, cell states, and
 downstream scverse analysis.
 
-The package provides reproducible workflow scaffolds, provenance, input QC,
-group-level aggregation, visualization, and export. These components turn RFU
+The package provides dataset-independent receptor adapters, expression-free
+caches, exact-sequence deduplication, restartable execution, explicit
+nearest/threshold assignment, convergence and phenotype coupling,
+biological-sample pseudobulk, overlap, conventional repertoire comparisons,
+visualization, and provenance. These components turn RFU
 assignment from a standalone repertoire step into an AnnData-compatible analysis
 layer that can be benchmarked on public single-cell immune profiling datasets.
 
@@ -62,3 +65,10 @@ These are possible fits rather than predictions.
 - Keep upstream RFU attribution and dependency boundaries explicit.
 - Maintain CI-safe tests, small examples, stable API documentation, and
   manuscript-ready output schemas.
+
+## Explicit Future Work
+
+Version-pinned VDJdb evidence, antigen-coherence validation, RFU networks,
+modeled differential abundance, BCR lineage utilities, and experimental ALFU
+remain future directions. Current outputs make no antigen-specific, clinical,
+radiation, or B-cell functional claims.

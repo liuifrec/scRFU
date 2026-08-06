@@ -9,7 +9,8 @@ planned compatibility surface.
 `scrfu.pp.validate_receptor_table()` validates schema-versioned canonical
 receptor rows. `scrfu.adapters.prepare_receptors()` resolves an explicit named
 adapter and returns receptor rows, separate cell metadata, QC, and provenance.
-Built-ins are `wells_tcr_ir`, `scirpy_airr`, and `generic_airr_dataframe`.
+Built-ins are `wells_tcr_ir`, `scirpy_airr`, `generic_airr_dataframe`, and
+`cellranger_vdj`.
 
 `scrfu.io.read_h5ad_dataframe()` and `read_h5ad_obs()` selectively read encoded
 dataframes without materializing expression payloads. Generic cache schema 2 is
@@ -252,6 +253,12 @@ Common errors: `ValueError` when feature or RFU tables lack required `cell_id`,
 CDR3, or V-gene columns.
 
 ## Analysis
+
+Dataset-independent downstream functions are `repertoire_metrics`,
+`rfu_metrics`, `rfu_pseudobulk`, `rfu_overlap`,
+`rfu_phenotype_coupling`, and `rfu_sequence_matrix`. They require explicit
+grouping, sample, and weighting semantics where applicable. See the focused
+metric documentation for formulas.
 
 ### `scrfu.tl.rfu_summary`
 

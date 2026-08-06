@@ -174,6 +174,12 @@ def test_rfu_metrics_cell_weighting_and_prevalence() -> None:
     )
     assert row["dominant_clonotype_fraction"] == pytest.approx(2 / 3)
     assert row["rfu_threshold_pass_rate"] == pytest.approx(2 / 3)
+    assert row["cell_abundance"] == 3
+    assert row["convergence_richness"] == 2
+    assert row["mean_sequence_multiplicity"] == pytest.approx(3 / 2)
+    assert row["normalized_convergence"] == pytest.approx(2 / 4)
+    assert row["dominant_sequence_fraction"] == pytest.approx(2 / 3)
+    assert row["threshold_pass_rate"] == pytest.approx(2 / 3)
     assert row["donor_count"] == 2
     assert row["donor_prevalence"] == pytest.approx(2 / 3)
     assert row["sample_count"] == 2

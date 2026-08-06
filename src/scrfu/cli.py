@@ -110,6 +110,27 @@ def build_parser() -> argparse.ArgumentParser:
     )
     generic.add_argument("--airr-key", default="airr", help="obsm key for AIRR data")
     generic.add_argument("--tcr-key", default="TCR_IR", help="Wells TCR_IR key")
+    generic.add_argument(
+        "--include-non-cells",
+        action="store_false",
+        dest="filter_is_cell",
+        default=True,
+        help="For Cell Ranger, retain rows where is_cell is false",
+    )
+    generic.add_argument(
+        "--include-low-confidence",
+        action="store_false",
+        dest="filter_high_confidence",
+        default=True,
+        help="For Cell Ranger, retain rows where high_confidence is false",
+    )
+    generic.add_argument(
+        "--include-nonproductive",
+        action="store_false",
+        dest="productive_only",
+        default=True,
+        help="Retain nonproductive receptor rows",
+    )
     generic.add_argument("--force", action="store_true", help="Replace an existing cache")
     generic.add_argument(
         "--list-adapters", action="store_true", help="List built-in adapters and exit"
@@ -161,6 +182,15 @@ def _prepare_receptors_command(args: argparse.Namespace) -> dict[str, object]:
             source = read_wells_receptors_h5ad(
                 path, obs_columns=args.metadata_columns, max_cells=args.max_cells
             )
+    elif adapter in {"cellranger_vdj", "cellranger", "tenx_vdj"}:
+        source = path
+        kwargs.update(
+            {
+                "filter_is_cell": args.filter_is_cell,
+                "filter_high_confidence": args.filter_high_confidence,
+                "productive_only": args.productive_only,
+            }
+        )
     elif path.suffix.lower() == ".h5ad":
         airr = read_h5ad_dataframe(
             path, location="obsm", key=args.airr_key, max_rows=args.max_cells
@@ -196,6 +226,9 @@ def _prepare_receptors_command(args: argparse.Namespace) -> dict[str, object]:
                 "primary_chain": args.primary_chain,
                 "airr_key": args.airr_key,
                 "tcr_key": args.tcr_key,
+                "filter_is_cell": args.filter_is_cell,
+                "filter_high_confidence": args.filter_high_confidence,
+                "productive_only": args.productive_only,
             },
             selected_metadata_columns=args.metadata_columns,
             source_atlas_dimensions=provenance.get("source_atlas_dimensions"),
@@ -243,3 +276,7 @@ def main(argv: list[str] | None = None) -> None:
         migrate_wells_receptor_cache(args.input, args.outdir, force=args.force)
     else:
         raise SystemExit(f"Unknown command: {args.cmd}")
+
+
+if __name__ == "__main__":
+    main()

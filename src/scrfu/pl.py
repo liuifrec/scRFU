@@ -1,19 +1,50 @@
 from __future__ import annotations
 
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from matplotlib.axes import Axes
 
+from .downstream import RFUOverlapResult, RFUPseudobulkResult
 from .summary import aggregate_rfu
+
+if TYPE_CHECKING:
+    from matplotlib.axes import Axes
+else:
+    Axes = Any
 
 
 def _get_ax(ax: Axes | None) -> Axes:
     if ax is not None:
         return ax
+    try:
+        import matplotlib.pyplot as plt
+    except ImportError as exc:
+        raise ImportError(
+            "Plotting requires matplotlib; install scRFU with `pip install scrfu[plotting]`."
+        ) from exc
     _, ax = plt.subplots()
+    return ax
+
+
+def _heatmap(
+    table: pd.DataFrame,
+    *,
+    ax: Axes,
+    title: str,
+    xlabel: str,
+    ylabel: str,
+    colorbar_label: str,
+) -> Axes:
+    image = ax.imshow(table.to_numpy(dtype=float), aspect="auto", interpolation="nearest")
+    ax.set_title(title)
+    ax.set_xlabel(xlabel)
+    ax.set_ylabel(ylabel)
+    ax.set_xticks(np.arange(table.shape[1]))
+    ax.set_xticklabels(table.columns.astype(str), rotation=90)
+    ax.set_yticks(np.arange(table.shape[0]))
+    ax.set_yticklabels(table.index.astype(str))
+    ax.figure.colorbar(image, ax=ax, label=colorbar_label)
     return ax
 
 
@@ -117,4 +148,189 @@ def rfu_score_hist(adata: Any, bins: int = 50, ax: Axes | None = None) -> Axes:
     return ax
 
 
-__all__ = ["rfu_bar", "rfu_heatmap", "rfu_score_hist"]
+def rfu_metric_heatmap(
+    data: RFUPseudobulkResult | pd.DataFrame,
+    *,
+    top_n: int | None = 50,
+    row_standardize: bool = False,
+    value_label: str | None = None,
+    ax: Axes | None = None,
+) -> Axes:
+    """Plot RFUs by samples from a pseudobulk result or sample-by-RFU matrix."""
+    matrix = data.matrix.copy() if isinstance(data, RFUPseudobulkResult) else data.copy()
+    if matrix.empty or matrix.shape[1] == 0:
+        raise ValueError("RFU metric heatmap input is empty.")
+    matrix = matrix.apply(pd.to_numeric, errors="raise")
+    if top_n is not None:
+        if top_n < 1:
+            raise ValueError("top_n must be positive or None.")
+        totals = matrix.abs().sum(axis=0)
+        selected = sorted(matrix.columns, key=lambda item: (-totals[item], str(item)))[:top_n]
+        matrix = matrix.loc[:, selected]
+    table = matrix.T
+    if row_standardize:
+        means = table.mean(axis=1)
+        deviations = table.std(axis=1, ddof=0).replace(0, np.nan)
+        table = table.sub(means, axis=0).div(deviations, axis=0).fillna(0.0)
+    return _heatmap(
+        table,
+        ax=_get_ax(ax),
+        title="RFU metric heatmap",
+        xlabel=str(matrix.index.name or "sample"),
+        ylabel=str(matrix.columns.name or "RFU"),
+        colorbar_label=value_label or ("Row z-score" if row_standardize else "Value"),
+    )
+
+
+def rfu_overlap_heatmap(
+    data: RFUOverlapResult | pd.DataFrame,
+    *,
+    metric: str | None = None,
+    direction: str | None = None,
+    ax: Axes | None = None,
+) -> Axes:
+    """Plot a square RFU overlap matrix with explicit similarity/distance labeling."""
+    if isinstance(data, RFUOverlapResult):
+        matrix = data.matrix.copy()
+        metric = data.metric
+        direction = data.direction
+    else:
+        matrix = data.copy()
+    if matrix.empty:
+        raise ValueError("RFU overlap heatmap input is empty.")
+    if matrix.shape[0] != matrix.shape[1]:
+        raise ValueError("RFU overlap heatmap requires a square matrix.")
+    if matrix.index.astype(str).tolist() != matrix.columns.astype(str).tolist():
+        raise ValueError("RFU overlap heatmap row and column sample labels must match in order.")
+    direction = direction or "similarity"
+    return _heatmap(
+        matrix,
+        ax=_get_ax(ax),
+        title=f"RFU overlap: {metric or 'metric'} ({direction})",
+        xlabel="Sample",
+        ylabel="Sample",
+        colorbar_label=direction.title(),
+    )
+
+
+def rfu_convergence(
+    metrics: pd.DataFrame,
+    *,
+    richness_col: str = "unique_cdr3_richness",
+    abundance_col: str = "cell_abundance",
+    rfu_col: str = "rfu_label",
+    phenotype_col: str | None = None,
+    annotate_top: int = 0,
+    ax: Axes | None = None,
+) -> Axes:
+    """Plot RFU sequence richness against abundance or multiplicity."""
+    required = [richness_col, abundance_col, rfu_col]
+    if phenotype_col is not None:
+        required.append(phenotype_col)
+    missing = [column for column in required if column not in metrics]
+    if missing:
+        raise ValueError(f"RFU convergence input is missing columns: {missing}")
+    if metrics.empty:
+        raise ValueError("RFU convergence input is empty.")
+    plot_ax = _get_ax(ax)
+    if phenotype_col is None:
+        plot_ax.scatter(metrics[richness_col], metrics[abundance_col])
+    else:
+        for phenotype in sorted(metrics[phenotype_col].dropna().unique(), key=str):
+            subset = metrics.loc[metrics[phenotype_col].eq(phenotype)]
+            plot_ax.scatter(subset[richness_col], subset[abundance_col], label=str(phenotype))
+        plot_ax.legend(title=phenotype_col, frameon=False)
+    if annotate_top:
+        if annotate_top < 0:
+            raise ValueError("annotate_top must be non-negative.")
+        ranked = metrics.assign(_order=range(len(metrics))).sort_values(
+            [abundance_col, richness_col, "_order"], ascending=[False, False, True], kind="stable"
+        )
+        for _, row in ranked.head(annotate_top).iterrows():
+            plot_ax.annotate(str(row[rfu_col]), (row[richness_col], row[abundance_col]))
+    plot_ax.set_xlabel(richness_col)
+    plot_ax.set_ylabel(abundance_col)
+    plot_ax.set_title("RFU convergence")
+    return plot_ax
+
+
+def rfu_phenotype_heatmap(
+    coupling: pd.DataFrame,
+    *,
+    rfu_col: str = "rfu_label",
+    phenotype_col: str = "phenotype",
+    value_col: str = "phenotype_specific_proportion",
+    top_n: int | None = 50,
+    min_prevalence: float = 0.0,
+    ax: Axes | None = None,
+) -> Axes:
+    """Plot RFU-by-phenotype coupling values from the long-form result table."""
+    required = [rfu_col, phenotype_col, value_col]
+    missing = [column for column in required if column not in coupling]
+    if missing:
+        raise ValueError(f"RFU phenotype heatmap input is missing columns: {missing}")
+    if coupling.empty:
+        raise ValueError("RFU phenotype heatmap input is empty.")
+    table = coupling.pivot(index=rfu_col, columns=phenotype_col, values=value_col).fillna(0.0)
+    prevalence = (table > 0).mean(axis=1)
+    table = table.loc[prevalence >= min_prevalence]
+    if top_n is not None:
+        if top_n < 1:
+            raise ValueError("top_n must be positive or None.")
+        totals = table.abs().sum(axis=1)
+        selected = sorted(table.index, key=lambda item: (-totals[item], str(item)))[:top_n]
+        table = table.loc[selected]
+    if table.empty:
+        raise ValueError("No RFUs remain after phenotype heatmap filtering.")
+    return _heatmap(
+        table,
+        ax=_get_ax(ax),
+        title="RFU phenotype coupling",
+        xlabel=phenotype_col,
+        ylabel="RFU",
+        colorbar_label=value_col,
+    )
+
+
+def repertoire_metric_comparison(
+    repertoire: pd.DataFrame,
+    rfu: pd.DataFrame,
+    *,
+    sample_key: str,
+    repertoire_metric: str,
+    rfu_metric: str,
+    ax: Axes | None = None,
+) -> Axes:
+    """Scatter two descriptive sample-level metrics without inferential claims."""
+    for name, table, metric_name in (
+        ("repertoire", repertoire, repertoire_metric),
+        ("RFU", rfu, rfu_metric),
+    ):
+        missing = [column for column in (sample_key, metric_name) if column not in table]
+        if missing:
+            raise ValueError(f"{name} metric input is missing columns: {missing}")
+    merged = repertoire[[sample_key, repertoire_metric]].merge(
+        rfu[[sample_key, rfu_metric]], on=sample_key, how="inner", validate="one_to_one"
+    )
+    if merged.empty:
+        raise ValueError("Repertoire comparison has no matched samples.")
+    plot_ax = _get_ax(ax)
+    plot_ax.scatter(merged[repertoire_metric], merged[rfu_metric])
+    for _, row in merged.iterrows():
+        plot_ax.annotate(str(row[sample_key]), (row[repertoire_metric], row[rfu_metric]))
+    plot_ax.set_xlabel(repertoire_metric)
+    plot_ax.set_ylabel(rfu_metric)
+    plot_ax.set_title("RFU and conventional repertoire metrics")
+    return plot_ax
+
+
+__all__ = [
+    "repertoire_metric_comparison",
+    "rfu_bar",
+    "rfu_convergence",
+    "rfu_heatmap",
+    "rfu_metric_heatmap",
+    "rfu_overlap_heatmap",
+    "rfu_phenotype_heatmap",
+    "rfu_score_hist",
+]

@@ -3,6 +3,11 @@
 This plan avoids claiming biological findings before real-data analyses are
 completed.
 
+Generic assembly starts from `examples/rfu_downstream_analysis.py`, which
+produces sample-level pseudobulk, overlap, coupling, conventional/RFU metrics,
+and dataset-independent panels. Biological sample is the pseudobulk unit; cells
+are not presented as independent replicates.
+
 ## Figure 1: Software Architecture and Workflow
 
 - Required input: conceptual schematic plus documented API contract.
@@ -68,3 +73,7 @@ metadata, sample-level RFU heatmap, and assignment summary.
   manifest excerpt.
 - Current status: documentation implemented; figure/table generation remains
   future work.
+
+`examples/benchmark_summary.py` assembles user-named preparation and RFU
+manifests into benchmark rows. Wells values can later be supplied as one
+user-labelled row; the utility contains no Wells-specific dataset name or path.

@@ -9,8 +9,8 @@ adapter, benchmark, and reproducible case study rather than the data model.
 
 - Extracts TRB CDR3 amino-acid and TRBV features from AnnData/scirpy-style AIRR
   tables.
-- Prepares canonical receptor rows through Wells, scirpy/AIRR, and generic
-  DataFrame adapters while keeping cell metadata separate.
+- Prepares canonical receptor rows through Wells, scirpy/AIRR, generic
+  DataFrame, and Cell Ranger VDJ adapters while keeping metadata separate.
 - Selectively reads receptor and observation data without loading expression
   matrices and writes portable checksummed receptor caches.
 - Calls a user-provided upstream RFU repository backend.
@@ -18,6 +18,9 @@ adapter, benchmark, and reproducible case study rather than the data model.
   AnnData.
 - Provides RFU summaries, group-level RFU matrices, matplotlib plots, and TSV
   export for downstream analysis.
+- Provides conventional repertoire metrics, sample-level RFU pseudobulk,
+  overlap, phenotype coupling, explicit convergence definitions, and generic
+  manuscript-oriented plots.
 - Provides CI-safe synthetic examples plus real-data workflow scaffolds for
   user-provided datasets.
 
@@ -43,6 +46,9 @@ Optional scirpy extras:
 ```bash
 pip install -e ".[dev,scirpy]"
 ```
+
+Core imports do not require matplotlib. Install plotting support with
+`pip install -e ".[plotting]"`; `.[all]` installs plotting and scirpy extras.
 
 ## External RFU Dependency
 
@@ -83,6 +89,14 @@ scrfu.tl.call_rfu(
 summary = scrfu.tl.rfu_summary(adata, groupby="sample")
 matrix = scrfu.tl.aggregate_rfu(adata, groupby="sample")
 
+pseudobulk = scrfu.tl.rfu_pseudobulk(
+    per_row_results,
+    sample_key="donor_id",
+    weighting="cell",
+    normalize="proportion",
+)
+overlap = scrfu.tl.rfu_overlap(pseudobulk, metric="jaccard")
+
 scrfu.pl.rfu_bar(adata, groupby="sample")
 scrfu.pl.rfu_heatmap(adata, groupby="sample")
 scrfu.pl.rfu_score_hist(adata)
@@ -114,9 +128,11 @@ required after receptor preparation.
 
 ## Analysis Utilities
 
-The public analysis layer includes `scrfu.tl.rfu_summary`,
-`scrfu.tl.aggregate_rfu`, `scrfu.pl.rfu_bar`, `scrfu.pl.rfu_heatmap`,
-`scrfu.pl.rfu_score_hist`, and `scrfu.io.export_rfu_matrix`.
+The public analysis layer includes legacy summaries plus
+`repertoire_metrics`, `rfu_metrics`, `rfu_pseudobulk`, `rfu_overlap`,
+`rfu_phenotype_coupling`, and generic `scrfu.pl` functions. See
+[docs/v0.2_api_review.md](docs/v0.2_api_review.md) for the compatibility
+boundary and the focused metric documentation for formulas.
 
 ## Reproducible Examples
 
@@ -131,6 +147,10 @@ The public analysis layer includes `scrfu.tl.rfu_summary`,
   expression-free receptor cache.
 - [examples/receptor_table_workflow.py](examples/receptor_table_workflow.py):
   dataset-independent cache, canonical TSV, or named-H5AD-adapter workflow.
+- [examples/rfu_downstream_analysis.py](examples/rfu_downstream_analysis.py):
+  sample-level downstream metrics and generic figures from RFU per-row results.
+- [examples/benchmark_summary.py](examples/benchmark_summary.py): combines
+  user-labelled manifests into a manuscript-ready benchmark table.
 
 For large inputs, chunking occurs after exact-CDR3 deduplication. Completed
 chunks are reused only after their manifest, scientific inputs, hashes, output

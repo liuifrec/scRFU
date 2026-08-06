@@ -62,6 +62,25 @@ Both named abundance columns, richness, multiplicity, entropy, and dominant
 fraction are always returned so a manuscript can state exactly which unit was
 used. Phenotype groups are never inferred from clustering fields or labels.
 
+## Refined convergence names and compatibility
+
+`cell_abundance` is the distinct-cell count. `convergence_richness` is the
+distinct exact-CDR3 count within the RFU and intentionally equals
+`unique_cdr3_richness`; it is a semantic alias, not another formula.
+`normalized_convergence` is RFU exact-CDR3 richness divided by group-wide
+exact-CDR3 richness. `mean_sequence_multiplicity` is distinct cell-CDR3
+observations divided by RFU exact-CDR3 richness. `dominant_sequence_fraction`
+is the largest exact-CDR3 cell count divided by all distinct cell-CDR3
+observations. `threshold_pass_rate` uses the explicitly requested weighting.
+
+Historical columns remain for compatibility: `rfu_cell_count` equals
+`cell_abundance`; `rfu_cell_abundance` is a within-group cell proportion;
+`sequence_convergence_ratio` equals `normalized_convergence`; `multiplicity`
+equals `mean_sequence_multiplicity`; `dominant_clonotype_fraction` equals
+`dominant_sequence_fraction`; and `rfu_threshold_pass_rate` equals
+`threshold_pass_rate`. The older “clonotype” name refers to exact CDR3 here and
+must not be interpreted as a supplied true clonotype identifier.
+
 `assignment_policy="nearest"` includes every non-missing nearest assignment;
 `assignment_policy="threshold_pass"` restricts metrics to threshold-qualified
 assignments. An explicit `chain` filters canonical result tables through their

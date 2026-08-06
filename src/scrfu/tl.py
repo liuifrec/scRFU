@@ -6,6 +6,15 @@ from typing import Any
 
 import pandas as pd
 
+from .downstream import (
+    RFUOverlapResult,
+    RFUPseudobulkResult,
+    rfu_overlap,
+    rfu_phenotype_coupling,
+    rfu_pseudobulk,
+)
+from .repertoire import repertoire_metrics
+from .sequence import rfu_sequence_matrix
 from .summary import aggregate_rfu, rfu_metrics, rfu_summary
 from .tl_rfu_repo import RFUTableResult, call_rfu_repo, call_rfu_table
 from .validation import validate_airr
@@ -92,7 +101,14 @@ __all__ = [
     "call_rfu_repo",
     "call_rfu_table",
     "RFUTableResult",
+    "RFUOverlapResult",
+    "RFUPseudobulkResult",
+    "repertoire_metrics",
     "rfu_metrics",
+    "rfu_overlap",
+    "rfu_phenotype_coupling",
+    "rfu_pseudobulk",
+    "rfu_sequence_matrix",
     "rfu_summary",
     "validate_airr",
 ]
