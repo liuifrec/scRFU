@@ -1,0 +1,22 @@
+{
+  "schema_version": "1",
+  "gates": [
+    {"id": "original_rfu_parity", "status": "partial", "evidence_path": "tests/test_integration_rfu_repo.py", "owner": "maintainer", "blocker": "full frozen-artifact parity table not yet produced", "next_action": "run bounded parity workflow and review mismatches", "target_month": 2},
+    {"id": "novelty_beyond_wrapper", "status": "partial", "evidence_path": "docs/methodological_novelty.md", "owner": "maintainer", "blocker": "independent real-cohort validation pending", "next_action": "validate longitudinal and transfer claims", "target_month": 2},
+    {"id": "longitudinal_compartment_results", "status": "blocked", "evidence_path": "src/scrfu/longitudinal.py", "owner": "analysis lead", "blocker": "governed longitudinal analysis not run", "next_action": "execute prespecified repeated-measures workflow outside the repository", "target_month": 2},
+    {"id": "two_independent_tcr_datasets", "status": "blocked", "evidence_path": "docs/dataset_validation_plan.md", "owner": "analysis lead", "blocker": "public cohorts not selected and verified", "next_action": "verify licensing and required fields", "target_month": 2},
+    {"id": "heldout_dataset", "status": "blocked", "evidence_path": "docs/heldout_validation_plan.md", "owner": "analysis lead", "blocker": "held-out cohort not registered", "next_action": "freeze cohort role before access", "target_month": 2},
+    {"id": "bcr_substantive_or_removed", "status": "complete", "evidence_path": "docs/bcr_architecture.md", "owner": "maintainer", "blocker": "none for TCR-only scope", "next_action": "keep BCR out unless every gate passes", "target_month": 1},
+    {"id": "meaningful_comparators", "status": "partial", "evidence_path": "src/scrfu/comparators.py", "owner": "methods lead", "blocker": "real-cohort comparison pending", "next_action": "freeze comparator parameters before evaluation", "target_month": 2},
+    {"id": "runtime_memory_benchmarks", "status": "partial", "evidence_path": "docs/benchmark_plan.md", "owner": "software lead", "blocker": "bounded scaling runs pending", "next_action": "run 1k/10k/25k manifests", "target_month": 2},
+    {"id": "installation_api_documentation", "status": "partial", "evidence_path": "docs/api_freeze_v1.md", "owner": "software lead", "blocker": "tutorial and release-version review pending", "next_action": "test documentation from clean wheel", "target_month": 3},
+    {"id": "public_test_dataset", "status": "partial", "evidence_path": "examples/synthetic_scirpy_demo.py", "owner": "software lead", "blocker": "redistribution review for a small real dataset pending", "next_action": "decide synthetic-only versus redistributable public fixture", "target_month": 3},
+    {"id": "ci", "status": "complete", "evidence_path": ".github/workflows/ci.yml", "owner": "software lead", "blocker": "none", "next_action": "monitor supported Python jobs", "target_month": 1},
+    {"id": "open_source_license", "status": "complete", "evidence_path": "LICENSE", "owner": "maintainer", "blocker": "none", "next_action": "retain license in artifacts", "target_month": 1},
+    {"id": "versioned_release", "status": "blocked", "evidence_path": "CHANGELOG.md", "owner": "maintainer", "blocker": "release candidate not approved", "next_action": "resolve version/tag history after validation", "target_month": 3},
+    {"id": "doi_archive", "status": "blocked", "evidence_path": "docs/submission_gate.md", "owner": "maintainer", "blocker": "versioned release absent", "next_action": "archive approved release", "target_month": 3},
+    {"id": "reviewer_shareable_code_data", "status": "partial", "evidence_path": "docs/dataset_validation_plan.md", "owner": "maintainer", "blocker": "public validation bundle pending", "next_action": "assemble public manifests and download instructions", "target_month": 3},
+    {"id": "complete_source_tables", "status": "blocked", "evidence_path": "docs/manuscript_figures.md", "owner": "analysis lead", "blocker": "figures not generated", "next_action": "generate one source table per plotted panel", "target_month": 3},
+    {"id": "reproducibility_report", "status": "blocked", "evidence_path": "docs/submission_gate.md", "owner": "software lead", "blocker": "final workflows not run", "next_action": "compile hashes, environments, runtime, and validation outcomes", "target_month": 3}
+  ]
+}

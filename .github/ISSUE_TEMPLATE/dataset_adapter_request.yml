@@ -1,0 +1,27 @@
+name: Dataset adapter request
+description: Propose a dataset-independent receptor input adapter
+title: "[Adapter]: "
+labels: [enhancement, adapter]
+body:
+  - type: input
+    id: format
+    attributes: {label: Input format and producer}
+    validations: {required: true}
+  - type: textarea
+    id: schema
+    attributes: {label: Public schema, description: List receptor, cell, chain, and optional metadata fields.}
+    validations: {required: true}
+  - type: textarea
+    id: selection
+    attributes: {label: Chain and primary-record semantics}
+    validations: {required: true}
+  - type: textarea
+    id: fixture
+    attributes: {label: Redistributable synthetic fixture and licensing}
+  - type: checkboxes
+    id: scope
+    attributes:
+      label: Scope
+      options:
+        - label: The request does not equate schema support with a validated functional-unit model.
+          required: true
