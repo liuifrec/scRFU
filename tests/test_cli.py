@@ -23,6 +23,10 @@ def test_cli_parser():
             "r/run_rfu_repo.R",
             "--rscript-bin",
             "/usr/bin/Rscript",
+            "--chunk-size",
+            "7",
+            "--no-resume",
+            "--force-recompute",
             "--extra-r-arg=--vanilla",
             "--extra-r-arg=--quiet",
         ]
@@ -32,6 +36,9 @@ def test_cli_parser():
     assert ns.rfu_dir == "/tmp/RFU"
     assert ns.wrapper_r_path == "r/run_rfu_repo.R"
     assert ns.rscript_bin == "/usr/bin/Rscript"
+    assert ns.chunk_size == 7
+    assert ns.resume is False
+    assert ns.force_recompute is True
     assert ns.extra_r_arg == ["--vanilla", "--quiet"]
 
 
@@ -39,6 +46,17 @@ def test_cli_parser_requires_subcommand():
     parser = build_parser()
     with pytest.raises(SystemExit):
         parser.parse_args([])
+
+
+def test_cli_parser_allows_rfu_dir_environment_fallback():
+    parser = build_parser()
+
+    ns = parser.parse_args(["call-rfu", "in.h5ad", "-o", "out.h5ad"])
+
+    assert ns.rfu_dir is None
+    assert ns.mode == "standard"
+    assert ns.threshold == 0.6
+    assert ns.deduplicate is True
 
 
 def test_cli_main_dispatches_current_call_rfu_signature(monkeypatch):
@@ -83,6 +101,14 @@ def test_cli_main_dispatches_current_call_rfu_signature(monkeypatch):
     assert calls["write"] == (adata, "output.h5ad")
     assert calls["kwargs"] == {
         "rfu_dir": "/rfu",
+        "mode": "standard",
+        "threshold": 0.6,
+        "deduplicate": True,
+        "chunk_size": None,
+        "max_workers": 1,
+        "executor": "process",
+        "resume": True,
+        "force_recompute": False,
         "chain": "TRB",
         "airr_key": "airr",
         "out_key": "rfu",
@@ -91,3 +117,31 @@ def test_cli_main_dispatches_current_call_rfu_signature(monkeypatch):
         "extra_r_args": ["--vanilla"],
         "workdir": ".scrfu/test-run",
     }
+
+
+def test_cli_prepare_wells_dispatch(monkeypatch):
+    calls: list[tuple[object, ...]] = []
+
+    def fake_prepare(
+        source: str, output: str, *, obs_columns: list[str], max_cells: int | None
+    ) -> None:
+        calls.append((source, output, obs_columns, max_cells))
+
+    monkeypatch.setattr("scrfu.cli.prepare_wells_receptor_cache", fake_prepare)
+
+    main(
+        [
+            "prepare-wells",
+            "atlas.h5ad",
+            "--output-dir",
+            "cache",
+            "--obs-column",
+            "donor_id",
+            "--obs-column",
+            "sample_id",
+            "--max-cells",
+            "1000",
+        ]
+    )
+
+    assert calls == [("atlas.h5ad", "cache", ["donor_id", "sample_id"], 1000)]

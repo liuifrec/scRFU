@@ -3,7 +3,7 @@ from __future__ import annotations
 import hashlib
 import subprocess
 from collections.abc import Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 
 import pandas as pd
@@ -17,6 +17,7 @@ class RFURunResult:
     stdout: str
     stderr: str
     returncode: int
+    metadata: dict = field(default_factory=dict)
 
 
 def file_sha256(path: PathLike) -> str:

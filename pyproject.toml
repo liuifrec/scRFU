@@ -5,20 +5,23 @@ build-backend = "hatchling.build"
 [project]
 name = "scrfu"
 dynamic = ["version"]
-description = "RFU calling for 10x single-cell TCR data integrated into scirpy/scverse AnnData."
+description = "Transferable frozen-reference receptor-state analysis for adaptive immune repertoires."
 readme = "README.md"
 requires-python = ">=3.10"
 license = { file = "LICENSE" }
 authors = [
-  { name = "James Liu", email = "REPLACE_ME@example.com" }
+  { name = "Yu-Chen Liu", email = "liu_y@rerf.or.jp" }
 ]
-keywords = ["single-cell", "TCR", "scirpy", "AnnData", "immunology", "RFU"]
+keywords = ["immune repertoire", "TCR", "single-cell", "longitudinal", "AnnData", "RFU"]
 classifiers = [
-  "Development Status :: 2 - Pre-Alpha",
+  "Development Status :: 3 - Alpha",
   "Intended Audience :: Science/Research",
   "License :: OSI Approved :: MIT License",
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
   "Topic :: Scientific/Engineering :: Bio-Informatics",
 ]
 
@@ -29,11 +32,33 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+plotting = [
+  "matplotlib>=3.7",
+]
 scirpy = [
   "scirpy>=0.13",
   "scanpy>=1.9",
 ]
+mudata = [
+  "mudata>=0.2",
+]
+test = [
+  "pytest>=7.4",
+  "ruff>=0.6",
+]
+docs = [
+  "myst-parser>=2.0",
+  "sphinx>=7.0",
+]
+all = [
+  "matplotlib>=3.7",
+  "mudata>=0.2",
+  "scanpy>=1.9",
+  "scirpy>=0.13",
+]
 dev = [
+  "build>=1.2",
+  "matplotlib>=3.7",
   "pytest>=7.4",
   "ruff>=0.6",
   "mypy>=1.8",
@@ -44,9 +69,9 @@ dev = [
 scrfu = "scrfu.cli:main"
 
 [project.urls]
-Homepage = "https://github.com/REPLACE_ME/scrfu"
-Repository = "https://github.com/REPLACE_ME/scrfu"
-Issues = "https://github.com/REPLACE_ME/scrfu/issues"
+Homepage = "https://github.com/liuifrec/scRFU"
+Repository = "https://github.com/liuifrec/scRFU"
+Issues = "https://github.com/liuifrec/scRFU/issues"
 
 [tool.hatch.version]
 path = "src/scrfu/_version.py"

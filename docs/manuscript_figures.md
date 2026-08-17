@@ -1,70 +1,59 @@
-# Manuscript Figure Plan
+# Manuscript figure and source-table plan
 
-This plan avoids claiming biological findings before real-data analyses are
-completed.
+Every panel must be regenerated from a saved source table and manifest. Cells or
+sequences are descriptive units, not independent biological replicates.
 
-## Figure 1: Software Architecture and Workflow
+## Figure 1 — framework and technical benchmark
 
-- Required input: conceptual schematic plus documented API contract.
-- Script to generate: future manuscript figure script or vector graphics source.
-- Expected output files: architecture figure panel, API/provenance summary.
-- Current status: needs figure artwork; software components are implemented.
+| Panel | Generating function/workflow | Required source table | Data unit | Uncertainty | Caveat / status |
+|---|---|---|---|---|---|
+| Workflow/schema | vector assembly from API contract | receptor/result schema tables | field | none | Planned; distinguish original RFU from scRFU. |
+| Assignment parity | `examples/original_rfu_parity.py` (planned) | row-level original/scRFU comparison | receptor row | exact mismatch counts | Workflow not yet added; frozen artifacts required. |
+| Deterministic chunks | `call_rfu_table` manifests | run/chunk manifest summary | unique query/chunk | repeated-run range if repeated | Serial/parallel synthetic parity implemented; real benchmark pending. |
+| Reference coverage | `reference_coverage` | group coverage TSV | sample/cohort/chain | donor/sample summaries | Threshold is not probabilistic confidence or OOD. |
+| Runtime/memory | benchmark manifest summary | runtime/RSS/cache table | run | replicate range | 1k/10k/25k bounded runs pending. |
+| Downsampling robustness | benchmark utilities | perturbation stability TSV | biological sample/run | seeded replicate distribution | Multinomial abundance resampling is not physical read downsampling. |
 
-Content: AnnData/scirpy AIRR input, TRB feature extraction, external upstream RFU
-execution, RFU attachment into `adata.obs`, provenance in `adata.uns`, grouped
-summary, visualization, export, and downstream scverse-compatible analysis.
+## Figure 2 — longitudinal compartment validation
 
-## Figure 2: Synthetic/scirpy Demo Validation
+| Panel | Generating function | Source table | Data unit | Uncertainty | Caveat / status |
+|---|---|---|---|---|---|
+| Design | `validate_longitudinal_design` | design and QC TSV | biological sample | none | Synthetic only; missing visits remain missing. |
+| Within/between similarity | `longitudinal_similarity` | tidy pair TSV | sample pair | donor-block interval/bootstrap summary | Do not treat pairs as independent. |
+| Donor retrieval | `donor_retrieval` | query-ranking TSV | query sample | donor-level bootstrap | No parameter tuning on evaluation cohort. |
+| Persistence/dynamics | `rfu_longitudinal_dynamics` | classifications plus trajectory TSV | donor–RFU–compartment | threshold sensitivity | Descriptive labels, not inferential states. |
+| Trajectories | source trajectories | abundance/missingness TSV | biological sample | donor summaries | No hidden imputation. |
+| Compartment divergence | `longitudinal_compartment_comparison` | paired comparison TSV | donor-time pair | donor-block bootstrap/restricted permutation | Compartment names are user data, not hard-coded. |
 
-- Required input: synthetic AnnData object from
-  `examples/synthetic_scirpy_demo.py`.
-- Script to generate: `python examples/synthetic_scirpy_demo.py`.
-- Expected output files: `rfu_matrix.tsv`, `rfu_bar.png`, `rfu_heatmap.png`,
-  `rfu_score_hist.png`.
-- Current status: implemented with synthetic RFU labels; does not run upstream
-  RFU.
+The deep longitudinal cohort is a methods demonstration and cannot support a
+general population claim by itself.
 
-Content: feature extraction, RFU-style annotation attachment, summary,
-aggregation, plotting, and export on a CI-safe demo.
+## Figure 3 — cross-cohort TCR validation
 
-## Figure 3: COVID-19 PBMC Benchmark
+| Panel | Generating function/workflow | Source table | Data unit | Uncertainty | Caveat / status |
+|---|---|---|---|---|---|
+| Cohort characteristics | explicit harmonization | mapped fields/QC/missingness | donor/sample | descriptive | Cohorts not yet selected. |
+| Frozen coverage | `transfer_cohort` | coverage/score/RFU summaries | sample/cohort | donor/sample summaries | No target refitting. |
+| Held-out transfer | held-out manifest plus fixed metrics | registered evaluation TSV | held-out sample | prespecified donor-level method | Blocked until cohort registered. |
+| Replication | frozen analysis configuration | cohort-specific effect/source table | donor | model appropriate to cohort | No result claimed in Month 1. |
+| Comparator performance | `repertoire_representation`, retrieval/similarity | tidy comparator metric TSV | biological sample/query | donor-block resampling | Comparators are useful baselines, not exhaustive SOTA. |
+| Single-cell phenotype interpretation | phenotype coupling/pseudobulk | RFU-by-phenotype/sample TSV | sample and descriptive cell rows | sample-level summaries | Avoid cell-level pseudoreplication. |
+| Antigen evidence | VDJdb workflow | pinned-reference evidence/coherence/null TSV | unique sequence/RFU | size-preserving permutations | Evidence is not proof of antigen specificity. |
 
-- Required input: user-provided public COVID-19 PBMC AnnData/scirpy h5ad with
-  TCR AIRR data and metadata such as disease, severity, sample, and cell type.
-- Script to generate:
-  `python examples/benchmark_scirpy_dataset.py --input input.h5ad --rfu-dir ~/ext/RFU --groupby sample --cell-type-key cell_type --outdir results/scRFU_benchmark`.
-- Expected output files: `validate_airr.tsv`, `rfu_summary_by_group.tsv`,
-  `rfu_matrix_by_group.tsv`, `rfu_bar_by_group.png`,
-  `rfu_heatmap_by_group.png`, `rfu_score_hist.png`, optional cell-type outputs,
-  and `run_manifest.json`.
-- Current status: workflow scaffold implemented; needs real data and manuscript
-  panel assembly.
+## Figure 4 — BCR extension (gated and optional)
 
-Content: RFU assignment rate, RFU composition by disease/severity/sample when
-metadata permit, RFU score distribution, and optional cell-type association.
+Only planned after every BCR gate passes. Required source tables would include
+heavy/light selection, isotype/SHM/family QC, receptor-specific parity and
+coverage, public-cohort results, and held-out validation. Current status:
+blocked; not part of the TCR methods claim.
 
-## Figure 4: Radiotherapy-Associated Public Dataset GSE190905
+## Optional Figure 5 — unified biological synthesis
 
-- Required input: user-downloaded processed GSE190905 TCR and metadata files,
-  then prepared h5ad.
-- Script to generate:
-  `python examples/gse190905_prepare.py --tcr GSE190905_TCR_data.csv.gz --metadata GSE190905_meta_data.csv.gz --out gse190905_scrfu_input.h5ad --report gse190905_prepare_report.json`,
-  followed by `benchmark_scirpy_dataset.py` or
-  `examples/radiation_pbmc_workflow.py`.
-- Expected output files: preparation report JSON, prepared h5ad, AIRR QC,
-  grouped RFU summaries, RFU matrices, heatmaps, score histogram, and manifest.
-- Current status: preparation scaffold implemented; needs real downloaded files,
-  metadata inspection, RFU run, and analysis validation.
+Future only. It cannot proceed until independently validated TCR and BCR models
+both exist. No generating function or statistical claim is frozen.
 
-Content: input QC, pre/post or treatment-group RFU composition if supported by
-metadata, sample-level RFU heatmap, and assignment summary.
+## Supplementary source tables
 
-## Supplementary Figure: API, Provenance, and Output Schema
-
-- Required input: `docs/api_contract.md`, `docs/benchmark_outputs.md`, and saved
-  run manifests.
-- Script to generate: future manuscript supplement script.
-- Expected output files: API/provenance diagram, output schema table, example
-  manifest excerpt.
-- Current status: documentation implemented; figure/table generation remains
-  future work.
+Include API/provenance schemas, all eligibility and exclusion counts, exact
+parameters, software/reference hashes, undefined results, comparator settings,
+random seeds, environment information, and one panel-to-source-table index.

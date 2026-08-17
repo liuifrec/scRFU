@@ -9,7 +9,11 @@ import anndata as ad
 import pandas as pd
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-SCRIPT = "examples/benchmark_scirpy_dataset.py"
+SCRIPT = REPO_ROOT / "examples" / "benchmark_scirpy_dataset.py"
+
+
+def _subprocess_output(result: subprocess.CompletedProcess[str]) -> str:
+    return f"stdout:\n{result.stdout}\nstderr:\n{result.stderr}"
 
 
 def _write_synthetic_h5ad(path: Path) -> None:
@@ -37,23 +41,23 @@ def _write_synthetic_h5ad(path: Path) -> None:
     adata.write_h5ad(path)
 
 
-def test_benchmark_help_works() -> None:
+def test_benchmark_help_works(tmp_path: Path) -> None:
     result = subprocess.run(
-        [sys.executable, SCRIPT, "--help"],
-        cwd=REPO_ROOT,
+        [sys.executable, str(SCRIPT), "--help"],
+        cwd=tmp_path,
         capture_output=True,
         text=True,
     )
 
-    assert result.returncode == 0, result.stderr
-    assert "usage:" in result.stdout
+    assert result.returncode == 0, _subprocess_output(result)
+    assert "usage:" in result.stdout, _subprocess_output(result)
 
 
 def test_benchmark_dry_run_missing_input_fails_clearly(tmp_path: Path) -> None:
     result = subprocess.run(
         [
             sys.executable,
-            SCRIPT,
+            str(SCRIPT),
             "--input",
             str(tmp_path / "missing.h5ad"),
             "--rfu-dir",
@@ -64,13 +68,13 @@ def test_benchmark_dry_run_missing_input_fails_clearly(tmp_path: Path) -> None:
             str(tmp_path / "out"),
             "--dry-run",
         ],
-        cwd=REPO_ROOT,
+        cwd=tmp_path,
         capture_output=True,
         text=True,
     )
 
-    assert result.returncode != 0
-    assert "input file not found" in result.stderr
+    assert result.returncode != 0, _subprocess_output(result)
+    assert "input file not found" in result.stderr, _subprocess_output(result)
 
 
 def test_benchmark_dry_run_with_synthetic_h5ad_succeeds(tmp_path: Path) -> None:
@@ -81,7 +85,7 @@ def test_benchmark_dry_run_with_synthetic_h5ad_succeeds(tmp_path: Path) -> None:
     result = subprocess.run(
         [
             sys.executable,
-            SCRIPT,
+            str(SCRIPT),
             "--input",
             str(input_path),
             "--rfu-dir",
@@ -94,12 +98,12 @@ def test_benchmark_dry_run_with_synthetic_h5ad_succeeds(tmp_path: Path) -> None:
             "--max-cells",
             "2",
         ],
-        cwd=REPO_ROOT,
+        cwd=tmp_path,
         capture_output=True,
         text=True,
     )
 
-    assert result.returncode == 0, result.stderr
+    assert result.returncode == 0, _subprocess_output(result)
     assert (outdir / "validate_airr.tsv").exists()
     manifest = json.loads((outdir / "run_manifest.json").read_text(encoding="utf-8"))
     assert manifest["rfu_run"] is False
@@ -114,7 +118,7 @@ def test_benchmark_skip_rfu_with_synthetic_h5ad_writes_outputs(tmp_path: Path) -
     result = subprocess.run(
         [
             sys.executable,
-            SCRIPT,
+            str(SCRIPT),
             "--input",
             str(input_path),
             "--rfu-dir",
@@ -127,12 +131,12 @@ def test_benchmark_skip_rfu_with_synthetic_h5ad_writes_outputs(tmp_path: Path) -
             str(outdir),
             "--skip-rfu",
         ],
-        cwd=REPO_ROOT,
+        cwd=tmp_path,
         capture_output=True,
         text=True,
     )
 
-    assert result.returncode == 0, result.stderr
+    assert result.returncode == 0, _subprocess_output(result)
     for filename in [
         "validate_airr.tsv",
         "rfu_summary_global.tsv",
