@@ -260,6 +260,26 @@ Dataset-independent downstream functions are `repertoire_metrics`,
 grouping, sample, and weighting semantics where applicable. See the focused
 metric documentation for formulas.
 
+### Version-pinned antigen evidence
+
+`scrfu.tl.load_vdjdb_reference()` and `validate_vdjdb_reference()` define the
+local reference contract. `annotate_vdjdb()` returns long exact evidence;
+`summarize_vdjdb_evidence()` derives non-lossy sequence/row summaries.
+`rfu_antigen_coherence()`, `global_antigen_coherence()`,
+`rfu_antigen_permutation_test()`, `compare_antigen_groupings()`, and
+`summarize_antigen_context()` provide descriptive coherence, explicit nulls,
+simple baselines, and metadata recurrence. All are table-level functions and do
+not mutate AnnData.
+
+The stable distinctions are: RFU assignment is not a VDJdb match; a VDJdb
+match is external evidence rather than proof; exact and exploratory similarity
+must use different evidence labels; and a multi-epitope sequence remains
+ambiguous. Reference release and SHA256 are retained in evidence and
+provenance. See [vdjdb_reference.md](vdjdb_reference.md),
+[antigen_evidence.md](antigen_evidence.md),
+[rfu_antigen_coherence.md](rfu_antigen_coherence.md), and
+[antigen_null_models.md](antigen_null_models.md).
+
 ### `scrfu.tl.rfu_summary`
 
 Purpose: summarize RFU assignment rate, unique RFUs, scores, and top RFU.

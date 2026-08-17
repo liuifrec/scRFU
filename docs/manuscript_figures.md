@@ -77,3 +77,16 @@ metadata, sample-level RFU heatmap, and assignment summary.
 `examples/benchmark_summary.py` assembles user-named preparation and RFU
 manifests into benchmark rows. Wells values can later be supplied as one
 user-labelled row; the utility contains no Wells-specific dataset name or path.
+
+## Proposed Figure: RFU antigen-evidence coherence compared with simple receptor grouping baselines
+
+- Required input: RFU per-sequence results and a local VDJdb table with an
+  explicit release label and SHA256.
+- Script: `examples/vdjdb_antigen_evidence.py`.
+- Panels: exact-evidence RFU-by-antigen heatmap, purity/entropy versus matched
+  richness, observed same-antigen pair fraction against a size-preserving null,
+  and RFU/TRBV/CDR3-length baseline comparison.
+- Interpretation boundary: matching tiers are external annotation evidence;
+  neither one matched sequence nor a coherent RFU proves antigen specificity.
+- Current status: offline software and synthetic validation implemented; a
+  pinned real reference and independently selected datasets remain required.

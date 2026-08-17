@@ -16,6 +16,13 @@ visualization, and provenance. These components turn RFU
 assignment from a standalone repertoire step into an AnnData-compatible analysis
 layer that can be benchmarked on public single-cell immune profiling datasets.
 
+The version-pinned antigen-evidence layer adds a falsifiable validation
+question: whether exact VDJdb-labelled sequences are more label-coherent within
+RFUs than in size-preserving or receptor-property-stratified null groupings. It
+preserves ambiguous database evidence and compares RFU grouping with simple
+TRBV and CDR3-length baselines. This is external evidence validation, not a new
+antigen-specificity predictor.
+
 ## Additional Evidence Needed for Higher-End Submission
 
 - At least two real datasets with completed RFU runs and saved manifests.
@@ -68,7 +75,8 @@ These are possible fits rather than predictions.
 
 ## Explicit Future Work
 
-Version-pinned VDJdb evidence, antigen-coherence validation, RFU networks,
-modeled differential abundance, BCR lineage utilities, and experimental ALFU
-remain future directions. Current outputs make no antigen-specific, clinical,
+Broader antigen-coherence validation across independently selected datasets,
+exploratory sequence-similarity candidates, RFU networks, modeled differential
+abundance, BCR lineage utilities, and experimental ALFU remain future
+directions. Current outputs make no definitive antigen-specific, clinical,
 radiation, or B-cell functional claims.

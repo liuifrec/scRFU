@@ -23,12 +23,16 @@ adapter, benchmark, and reproducible case study rather than the data model.
   manuscript-oriented plots.
 - Provides CI-safe synthetic examples plus real-data workflow scaffolds for
   user-provided datasets.
+- Matches RFU sequences to user-supplied, version-labelled local VDJdb tables
+  and benchmarks descriptive antigen-label coherence against explicit nulls.
 
 ## What scRFU Does Not Do
 
 - scRFU does not invent RFU or replace the upstream RFU method.
 - scRFU does not vendor upstream RFU code, atlas files, or `.Rdata` objects.
 - scRFU does not download real datasets.
+- scRFU does not bundle or silently download VDJdb, and a database match is not
+  proof that an RFU is antigen-specific.
 - B-cell/ALFU support is design-only future work.
 - Radiation biology claims require completed real-data analyses and are not
   implied by the workflow templates.
@@ -97,6 +101,14 @@ pseudobulk = scrfu.tl.rfu_pseudobulk(
 )
 overlap = scrfu.tl.rfu_overlap(pseudobulk, metric="jaccard")
 
+reference = scrfu.tl.load_vdjdb_reference(
+    "vdjdb-release.tsv.gz",
+    release_label="EXPLICIT_RELEASE_LABEL",
+    expected_sha256="EXPECTED_SHA256",
+)
+evidence = scrfu.tl.annotate_vdjdb(per_sequence_results, reference)
+coherence = scrfu.tl.rfu_antigen_coherence(per_sequence_results, evidence)
+
 scrfu.pl.rfu_bar(adata, groupby="sample")
 scrfu.pl.rfu_heatmap(adata, groupby="sample")
 scrfu.pl.rfu_score_hist(adata)
@@ -134,6 +146,13 @@ The public analysis layer includes legacy summaries plus
 [docs/v0.2_api_review.md](docs/v0.2_api_review.md) for the compatibility
 boundary and the focused metric documentation for formulas.
 
+The offline antigen-evidence API is documented in
+[docs/vdjdb_reference.md](docs/vdjdb_reference.md),
+[docs/antigen_evidence.md](docs/antigen_evidence.md),
+[docs/rfu_antigen_coherence.md](docs/rfu_antigen_coherence.md), and
+[docs/antigen_null_models.md](docs/antigen_null_models.md). Exact matching tiers
+describe evidence strength, not biological certainty.
+
 ## Reproducible Examples
 
 - [examples/synthetic_scirpy_demo.py](examples/synthetic_scirpy_demo.py):
@@ -151,6 +170,9 @@ boundary and the focused metric documentation for formulas.
   sample-level downstream metrics and generic figures from RFU per-row results.
 - [examples/benchmark_summary.py](examples/benchmark_summary.py): combines
   user-labelled manifests into a manuscript-ready benchmark table.
+- [examples/vdjdb_antigen_evidence.py](examples/vdjdb_antigen_evidence.py):
+  offline exact antigen evidence, ambiguity-aware coherence, simple baselines,
+  permutation null, and generic figures from a pinned local reference.
 
 For large inputs, chunking occurs after exact-CDR3 deduplication. Completed
 chunks are reused only after their manifest, scientific inputs, hashes, output

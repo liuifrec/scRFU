@@ -11,6 +11,15 @@ and output-contract checks without an external RFU checkout.
 The Wells workflow remains a case-study wrapper and compatibility output
 surface; it now uses the same canonical adapter and table-level RFU engine.
 
+## Offline antigen-evidence workflow
+
+`vdjdb_antigen_evidence.py` uses a user-supplied local VDJdb table with an
+explicit release label and optional SHA256. It writes exact long evidence,
+ambiguity-preserving summaries, RFU/global coherence, simple grouping
+baselines, a size-preserving permutation benchmark, generic figures, and a run
+manifest. It does not download a reference or treat a match as proof of antigen
+specificity. See [the evidence contract](../docs/antigen_evidence.md).
+
 ## Synthetic demo
 
 `synthetic_scirpy_demo.py` builds a tiny synthetic AnnData object with a

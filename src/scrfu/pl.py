@@ -7,6 +7,7 @@ import pandas as pd
 
 from .downstream import RFUOverlapResult, RFUPseudobulkResult
 from .summary import aggregate_rfu
+from .vdjdb import AntigenPermutationResult
 
 if TYPE_CHECKING:
     from matplotlib.axes import Axes
@@ -324,8 +325,200 @@ def repertoire_metric_comparison(
     return plot_ax
 
 
+def _antigen_abundance_table(
+    abundance: pd.DataFrame,
+    *,
+    rfu_col: str,
+    antigen_col: str,
+    value_col: str,
+    top_n_rfus: int | None,
+    top_n_antigens: int | None,
+) -> pd.DataFrame:
+    if abundance.empty:
+        raise ValueError("RFU-antigen plot input is empty.")
+    required = [rfu_col, antigen_col, value_col]
+    missing = [column for column in required if column not in abundance]
+    if missing:
+        raise ValueError(f"RFU-antigen input is missing columns: {missing}")
+    data = abundance.loc[
+        abundance[rfu_col].notna() & abundance[antigen_col].notna(), required
+    ].copy()
+    if data.empty:
+        raise ValueError("RFU-antigen plot input is empty.")
+    data[value_col] = pd.to_numeric(data[value_col], errors="raise")
+    totals = data.groupby(rfu_col, observed=True)[value_col].sum()
+    antigens = data.groupby(antigen_col, observed=True)[value_col].sum()
+    ordered_rfus = sorted(totals.index, key=lambda item: (-totals[item], str(item)))
+    ordered_antigens = sorted(antigens.index, key=lambda item: (-antigens[item], str(item)))
+    if top_n_rfus is not None:
+        if top_n_rfus < 1:
+            raise ValueError("top_n_rfus must be positive or None.")
+        ordered_rfus = ordered_rfus[:top_n_rfus]
+    if top_n_antigens is not None:
+        if top_n_antigens < 1:
+            raise ValueError("top_n_antigens must be positive or None.")
+        ordered_antigens = ordered_antigens[:top_n_antigens]
+    table = data.pivot_table(
+        index=rfu_col,
+        columns=antigen_col,
+        values=value_col,
+        aggfunc="sum",
+        fill_value=0.0,
+    )
+    return table.reindex(index=ordered_rfus, columns=ordered_antigens, fill_value=0.0)
+
+
+def rfu_antigen_heatmap(
+    abundance: pd.DataFrame,
+    *,
+    rfu_col: str = "rfu_label",
+    antigen_col: str = "epitope",
+    value_col: str = "within_rfu_proportion",
+    top_n_rfus: int | None = 30,
+    top_n_antigens: int | None = 30,
+    ax: Axes | None = None,
+) -> Axes:
+    """Plot deterministic RFU-by-antigen evidence abundance or proportion."""
+    table = _antigen_abundance_table(
+        abundance,
+        rfu_col=rfu_col,
+        antigen_col=antigen_col,
+        value_col=value_col,
+        top_n_rfus=top_n_rfus,
+        top_n_antigens=top_n_antigens,
+    )
+    return _heatmap(
+        table,
+        ax=_get_ax(ax),
+        title="RFU antigen evidence",
+        xlabel=antigen_col,
+        ylabel=rfu_col,
+        colorbar_label=value_col,
+    )
+
+
+def rfu_antigen_coherence(
+    metrics: pd.DataFrame,
+    *,
+    x: str = "vdjdb_matched_sequences",
+    y: str = "antigen_purity",
+    size: str = "total_rfu_sequences",
+    color: str | None = None,
+    ax: Axes | None = None,
+) -> Axes:
+    """Plot descriptive RFU antigen-evidence coherence without inferential claims."""
+    required = [x, y, size, *([color] if color else [])]
+    missing = [column for column in required if column not in metrics]
+    if missing:
+        raise ValueError(f"RFU antigen-coherence input is missing columns: {missing}")
+    data = metrics.dropna(subset=[x, y, size]).copy()
+    if data.empty:
+        raise ValueError("RFU antigen-coherence plot has no finite rows.")
+    x_values = pd.to_numeric(data[x], errors="raise")
+    y_values = pd.to_numeric(data[y], errors="raise")
+    sizes = pd.to_numeric(data[size], errors="raise").clip(lower=0)
+    scaled_sizes = 25.0 + 125.0 * sizes / max(float(sizes.max()), 1.0)
+    plot_ax = _get_ax(ax)
+    if color is None:
+        plot_ax.scatter(x_values, y_values, s=scaled_sizes, alpha=0.75)
+    else:
+        categorical = pd.Categorical(data[color].astype("string"))
+        points = plot_ax.scatter(
+            x_values,
+            y_values,
+            s=scaled_sizes,
+            c=categorical.codes,
+            alpha=0.75,
+        )
+        labels = [str(label) for label in categorical.categories]
+        handles, _ = points.legend_elements()
+        plot_ax.legend(handles, labels, title=color, frameon=False)
+    plot_ax.set_xlabel(x)
+    plot_ax.set_ylabel(y)
+    plot_ax.set_title("RFU antigen-evidence coherence")
+    return plot_ax
+
+
+def antigen_permutation_distribution(
+    result: AntigenPermutationResult,
+    *,
+    bins: int = 30,
+    ax: Axes | None = None,
+) -> Axes:
+    """Plot an observed coherence statistic against its permutation null."""
+    if not isinstance(result, AntigenPermutationResult):
+        raise TypeError("result must be an AntigenPermutationResult.")
+    values = np.asarray(result.permutation_values, dtype=float)
+    values = values[np.isfinite(values)]
+    if values.size == 0:
+        raise ValueError("Permutation result contains no finite null values.")
+    if bins < 1:
+        raise ValueError("bins must be positive.")
+    plot_ax = _get_ax(ax)
+    plot_ax.hist(values, bins=bins, alpha=0.7, label="Permutation null")
+    plot_ax.axvline(result.observed, color="black", linestyle="--", label="Observed")
+    plot_ax.set_xlabel(str(result.parameters.get("metric", "coherence statistic")))
+    plot_ax.set_ylabel("Permutation count")
+    plot_ax.set_title("RFU antigen-coherence null benchmark")
+    plot_ax.legend(frameon=False)
+    return plot_ax
+
+
+def rfu_antigen_bubble(
+    abundance: pd.DataFrame,
+    *,
+    rfu_col: str = "rfu_label",
+    antigen_col: str = "epitope",
+    size_col: str = "antigen_abundance",
+    color_col: str = "within_rfu_proportion",
+    top_n_rfus: int | None = 30,
+    top_n_antigens: int | None = 30,
+    ax: Axes | None = None,
+) -> Axes:
+    """Plot RFU-antigen evidence with abundance size and within-RFU proportion color."""
+    size_table = _antigen_abundance_table(
+        abundance,
+        rfu_col=rfu_col,
+        antigen_col=antigen_col,
+        value_col=size_col,
+        top_n_rfus=top_n_rfus,
+        top_n_antigens=top_n_antigens,
+    )
+    color_table = _antigen_abundance_table(
+        abundance,
+        rfu_col=rfu_col,
+        antigen_col=antigen_col,
+        value_col=color_col,
+        top_n_rfus=None,
+        top_n_antigens=None,
+    ).reindex(index=size_table.index, columns=size_table.columns, fill_value=0.0)
+    sizes = size_table.to_numpy(dtype=float)
+    scaled = 20.0 + 180.0 * sizes / max(float(sizes.max()), 1.0)
+    y_positions, x_positions = np.indices(size_table.shape)
+    plot_ax = _get_ax(ax)
+    points = plot_ax.scatter(
+        x_positions.ravel(),
+        y_positions.ravel(),
+        s=scaled.ravel(),
+        c=color_table.to_numpy(dtype=float).ravel(),
+    )
+    plot_ax.set_xticks(np.arange(size_table.shape[1]))
+    plot_ax.set_xticklabels(size_table.columns.astype(str), rotation=90)
+    plot_ax.set_yticks(np.arange(size_table.shape[0]))
+    plot_ax.set_yticklabels(size_table.index.astype(str))
+    plot_ax.set_xlabel(antigen_col)
+    plot_ax.set_ylabel(rfu_col)
+    plot_ax.set_title("RFU antigen evidence")
+    plot_ax.figure.colorbar(points, ax=plot_ax, label=color_col)
+    return plot_ax
+
+
 __all__ = [
+    "antigen_permutation_distribution",
     "repertoire_metric_comparison",
+    "rfu_antigen_bubble",
+    "rfu_antigen_coherence",
+    "rfu_antigen_heatmap",
     "rfu_bar",
     "rfu_convergence",
     "rfu_heatmap",

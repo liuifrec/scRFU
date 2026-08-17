@@ -14,6 +14,16 @@
   sample-level RFU pseudobulk, RFU overlap, and phenotype coupling.
 - Add dataset-independent plotting, sequence-matrix, downstream workflow, and
   benchmark-summary foundations.
+- Add a local, version-labelled VDJdb reference contract with optional SHA256
+  verification and explicit source-column mappings.
+- Add exact CDR3, CDR3-plus-V, and genuinely paired evidence matching as a
+  validated long table with stable evidence tiers.
+- Add ambiguity-preserving sequence/row summaries, RFU antigen-coherence and
+  global association metrics, size-preserving stratified nulls, simple receptor
+  grouping baselines, biological-metadata recurrence summaries, and generic
+  antigen-evidence plots.
+- Add an offline VDJdb evidence workflow; no database content, live API, or
+  silent download is included.
 
 The recommended release version is 0.2.0. The package version is not changed
 until repository release policy and placeholder project metadata are confirmed.

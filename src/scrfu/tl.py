@@ -18,6 +18,24 @@ from .sequence import rfu_sequence_matrix
 from .summary import aggregate_rfu, rfu_metrics, rfu_summary
 from .tl_rfu_repo import RFUTableResult, call_rfu_repo, call_rfu_table
 from .validation import validate_airr
+from .vdjdb import (
+    AntigenContextResult,
+    AntigenPermutationResult,
+    VDJdbEvidenceSummary,
+    VDJdbReference,
+    annotate_vdjdb,
+    compare_antigen_groupings,
+    global_antigen_coherence,
+    load_vdjdb_reference,
+    normalize_vdjdb_cdr3,
+    normalize_vdjdb_v_gene,
+    rfu_antigen_abundance,
+    rfu_antigen_coherence,
+    rfu_antigen_permutation_test,
+    summarize_antigen_context,
+    summarize_vdjdb_evidence,
+    validate_vdjdb_reference,
+)
 
 PathLike = str | Path
 
@@ -97,18 +115,34 @@ def call_rfu(
 
 __all__ = [
     "aggregate_rfu",
+    "annotate_vdjdb",
+    "AntigenContextResult",
+    "AntigenPermutationResult",
     "call_rfu",
     "call_rfu_repo",
     "call_rfu_table",
+    "compare_antigen_groupings",
+    "global_antigen_coherence",
+    "load_vdjdb_reference",
+    "normalize_vdjdb_cdr3",
+    "normalize_vdjdb_v_gene",
     "RFUTableResult",
     "RFUOverlapResult",
     "RFUPseudobulkResult",
     "repertoire_metrics",
     "rfu_metrics",
+    "rfu_antigen_abundance",
+    "rfu_antigen_coherence",
+    "rfu_antigen_permutation_test",
     "rfu_overlap",
     "rfu_phenotype_coupling",
     "rfu_pseudobulk",
     "rfu_sequence_matrix",
     "rfu_summary",
+    "summarize_antigen_context",
+    "summarize_vdjdb_evidence",
     "validate_airr",
+    "validate_vdjdb_reference",
+    "VDJdbEvidenceSummary",
+    "VDJdbReference",
 ]
