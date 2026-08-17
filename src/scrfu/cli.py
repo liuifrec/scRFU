@@ -50,7 +50,11 @@ def build_parser() -> argparse.ArgumentParser:
         "--chunk-size",
         type=int,
         default=None,
-        help="Unique eligible CDR3 queries per serial chunk",
+        help="Unique eligible CDR3 queries per chunk",
+    )
+    c.add_argument("--max-workers", type=int, default=1, help="Independent chunk workers")
+    c.add_argument(
+        "--executor", choices=("process", "thread"), default="process", help="Chunk executor"
     )
     c.add_argument(
         "--no-resume",
@@ -252,6 +256,8 @@ def main(argv: list[str] | None = None) -> None:
             threshold=args.threshold,
             deduplicate=args.deduplicate,
             chunk_size=args.chunk_size,
+            max_workers=args.max_workers,
+            executor=args.executor,
             resume=args.resume,
             force_recompute=args.force_recompute,
             chain=args.chain,

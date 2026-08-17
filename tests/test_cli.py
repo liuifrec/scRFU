@@ -105,6 +105,8 @@ def test_cli_main_dispatches_current_call_rfu_signature(monkeypatch):
         "threshold": 0.6,
         "deduplicate": True,
         "chunk_size": None,
+        "max_workers": 1,
+        "executor": "process",
         "resume": True,
         "force_recompute": False,
         "chain": "TRB",

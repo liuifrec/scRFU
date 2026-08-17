@@ -1,54 +1,39 @@
 # Roadmap
 
-## v0.1: RFU Backend and AnnData Attachment
+scRFU is being developed as a transferable frozen-reference receptor-state
+framework, not solely as an RFU wrapper. The three-month execution criteria are
+in [`three_month_plan.md`](three_month_plan.md).
 
-- Integrate with an external upstream RFU repository without vendoring RFU code
-  or data.
-- Extract AnnData/scirpy-style AIRR features needed for TRB RFU assignment.
-- Attach RFU labels, scores, and provenance into AnnData.
+## Month 1: method and API freeze — current
 
-## v0.2: Summary, Aggregation, Plotting, and Export
+- freeze receptor, assignment, coverage, longitudinal, transfer, comparator,
+  and provenance terminology;
+- preserve original-RFU semantics and backwards compatibility;
+- provide optional deterministic parallel chunks with serial default;
+- validate repeated-measures and frozen-reference contracts synthetically;
+- freeze benchmark datasets, metrics, figures, source tables, and BCR gate.
 
-- Summarize per-cell RFU assignment rates and score distributions.
-- Aggregate RFU labels by user-provided metadata groups.
-- Provide lightweight matplotlib plotting utilities.
-- Export group-by-RFU matrices for downstream analysis.
+Real longitudinal cohorts and full public cohorts are deliberately not run in
+this phase.
 
-## v0.3: Synthetic Demo
+## Month 2: benchmarks and applications
 
-- Provide a small synthetic scirpy-style AnnData example.
-- Exercise extraction, annotation, summary, aggregation, plotting, and export
-  without requiring R, RFU files, internet access, or real datasets.
+- original-RFU parity and bounded 1k/10k/25k scaling;
+- downsampling, order, threshold, chunk, and worker robustness;
+- prespecified deep longitudinal methods demonstration;
+- independent public TCR and paired single-cell applications;
+- completely held-out transfer evaluation;
+- BCR implementation only if every architecture gate passes.
 
-## v0.4 Planned: Real-Data Demonstration
+## Month 3: manuscript and release
 
-- Add reproducible workflow templates for user-provided public single-cell
-  RNA/TCR datasets.
-- Demonstrate assignment summaries and RFU abundance matrices on at least one
-  real dataset.
-- Keep data download and storage outside the repository.
+- reproducible figures and source tables;
+- clean-install tutorials, public test material, CI, and API reference;
+- approved versioned release and DOI archive;
+- manuscript, methods, cover letter, and reproducibility report.
 
-## v0.5 Planned: Manuscript Workflow and Reproducible Figure Scripts
+## Explicitly deferred
 
-- Add scripts for producing manuscript-oriented summary tables and figures from
-  user-provided inputs.
-- Document expected input AnnData fields and output artifacts.
-- Keep generated figures and data-heavy outputs out of version control unless
-  they are small, synthetic, and CI-safe.
-
-## Future: B-Cell/ALFU Experimental Backend
-
-- Explore an experimental antibody-lineage functional unit design for BCR data.
-- Treat this as a future extension rather than a current scRFU capability.
-
-## Future: Radiation-Specific Workflows
-
-- Provide templates for radiation-associated PBMC datasets where appropriate
-  metadata are available.
-- Avoid biological claims until validated on real datasets with appropriate
-  controls.
-
-## Future: ScGeo/Repertoire-State Topology Integration
-
-- Consider future integration with repertoire-state topology methods after the
-  RFU single-cell workflow is stable and documented.
+Inferential longitudinal models, automatic ontology mapping, expression batch
+integration, cross-receptor synthesis, and BCR functional units without a
+validated receptor-specific reference.

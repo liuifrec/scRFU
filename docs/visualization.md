@@ -1,5 +1,11 @@
 # Dataset-independent Visualization
 
+Longitudinal and cross-cohort APIs intentionally return tidy source tables in
+Month 1. Dedicated trajectory, retrieval, and transfer plots are deferred until
+their real-data schemas and uncertainty displays are reviewed; generic plots
+below remain suitable for RFU matrices and descriptive metrics. This avoids
+freezing cosmetic placeholders before the data-unit contract is final.
+
 The plotting API consumes generic tables or structured analysis results:
 
 - `rfu_metric_heatmap`: RFU rows by sample columns, deterministic top-N and

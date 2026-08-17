@@ -100,6 +100,13 @@ def test_call_rfu_table_preserves_canonical_provenance_and_reconstructs(
         "sequence_00000000",
         "sequence_00000000",
     ]
+    assert result.per_row["rfu_id_nearest"].equals(result.per_row["rfu_id"])
+    assert result.per_row["rfu_pass_threshold"].equals(result.per_row["pass_thr"].astype("boolean"))
+    assert result.per_row["reference_coverage_status"].tolist() == [
+        "covered",
+        "covered",
+        "ineligible_sequence",
+    ]
     assert result.provenance["table_level_api"] is True
 
 
@@ -309,3 +316,19 @@ def test_generic_workflow_offline_scirpy_h5ad_input(tmp_path: Path) -> None:
     assert result.returncode == 0, result.stderr
     assert (outdir / "adapter_qc.json").is_file()
     assert len(pd.read_csv(outdir / "rfu_results_per_row.tsv.gz", sep="\t")) == 2
+
+
+def test_original_rfu_table_backend_rejects_non_trb_before_execution() -> None:
+    rows = pd.DataFrame(
+        {
+            "input_row_id": ["r1"],
+            "cell_id": ["c1"],
+            "chain": ["IGH"],
+            "cdr3aa": ["CARF"],
+            "v_call": ["IGHV1"],
+            "source_adapter": ["synthetic"],
+            "source_row_id": ["source-1"],
+        }
+    )
+    with pytest.raises(ValueError, match="TRB-specific"):
+        call_rfu_table(rows, chain="IGH")

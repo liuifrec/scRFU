@@ -5,6 +5,7 @@ import json
 import os
 import time
 from collections.abc import Callable, Mapping, Sequence
+from concurrent.futures import Future, ProcessPoolExecutor, ThreadPoolExecutor, as_completed
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -90,6 +91,17 @@ class RFUChunkSpec:
 
 
 ChunkRunner = Callable[[pd.DataFrame, Path, Path, Path], RFURunResult]
+
+
+def _run_chunk_task(
+    runner: ChunkRunner,
+    chunk: pd.DataFrame,
+    input_path: Path,
+    pending_output: Path,
+    chunk_dir: Path,
+) -> RFURunResult:
+    """Top-level process-pool target; all paths are private to one chunk."""
+    return runner(chunk, input_path, pending_output, chunk_dir)
 
 
 def _utc_now() -> str:
@@ -281,8 +293,15 @@ def execute_restartable_chunks(
     runner: ChunkRunner,
     resume: bool,
     force_recompute: bool,
+    max_workers: int = 1,
+    executor: str = "process",
     run_context: Mapping[str, Any] | None = None,
 ) -> RFURunResult:
+    if isinstance(max_workers, bool) or not isinstance(max_workers, int) or max_workers < 1:
+        raise ValueError("max_workers must be a positive integer.")
+    executor_name = str(executor).strip().lower()
+    if executor_name not in {"process", "thread"}:
+        raise ValueError("executor must be 'process' or 'thread'.")
     started = time.perf_counter()
     run_id = deterministic_run_id(queries, identity)
     specs = build_chunk_specs(queries, run_id=run_id, chunk_size=identity.chunk_size)
@@ -300,10 +319,9 @@ def execute_restartable_chunks(
         "failed_chunk_count": 0,
     }
     cache_events: list[dict[str, Any]] = []
-    outputs: list[pd.DataFrame] = []
-    stdout_parts: list[str] = []
-    stderr_parts: list[str] = []
-    upstream_n_total = 0
+    outputs: dict[int, pd.DataFrame] = {}
+    stdout_parts: dict[int, str] = {}
+    stderr_parts: dict[int, str] = {}
 
     run_manifest: dict[str, Any] = {
         "schema_version": CHUNK_SCHEMA_VERSION,
@@ -315,6 +333,8 @@ def execute_restartable_chunks(
         "unique_query_count": len(queries),
         "chunk_size": identity.chunk_size,
         "chunk_count": len(specs),
+        "max_workers": max_workers,
+        "executor": executor_name,
         "identity": identity.as_dict(),
         "chunks": [spec.chunk_id for spec in specs],
         "run_manifest_path": str(run_manifest_path),
@@ -322,6 +342,7 @@ def execute_restartable_chunks(
     }
     _atomic_write_json(run_manifest_path, run_manifest)
 
+    pending: list[dict[str, Any]] = []
     for spec in specs:
         chunk = queries.iloc[spec.start_offset : spec.end_offset_exclusive].reset_index(drop=True)
         chunk_dir = chunks_dir / f"chunk_{spec.chunk_index:05d}"
@@ -370,8 +391,7 @@ def execute_restartable_chunks(
             }
         )
         if cached is not None:
-            outputs.append(cached)
-            upstream_n_total += _upstream_n_miss(cached)
+            outputs[spec.chunk_index] = cached
             continue
 
         counters["recomputed_chunk_count"] += 1
@@ -399,83 +419,144 @@ def execute_restartable_chunks(
         manifest["status"] = "running"
         manifest["start_timestamp"] = _utc_now()
         _atomic_write_json(manifest_path, manifest)
+        pending.append(
+            {
+                "spec": spec,
+                "chunk": chunk,
+                "chunk_dir": chunk_dir,
+                "input_path": input_path,
+                "pending_output": pending_output,
+                "output_path": output_path,
+                "manifest_path": manifest_path,
+                "manifest": manifest,
+                "started": chunk_started,
+            }
+        )
 
-        try:
-            result = runner(chunk, input_path, pending_output, chunk_dir)
-            stdout_parts.append(result.stdout)
-            stderr_parts.append(result.stderr)
-            _atomic_write_text(chunk_dir / "stdout.log", result.stdout or "")
-            _atomic_write_text(chunk_dir / "stderr.log", result.stderr or "")
-            if result.returncode != 0:
-                raise RFUChunkError(
-                    "RFU runner returned a non-zero exit code.",
-                    returncode=result.returncode,
-                    stdout=result.stdout,
-                    stderr=result.stderr,
-                )
-            output_error = _validate_output_table(
-                result.df,
-                spec.ordered_unique_sequence_ids,
-            )
-            if output_error is not None:
-                raise RFUChunkError(output_error, stdout=result.stdout, stderr=result.stderr)
-            _atomic_write_bytes(pending_output, result.df.to_csv(sep="\t", index=False).encode())
-            os.replace(pending_output, output_path)
-            output_sha = file_sha256(output_path)
-            elapsed = time.perf_counter() - chunk_started
-            manifest.update(
-                {
-                    "status": "complete",
-                    "completion_timestamp": _utc_now(),
-                    "elapsed_seconds": elapsed,
-                    "exit_code": 0,
-                    "output_sha256": output_sha,
-                    "process_max_rss_kb": _optional_max_rss_kb(),
-                }
-            )
-            _atomic_write_json(manifest_path, manifest)
-            outputs.append(result.df)
-            upstream_n_total += _upstream_n_miss(result.df)
-        except Exception as exc:
-            counters["failed_chunk_count"] += 1
-            returncode = int(getattr(exc, "returncode", 1))
-            stdout = str(getattr(exc, "stdout", ""))
-            stderr = str(getattr(exc, "stderr", ""))
-            _atomic_write_text(chunk_dir / "stdout.log", stdout)
-            _atomic_write_text(chunk_dir / "stderr.log", stderr)
-            manifest.update(
-                {
-                    "status": "failed",
-                    "completion_timestamp": _utc_now(),
-                    "elapsed_seconds": time.perf_counter() - chunk_started,
-                    "exit_code": returncode,
-                    "failure": str(exc),
-                    "process_max_rss_kb": _optional_max_rss_kb(),
-                }
-            )
-            _atomic_write_json(manifest_path, manifest)
-            run_manifest.update(
-                {
-                    "status": "failed",
-                    "completion_timestamp": _utc_now(),
-                    "total_elapsed_seconds": time.perf_counter() - started,
-                    "failed_chunk_id": spec.chunk_id,
-                    "completed_chunk_count": len(outputs),
-                    "reused_chunk_count": counters["cache_hit_count"],
-                    "invalidated_chunk_count": counters["cache_invalidated_count"],
-                    "cache_events": cache_events,
-                    **counters,
-                }
-            )
-            _atomic_write_json(run_manifest_path, run_manifest)
+    def complete(task: dict[str, Any], result: RFURunResult) -> None:
+        spec: RFUChunkSpec = task["spec"]
+        if result.returncode != 0:
             raise RFUChunkError(
-                f"RFU chunk {spec.chunk_id} (index {spec.chunk_index}) failed: {exc}",
-                returncode=returncode,
-                stdout=stdout,
-                stderr=stderr,
-            ) from exc
+                "RFU runner returned a non-zero exit code.",
+                returncode=result.returncode,
+                stdout=result.stdout,
+                stderr=result.stderr,
+            )
+        output_error = _validate_output_table(result.df, spec.ordered_unique_sequence_ids)
+        if output_error is not None:
+            raise RFUChunkError(output_error, stdout=result.stdout, stderr=result.stderr)
+        _atomic_write_text(task["chunk_dir"] / "stdout.log", result.stdout or "")
+        _atomic_write_text(task["chunk_dir"] / "stderr.log", result.stderr or "")
+        _atomic_write_bytes(
+            task["pending_output"], result.df.to_csv(sep="\t", index=False).encode()
+        )
+        os.replace(task["pending_output"], task["output_path"])
+        manifest = task["manifest"]
+        manifest.update(
+            {
+                "status": "complete",
+                "completion_timestamp": _utc_now(),
+                "elapsed_seconds": time.perf_counter() - task["started"],
+                "exit_code": 0,
+                "output_sha256": file_sha256(task["output_path"]),
+                "process_max_rss_kb": _optional_max_rss_kb(),
+            }
+        )
+        _atomic_write_json(task["manifest_path"], manifest)
+        outputs[spec.chunk_index] = result.df
+        stdout_parts[spec.chunk_index] = result.stdout
+        stderr_parts[spec.chunk_index] = result.stderr
 
-    assignments = pd.concat(outputs, ignore_index=True) if outputs else pd.DataFrame()
+    def fail(task: dict[str, Any], exc: Exception) -> RFUChunkError:
+        spec: RFUChunkSpec = task["spec"]
+        counters["failed_chunk_count"] += 1
+        returncode = int(getattr(exc, "returncode", 1))
+        stdout = str(getattr(exc, "stdout", ""))
+        stderr = str(getattr(exc, "stderr", ""))
+        _atomic_write_text(task["chunk_dir"] / "stdout.log", stdout)
+        _atomic_write_text(task["chunk_dir"] / "stderr.log", stderr)
+        manifest = task["manifest"]
+        manifest.update(
+            {
+                "status": "failed",
+                "completion_timestamp": _utc_now(),
+                "elapsed_seconds": time.perf_counter() - task["started"],
+                "exit_code": returncode,
+                "failure": str(exc),
+                "process_max_rss_kb": _optional_max_rss_kb(),
+            }
+        )
+        _atomic_write_json(task["manifest_path"], manifest)
+        run_manifest.update(
+            {
+                "status": "failed",
+                "completion_timestamp": _utc_now(),
+                "total_elapsed_seconds": time.perf_counter() - started,
+                "failed_chunk_id": spec.chunk_id,
+                "completed_chunk_count": len(outputs),
+                "reused_chunk_count": counters["cache_hit_count"],
+                "invalidated_chunk_count": counters["cache_invalidated_count"],
+                "cache_events": cache_events,
+                **counters,
+            }
+        )
+        _atomic_write_json(run_manifest_path, run_manifest)
+        return RFUChunkError(
+            f"RFU chunk {spec.chunk_id} (index {spec.chunk_index}) failed: {exc}",
+            returncode=returncode,
+            stdout=stdout,
+            stderr=stderr,
+        )
+
+    if max_workers == 1:
+        for task in pending:
+            try:
+                result = _run_chunk_task(
+                    runner,
+                    task["chunk"],
+                    task["input_path"],
+                    task["pending_output"],
+                    task["chunk_dir"],
+                )
+                complete(task, result)
+            except Exception as exc:
+                raise fail(task, exc) from exc
+    elif pending:
+        pool_class = ProcessPoolExecutor if executor_name == "process" else ThreadPoolExecutor
+        pool = pool_class(max_workers=max_workers)
+        futures: dict[Future[RFURunResult], dict[str, Any]] = {
+            pool.submit(
+                _run_chunk_task,
+                runner,
+                task["chunk"],
+                task["input_path"],
+                task["pending_output"],
+                task["chunk_dir"],
+            ): task
+            for task in pending
+        }
+        failure: tuple[dict[str, Any], Exception] | None = None
+        try:
+            for future in as_completed(futures):
+                task = futures[future]
+                try:
+                    complete(task, future.result())
+                except Exception as exc:
+                    failure = (task, exc)
+                    for other in futures:
+                        if other is not future:
+                            other.cancel()
+                    break
+        finally:
+            pool.shutdown(wait=True, cancel_futures=True)
+        if failure is not None:
+            task, exc = failure
+            raise fail(task, exc) from exc
+
+    ordered_outputs = [outputs[index] for index in sorted(outputs)]
+    assignments = (
+        pd.concat(ordered_outputs, ignore_index=True) if ordered_outputs else pd.DataFrame()
+    )
     global_error = _validate_output_table(
         assignments,
         queries["unique_sequence_id"].astype(str).tolist(),
@@ -483,6 +564,7 @@ def execute_restartable_chunks(
     if global_error is not None:
         raise RFUChunkError(f"Concatenated RFU output validation failed: {global_error}")
     total_elapsed = time.perf_counter() - started
+    upstream_n_total = sum(_upstream_n_miss(output) for output in ordered_outputs)
     run_manifest.update(
         {
             "status": "complete",
@@ -502,6 +584,8 @@ def execute_restartable_chunks(
         "chunking_enabled": True,
         "chunk_size": identity.chunk_size,
         "chunk_count": len(specs),
+        "max_workers": max_workers,
+        "executor": executor_name,
         "completed_chunk_count": len(specs),
         "reused_chunk_count": counters["cache_hit_count"],
         "recomputed_chunk_count": counters["recomputed_chunk_count"],
@@ -517,8 +601,8 @@ def execute_restartable_chunks(
     }
     return RFURunResult(
         df=assignments,
-        stdout="".join(stdout_parts),
-        stderr="".join(stderr_parts),
+        stdout="".join(stdout_parts[index] for index in sorted(stdout_parts)),
+        stderr="".join(stderr_parts[index] for index in sorted(stderr_parts)),
         returncode=0,
         metadata=metadata,
     )

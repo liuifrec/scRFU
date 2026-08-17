@@ -34,6 +34,8 @@ def call_rfu_table(
     threshold: float = 0.6,
     deduplicate: bool = True,
     chunk_size: int | None = None,
+    max_workers: int = 1,
+    executor: str = "process",
     resume: bool = True,
     force_recompute: bool = False,
     workdir: PathLike | None = None,
@@ -47,6 +49,11 @@ def call_rfu_table(
     canonical = canonicalize_receptor_table(receptors)
     validate_receptor_table(canonical, strict=True)
     selected_chain = str(chain).strip().upper()
+    if selected_chain != "TRB":
+        raise ValueError(
+            "The configured original RFU reference is TRB-specific; scRFU will not apply it "
+            f"to chain {selected_chain!r}. A receptor-specific reference/backend is required."
+        )
     selected = canonical.loc[canonical["chain"].eq(selected_chain)].copy()
     selected["trbv"] = selected["v_call"]
 
@@ -61,12 +68,40 @@ def call_rfu_table(
         threshold=threshold,
         deduplicate=deduplicate,
         chunk_size=chunk_size,
+        max_workers=max_workers,
+        executor=executor,
         resume=resume,
         force_recompute=force_recompute,
         extra_args=extra_r_args,
         workdir=workdir,
     )
     per_row = run.df.copy()
+    if "rfu_id_nearest" not in per_row:
+        per_row["rfu_id_nearest"] = per_row["rfu_id"]
+    if "rfu_label_nearest" not in per_row:
+        per_row["rfu_label_nearest"] = per_row["rfu_label"]
+    if "rfu_pass_threshold" not in per_row:
+        per_row["rfu_pass_threshold"] = per_row["pass_thr"].astype("boolean")
+    if "reference_coverage_status" not in per_row:
+        eligible_mask = per_row["eligibility_status"].eq("eligible")
+        assigned_mask = eligible_mask & per_row["rfu_id"].notna()
+        passed_mask = per_row["pass_thr"].astype("boolean").fillna(False)
+        coverage = pd.Series("ineligible_sequence", index=per_row.index, dtype="string")
+        coverage.loc[per_row["cdr3aa"].isna()] = "missing_sequence"
+        coverage.loc[eligible_mask & ~assigned_mask] = "upstream_unassigned"
+        coverage.loc[assigned_mask & ~passed_mask] = "below_threshold"
+        coverage.loc[assigned_mask & passed_mask] = "covered"
+        per_row["reference_coverage_status"] = coverage
+    if "assignment_status" not in per_row:
+        per_row["assignment_status"] = per_row["reference_coverage_status"].map(
+            {
+                "covered": "nearest_threshold_qualified",
+                "below_threshold": "nearest_below_threshold",
+                "ineligible_sequence": "ineligible_sequence",
+                "upstream_unassigned": "upstream_unassigned",
+                "missing_sequence": "missing_sequence",
+            }
+        )
     mapping_columns = [
         column
         for column in (
@@ -79,6 +114,8 @@ def call_rfu_table(
             "source_adapter",
             "source_row_id",
             "eligibility_status",
+            "reference_coverage_status",
+            "assignment_status",
         )
         if column in per_row
     ]
@@ -96,6 +133,11 @@ def call_rfu_table(
                 "rfu_score",
                 "pass_thr",
                 "rfu_status",
+                "rfu_id_nearest",
+                "rfu_label_nearest",
+                "rfu_pass_threshold",
+                "reference_coverage_status",
+                "assignment_status",
             ]
         )
     else:
@@ -113,6 +155,11 @@ def call_rfu_table(
                 "rfu_score",
                 "pass_thr",
                 "rfu_status",
+                "rfu_id_nearest",
+                "rfu_label_nearest",
+                "rfu_pass_threshold",
+                "reference_coverage_status",
+                "assignment_status",
             ],
         ]
         per_sequence = summary.merge(
@@ -137,6 +184,8 @@ def call_rfu_repo(
     threshold: float = 0.6,
     deduplicate: bool = True,
     chunk_size: int | None = None,
+    max_workers: int = 1,
+    executor: str = "process",
     resume: bool = True,
     force_recompute: bool = False,
     chain: str = "TRB",
@@ -164,6 +213,11 @@ def call_rfu_repo(
     """
     if isinstance(extra_r_args, str):
         raise TypeError("extra_r_args must be a sequence of strings, not a single string.")
+    if str(chain).strip().upper() != "TRB":
+        raise ValueError(
+            "The configured original RFU reference is TRB-specific; another receptor chain "
+            "requires a receptor-specific reference/backend."
+        )
 
     # Preserve the historical configuration-error precedence before input extraction.
     RFURepoPaths.resolve(rfu_dir)
@@ -196,6 +250,8 @@ def call_rfu_repo(
         threshold=threshold,
         deduplicate=deduplicate,
         chunk_size=chunk_size,
+        max_workers=max_workers,
+        executor=executor,
         resume=resume,
         force_recompute=force_recompute,
         extra_r_args=extra_r_args,

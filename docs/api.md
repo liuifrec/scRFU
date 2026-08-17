@@ -5,9 +5,10 @@ The intended stable public API is documented in
 
 Current public modules:
 
-- `scrfu.tl`: RFU calling, AIRR validation, summary, and aggregation.
-- `scrfu.extract`: AIRR/TRB feature extraction.
-- `scrfu.attach`: RFU result attachment into AnnData.
+- `scrfu.pp`: canonical receptor schema and validation.
+- `scrfu.adapters`: named receptor adapters and optional modality routing.
+- `scrfu.tl`: RFU calling, validation, downstream metrics, antigen evidence,
+  longitudinal methods, transfer diagnostics, robustness, and comparators.
 - `scrfu.backends.rfu_repo`: backend path resolution, immutable capability
   detection, explicit mode enforcement, and stable RFU mapping.
 - `scrfu.pl`: matplotlib plotting helpers.
@@ -23,3 +24,7 @@ Memory-efficient Wells extraction and cache validation are documented in
 [wells_receptor_cache.md](wells_receptor_cache.md). Stable descriptive RFU
 metrics and their explicit grouping and weighting definitions are documented in
 [rfu_metrics.md](rfu_metrics.md).
+
+The complete stable/experimental/compatibility classification is in
+[api_freeze_v1.md](api_freeze_v1.md). Longitudinal and frozen-transfer APIs are
+experimental pending independent real-cohort validation.

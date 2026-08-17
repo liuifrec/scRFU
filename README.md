@@ -1,9 +1,11 @@
 # scRFU
 
-scRFU is a receptor-table and AnnData/scirpy-compatible Python framework for
-applying established RFU-based TCR functional annotation inside single-cell
-immune profiling workflows. Its core is dataset-independent; Wells is a named
-adapter, benchmark, and reproducible case study rather than the data model.
+scRFU is a transferable, frozen-reference receptor-state framework for
+longitudinal, cross-cohort, and single-cell repertoire analysis. It preserves
+the established RFU assignment method while adding dataset-independent receptor
+interfaces, deterministic execution, cell-level reconstruction, reference-
+coverage diagnostics, and sample-level analysis contracts. Wells is a named
+adapter and bounded public benchmark, not the data model.
 
 ## What scRFU Does
 
@@ -25,6 +27,12 @@ adapter, benchmark, and reproducible case study rather than the data model.
   user-provided datasets.
 - Matches RFU sequences to user-supplied, version-labelled local VDJdb tables
   and benchmarks descriptive antigen-label coherence against explicit nulls.
+- Validates repeated-measures designs and constructs longitudinal RFU matrices,
+  pairwise similarity tables, donor-retrieval results, and explicit descriptive
+  trajectory classes without imputing unobserved visits.
+- Records immutable frozen-reference manifests and produces target-cohort
+  coverage, pseudobulk, and harmonization diagnostics without refitting the RFU
+  reference in the target cohort.
 
 ## What scRFU Does Not Do
 
@@ -34,8 +42,10 @@ adapter, benchmark, and reproducible case study rather than the data model.
 - scRFU does not bundle or silently download VDJdb, and a database match is not
   proof that an RFU is antigen-specific.
 - B-cell/ALFU support is design-only future work.
-- Radiation biology claims require completed real-data analyses and are not
-  implied by the workflow templates.
+- Current longitudinal and transfer APIs are methodological foundations; they
+  are not population-level evidence until evaluated on independent cohorts.
+- Accepting IGH/IGK/IGL rows in the receptor schema does not constitute a BCR
+  functional-unit model.
 
 ## Installation
 
@@ -77,6 +87,7 @@ table_run = scrfu.tl.call_rfu_table(
     prepared.receptors,
     rfu_dir="/path/to/RFU",
     chunk_size=20_000,
+    max_workers=2,
 )
 
 qc = scrfu.tl.validate_airr(adata, airr_key="airr", chain="TRB")
@@ -100,6 +111,21 @@ pseudobulk = scrfu.tl.rfu_pseudobulk(
     normalize="proportion",
 )
 overlap = scrfu.tl.rfu_overlap(pseudobulk, metric="jaccard")
+
+design = scrfu.tl.validate_longitudinal_design(
+    per_row_results,
+    sample_key="sample_id",
+    donor_key="donor_id",
+    time_key="timepoint",
+)
+longitudinal = scrfu.tl.rfu_longitudinal_matrix(
+    per_row_results,
+    sample_key="sample_id",
+    donor_key="donor_id",
+    time_key="timepoint",
+    design=design,
+)
+pairs = scrfu.tl.longitudinal_similarity(longitudinal, metric="cosine")
 
 reference = scrfu.tl.load_vdjdb_reference(
     "vdjdb-release.tsv.gz",
@@ -159,8 +185,6 @@ describe evidence strength, not biological certainty.
   offline synthetic AnnData/scirpy-style demo.
 - [examples/real_scirpy_workflow.py](examples/real_scirpy_workflow.py):
   template for user-provided real h5ad input.
-- [examples/radiation_pbmc_workflow.py](examples/radiation_pbmc_workflow.py):
-  radiation-associated PBMC workflow template without bundled data.
 - [examples/wells_atlas_workflow.py](examples/wells_atlas_workflow.py):
   restartable Wells public-atlas workflow for a user-supplied H5AD or compact
   expression-free receptor cache.
@@ -179,7 +203,9 @@ chunks are reused only after their manifest, scientific inputs, hashes, output
 schema, row count, and identifiers all validate. `chunk_size=None` retains the
 existing one-call behavior; `resume=False` reruns every chunk, and
 `force_recompute=True` takes precedence and forces every chunk to run again.
-Chunk execution is currently serial.
+The default remains serial. With explicit `max_workers > 1`, independent chunks
+run concurrently in isolated directories and final results are concatenated in
+chunk-index order. Worker count and executor are recorded in provenance.
 
 ## Manuscript and Benchmark Workflows
 

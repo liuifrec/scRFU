@@ -246,6 +246,27 @@ def _reconstruct_results(
     result.loc[assigned & ~result["pass_thr"].fillna(False), "rfu_status"] = (
         "assigned_below_threshold"
     )
+    result["rfu_id_nearest"] = result["rfu_id"]
+    result["rfu_label_nearest"] = result["rfu_label"]
+    result["rfu_pass_threshold"] = result["pass_thr"].astype("boolean")
+    result["reference_coverage_status"] = "ineligible_sequence"
+    result.loc[result["cdr3aa"].isna(), "reference_coverage_status"] = "missing_sequence"
+    result.loc[eligible & result["rfu_id"].isna(), "reference_coverage_status"] = (
+        "upstream_unassigned"
+    )
+    result.loc[assigned & result["pass_thr"].fillna(False), "reference_coverage_status"] = "covered"
+    result.loc[assigned & ~result["pass_thr"].fillna(False), "reference_coverage_status"] = (
+        "below_threshold"
+    )
+    result["assignment_status"] = "ineligible_sequence"
+    result.loc[result["cdr3aa"].isna(), "assignment_status"] = "missing_sequence"
+    result.loc[eligible & result["rfu_id"].isna(), "assignment_status"] = "upstream_unassigned"
+    result.loc[assigned & result["pass_thr"].fillna(False), "assignment_status"] = (
+        "nearest_threshold_qualified"
+    )
+    result.loc[assigned & ~result["pass_thr"].fillna(False), "assignment_status"] = (
+        "nearest_below_threshold"
+    )
     return result.drop(columns="_scrfu_row_order")
 
 
@@ -356,6 +377,8 @@ class RFURepoBackend:
         threshold: float = 0.6,
         deduplicate: bool = True,
         chunk_size: int | None = None,
+        max_workers: int = 1,
+        executor: str = "process",
         resume: bool = True,
         force_recompute: bool = False,
         extra_args: Sequence[str] | None = None,
@@ -368,6 +391,13 @@ class RFURepoBackend:
             isinstance(chunk_size, bool) or not isinstance(chunk_size, int) or chunk_size <= 0
         ):
             raise ValueError("chunk_size must be a positive integer or None.")
+        if isinstance(max_workers, bool) or not isinstance(max_workers, int) or max_workers < 1:
+            raise ValueError("max_workers must be a positive integer.")
+        executor_name = str(executor).strip().lower()
+        if executor_name not in {"process", "thread"}:
+            raise ValueError("executor must be 'process' or 'thread'.")
+        if chunk_size is None and max_workers != 1:
+            raise ValueError("max_workers greater than 1 requires chunk_size.")
         original, queries = _prepare_queries(features, deduplicate=deduplicate)
         extra_args = list(extra_args or [])
 
@@ -406,6 +436,8 @@ class RFURepoBackend:
             "rfu_threshold": float(threshold),
             "chunking_enabled": chunk_size is not None,
             "chunk_size": chunk_size,
+            "max_workers": max_workers,
+            "executor": executor_name,
         }
 
         if queries.empty:
@@ -430,6 +462,8 @@ class RFURepoBackend:
                     "total_elapsed_seconds": time.perf_counter() - started,
                     "run_manifest_path": None,
                     "process_max_rss_kb": None,
+                    "max_workers": max_workers,
+                    "executor": executor_name,
                 }
             )
             return RFURunResult(
@@ -448,20 +482,7 @@ class RFURepoBackend:
             )
             work_path.mkdir(parents=True, exist_ok=True)
 
-            def runner(
-                chunk: pd.DataFrame,
-                input_path: Path,
-                pending_output: Path,
-                chunk_dir: Path,
-            ) -> RFURunResult:
-                return self._run_query_file(
-                    chunk,
-                    input_path,
-                    pending_output,
-                    chunk_dir,
-                    threshold=threshold,
-                    extra_args=extra_args,
-                )
+            runner = RFURepoChunkRunner(self, float(threshold), tuple(extra_args))
 
             query_run = execute_restartable_chunks(
                 queries,
@@ -470,6 +491,8 @@ class RFURepoBackend:
                 runner=runner,
                 resume=resume,
                 force_recompute=force_recompute,
+                max_workers=max_workers,
+                executor=executor_name,
                 run_context={
                     "original_row_count": len(original),
                     "eligible_row_count": metadata["eligible_row_count"],
@@ -524,6 +547,8 @@ class RFURepoBackend:
                     "forced_recompute_count": 0,
                     "run_manifest_path": None,
                     "process_max_rss_kb": None,
+                    "max_workers": 1,
+                    "executor": executor_name,
                 }
             )
 
@@ -566,11 +591,37 @@ class RFURepoBackend:
         }
 
 
+@dataclass(frozen=True)
+class RFURepoChunkRunner:
+    """Pickle-safe adapter used by process and thread chunk executors."""
+
+    backend: RFURepoBackend
+    threshold: float
+    extra_args: tuple[str, ...]
+
+    def __call__(
+        self,
+        queries: pd.DataFrame,
+        input_path: Path,
+        output_path: Path,
+        execution_dir: Path,
+    ) -> RFURunResult:
+        return self.backend._run_query_file(
+            queries,
+            input_path,
+            output_path,
+            execution_dir,
+            threshold=self.threshold,
+            extra_args=self.extra_args,
+        )
+
+
 __all__ = [
     "RFUBackendMode",
     "RFUCapabilities",
     "RFUCapabilityError",
     "RFUConfigurationError",
     "RFURepoBackend",
+    "RFURepoChunkRunner",
     "RFURepoPaths",
 ]

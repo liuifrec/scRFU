@@ -79,8 +79,10 @@ Default mode: `standard`, requiring only official `AssignRFUs()`. Optional
 `mode="map_aware"` requires `AssignRFUs_with_map()` and is never selected
 implicitly. Exact CDR3 deduplication is enabled by default and can be disabled
 with `deduplicate=False`. `chunk_size=None` preserves single-call execution.
-Supplying a positive integer enables deterministic serial chunks after
-eligibility filtering and deduplication. `resume=True` reuses only fully
+Supplying a positive integer enables deterministic chunks after eligibility
+filtering and deduplication. `max_workers=1` remains serial. An explicit larger
+worker count executes only independent chunks, using `executor="process"` or
+`"thread"`, and concatenates results in chunk-index order. `resume=True` reuses only fully
 validated chunks; `resume=False` reruns them, and `force_recompute=True` takes
 precedence over resume.
 
@@ -129,9 +131,11 @@ Capabilities: immutable booleans for `AssignRFUs`,
 `AssignRFUs_with_map`, and `RFUbatch_with_maps`, detected by reading—not
 executing—`RFU.R`.
 
-Restartable arguments: `RFURepoBackend.run(..., chunk_size=None, resume=True,
-force_recompute=False)`. Chunk sizes must be positive integers. Chunking is
-serial and applies to the unique query table, not the original per-cell rows.
+Restartable arguments: `RFURepoBackend.run(..., chunk_size=None, max_workers=1,
+executor="process", resume=True, force_recompute=False)`. Chunk sizes and worker
+counts must be positive integers. Parallelism applies to isolated unique-query
+chunks, not original per-cell rows. Worker/executor settings do not invalidate
+scientifically identical completed chunks.
 
 ### Restartable run layout and cache contract
 
@@ -279,6 +283,32 @@ provenance. See [vdjdb_reference.md](vdjdb_reference.md),
 [antigen_evidence.md](antigen_evidence.md),
 [rfu_antigen_coherence.md](rfu_antigen_coherence.md), and
 [antigen_null_models.md](antigen_null_models.md).
+
+### Reference coverage, longitudinal, and transfer contracts
+
+`reference_coverage()` returns group-level eligibility, assignment,
+threshold-pass, low-similarity, missing/ineligible, score-quantile,
+unique-sequence, and cell-weighted coverage fields. It never reports calibrated
+probability or OOD status.
+
+`validate_longitudinal_design()` returns `LongitudinalDesign`; numeric or
+explicitly ordered-categorical times are accepted and ambiguous labels are not
+silently coerced. `rfu_longitudinal_matrix()` returns
+`RFULongitudinalResult`, including sample and donor/time representations and an
+explicit missingness mask. Similarity, retrieval, dynamics, compartment, and
+donor-block resampling functions consume these source tables without imputing
+visits or treating cells as replicates. See [longitudinal.md](longitudinal.md).
+
+`FrozenRFUReference.create()` hashes immutable assignment/reference parameters
+into a stable identifier. `transfer_cohort()` summarizes already assigned target
+rows and never executes or refits an RFU reference. Metadata harmonization uses
+only explicit field/value maps, while held-out manifests forbid overlapping
+cohort roles. See [transfer.md](transfer.md).
+
+The Month 1 longitudinal, transfer, robustness, and comparator functions are
+experimental pending independent real-cohort validation; their definitions are
+public and synthetic-test covered, but scientific defaults may still be added
+before the release candidate.
 
 ### `scrfu.tl.rfu_summary`
 

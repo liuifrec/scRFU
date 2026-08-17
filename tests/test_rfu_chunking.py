@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import hashlib
 import json
+import time
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
@@ -12,9 +14,44 @@ from scrfu.backends.rfu_chunks import (
     RFURunIdentity,
     build_chunk_specs,
     deterministic_run_id,
+    execute_restartable_chunks,
 )
 from scrfu.backends.rfu_repo import RFURepoBackend
 from scrfu.rfu import RFURunResult
+
+
+@dataclass(frozen=True)
+class _PickleableChunkRunner:
+    reverse_completion: bool = False
+    fail_index: int | None = None
+
+    def __call__(
+        self,
+        queries: pd.DataFrame,
+        input_path: Path,
+        output_path: Path,
+        execution_dir: Path,
+    ) -> RFURunResult:
+        del input_path, output_path
+        index = int(execution_dir.name.rsplit("_", maxsplit=1)[-1])
+        if self.reverse_completion:
+            time.sleep(max(0, 3 - index) * 0.01)
+        if self.fail_index == index:
+            from scrfu.backends.rfu_chunks import RFUChunkError
+
+            raise RFUChunkError("parallel injected failure", returncode=19)
+        scores = [0.7 + index * 0.01] * len(queries)
+        output = pd.DataFrame(
+            {
+                "unique_sequence_id": queries["unique_sequence_id"].astype(str),
+                "rfu_id": [index + 1] * len(queries),
+                "rfu_label": [f"RFU{index + 1}"] * len(queries),
+                "rfu_score": scores,
+                "pass_thr": [True] * len(queries),
+                "upstream_n_miss": [0] * len(queries),
+            }
+        )
+        return RFURunResult(output, f"chunk {index}\n", "", 0)
 
 
 def _backend(tmp_path: Path) -> RFURepoBackend:
@@ -377,3 +414,95 @@ def test_failed_middle_chunk_resumes_without_repeating_completed_chunk(
     _install_fake_runner(clean_backend, monkeypatch, [])
     uninterrupted = clean_backend.run(_features(), chunk_size=2, workdir=tmp_path / "uninterrupted")
     pd.testing.assert_frame_equal(resumed.df, uninterrupted.df)
+
+
+@pytest.mark.parametrize("executor", ["thread", "process"])
+def test_parallel_chunks_match_serial_and_preserve_query_order(
+    tmp_path: Path, executor: str
+) -> None:
+    queries = pd.concat(
+        [_queries(), _queries().assign(unique_sequence_id=lambda x: x["unique_sequence_id"] + "x")],
+        ignore_index=True,
+    )
+    identity = _identity(chunk_size=2)
+    serial = execute_restartable_chunks(
+        queries,
+        workdir=tmp_path / "serial",
+        identity=identity,
+        runner=_PickleableChunkRunner(reverse_completion=True),
+        resume=True,
+        force_recompute=False,
+    )
+    parallel = execute_restartable_chunks(
+        queries,
+        workdir=tmp_path / executor,
+        identity=identity,
+        runner=_PickleableChunkRunner(reverse_completion=True),
+        resume=True,
+        force_recompute=False,
+        max_workers=2,
+        executor=executor,
+    )
+    pd.testing.assert_frame_equal(serial.df, parallel.df)
+    assert parallel.df["unique_sequence_id"].tolist() == queries["unique_sequence_id"].tolist()
+    assert parallel.metadata["max_workers"] == 2
+    assert parallel.metadata["executor"] == executor
+    manifest = json.loads(Path(parallel.metadata["run_manifest_path"]).read_text())
+    assert manifest["max_workers"] == 2
+
+
+def test_parallel_cache_is_reusable_by_serial_execution(tmp_path: Path) -> None:
+    identity = _identity(chunk_size=1)
+    first = execute_restartable_chunks(
+        _queries(),
+        workdir=tmp_path,
+        identity=identity,
+        runner=_PickleableChunkRunner(),
+        resume=True,
+        force_recompute=False,
+        max_workers=2,
+        executor="thread",
+    )
+    second = execute_restartable_chunks(
+        _queries(),
+        workdir=tmp_path,
+        identity=identity,
+        runner=_PickleableChunkRunner(fail_index=0),
+        resume=True,
+        force_recompute=False,
+        max_workers=1,
+    )
+    assert second.metadata["reused_chunk_count"] == first.metadata["chunk_count"]
+    pd.testing.assert_frame_equal(first.df, second.df)
+
+
+@pytest.mark.parametrize("max_workers", [0, -1, True, 1.5])
+def test_parallel_worker_validation(tmp_path: Path, max_workers: Any) -> None:
+    with pytest.raises(ValueError, match="positive integer"):
+        execute_restartable_chunks(
+            _queries(),
+            workdir=tmp_path,
+            identity=_identity(),
+            runner=_PickleableChunkRunner(),
+            resume=True,
+            force_recompute=False,
+            max_workers=max_workers,
+        )
+
+
+def test_parallel_failure_names_chunk_and_keeps_completed_manifests(tmp_path: Path) -> None:
+    with pytest.raises(RuntimeError, match=r"index 1.*parallel injected failure"):
+        execute_restartable_chunks(
+            _queries(),
+            workdir=tmp_path,
+            identity=_identity(chunk_size=1),
+            runner=_PickleableChunkRunner(fail_index=1),
+            resume=True,
+            force_recompute=False,
+            max_workers=2,
+            executor="thread",
+        )
+    manifests = sorted(tmp_path.glob("runs/*/chunks/*/manifest.json"))
+    states = [json.loads(path.read_text())["status"] for path in manifests]
+    assert "failed" in states
+    assert all(state in {"complete", "failed", "running"} for state in states)

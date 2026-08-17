@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable, Mapping, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path
 from typing import Any
 
@@ -590,8 +590,60 @@ def list_receptor_adapters() -> list[str]:
     return sorted(_ADAPTERS)
 
 
-def prepare_receptors(source: Any, *, adapter: str, **kwargs: Any) -> AdapterResult:
-    return get_receptor_adapter(adapter)(source, **kwargs)
+def prepare_receptors(
+    source: Any,
+    *,
+    adapter: str,
+    modality: str | None = None,
+    metadata_modality: str | None = None,
+    **kwargs: Any,
+) -> AdapterResult:
+    """Prepare canonical receptors, optionally routing through explicit MuData modalities."""
+    if modality is None:
+        if metadata_modality is not None:
+            raise ValueError("metadata_modality requires modality.")
+        return get_receptor_adapter(adapter)(source, **kwargs)
+    modalities = getattr(source, "mod", None)
+    if modalities is None:
+        raise TypeError(
+            "modality requires a MuData-like object with .mod; install optional support with "
+            "`pip install scrfu[mudata]` when reading MuData files."
+        )
+    if modality not in modalities:
+        raise KeyError(f"MuData modality {modality!r} is missing. Available: {sorted(modalities)}")
+    receptor_source = modalities[modality]
+    selected_metadata_modality = metadata_modality or modality
+    if "metadata" in kwargs:
+        if metadata_modality is not None:
+            raise ValueError("Pass either metadata= or metadata_modality=, not both.")
+        selected_metadata_modality = "<explicit_dataframe>"
+    else:
+        if selected_metadata_modality not in modalities:
+            raise KeyError(
+                f"MuData metadata modality {selected_metadata_modality!r} is missing. "
+                f"Available: {sorted(modalities)}"
+            )
+        metadata_source = modalities[selected_metadata_modality]
+        if not hasattr(metadata_source, "obs") or not isinstance(metadata_source.obs, pd.DataFrame):
+            raise ValueError("Selected MuData metadata modality has no pandas DataFrame .obs.")
+        kwargs["metadata"] = metadata_source.obs
+    result = get_receptor_adapter(adapter)(receptor_source, **kwargs)
+    receptor_cells = set(result.receptors["cell_id"].dropna().astype(str))
+    metadata_cells = set(result.cell_metadata.index.astype(str))
+    missing = sorted(receptor_cells.difference(metadata_cells))
+    if missing:
+        raise ValueError(
+            "Receptor cells are absent from the selected MuData metadata modality: "
+            + ", ".join(missing[:10])
+        )
+    return replace(
+        result,
+        provenance={
+            **result.provenance,
+            "mudata_modality": modality,
+            "mudata_metadata_modality": selected_metadata_modality,
+        },
+    )
 
 
 __all__ = [

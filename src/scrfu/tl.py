@@ -6,6 +6,22 @@ from typing import Any
 
 import pandas as pd
 
+from .benchmark import (
+    StabilityBenchmarkResult,
+    benchmark_representation_stability,
+    deterministic_subsample,
+    donor_leave_one_out,
+    multinomial_abundance_resample,
+    shuffle_input_order,
+    threshold_sensitivity,
+)
+from .comparators import (
+    ComparatorRepresentation,
+    list_comparators,
+    register_comparator,
+    repertoire_representation,
+)
+from .diagnostics import reference_coverage
 from .downstream import (
     RFUOverlapResult,
     RFUPseudobulkResult,
@@ -13,10 +29,36 @@ from .downstream import (
     rfu_phenotype_coupling,
     rfu_pseudobulk,
 )
+from .longitudinal import (
+    LongitudinalCompartmentResult,
+    LongitudinalDesign,
+    LongitudinalDynamicsResult,
+    LongitudinalResamplingResult,
+    RFULongitudinalResult,
+    bootstrap_longitudinal_statistic,
+    donor_retrieval,
+    longitudinal_compartment_comparison,
+    longitudinal_similarity,
+    permute_longitudinal_labels,
+    rfu_longitudinal_dynamics,
+    rfu_longitudinal_matrix,
+    summarize_longitudinal_similarity,
+    validate_longitudinal_design,
+)
 from .repertoire import repertoire_metrics
 from .sequence import rfu_sequence_matrix
 from .summary import aggregate_rfu, rfu_metrics, rfu_summary
 from .tl_rfu_repo import RFUTableResult, call_rfu_repo, call_rfu_table
+from .transfer import (
+    CohortHarmonizationResult,
+    FrozenRFUReference,
+    HeldOutValidationManifest,
+    TransferCohortResult,
+    create_heldout_validation_manifest,
+    harmonize_cohort_metadata,
+    transfer_cohort,
+    validate_frozen_reference,
+)
 from .validation import validate_airr
 from .vdjdb import (
     AntigenContextResult,
@@ -49,6 +91,8 @@ def call_rfu(
     threshold: float = 0.6,
     deduplicate: bool = True,
     chunk_size: int | None = None,
+    max_workers: int = 1,
+    executor: str = "process",
     resume: bool = True,
     force_recompute: bool = False,
     chain: str = "TRB",
@@ -78,8 +122,12 @@ def call_rfu(
     deduplicate
         Query each exact eligible CDR3 once, then restore row multiplicity.
     chunk_size
-        Number of unique eligible CDR3 queries per serial chunk. ``None`` keeps
+        Number of unique eligible CDR3 queries per chunk. ``None`` keeps
         the existing single-call behavior.
+    max_workers
+        Independent chunk workers. The default of one preserves serial execution.
+    executor
+        ``"process"`` or ``"thread"`` when chunk parallelism is enabled.
     resume
         Reuse only fully validated completed chunks when chunking is enabled.
     force_recompute
@@ -98,6 +146,8 @@ def call_rfu(
             threshold=threshold,
             deduplicate=deduplicate,
             chunk_size=chunk_size,
+            max_workers=max_workers,
+            executor=executor,
             resume=resume,
             force_recompute=force_recompute,
             chain=chain,
@@ -114,35 +164,69 @@ def call_rfu(
 
 
 __all__ = [
-    "aggregate_rfu",
-    "annotate_vdjdb",
     "AntigenContextResult",
     "AntigenPermutationResult",
+    "CohortHarmonizationResult",
+    "ComparatorRepresentation",
+    "FrozenRFUReference",
+    "HeldOutValidationManifest",
+    "LongitudinalCompartmentResult",
+    "LongitudinalDesign",
+    "LongitudinalDynamicsResult",
+    "LongitudinalResamplingResult",
+    "RFULongitudinalResult",
+    "RFUOverlapResult",
+    "RFUPseudobulkResult",
+    "RFUTableResult",
+    "StabilityBenchmarkResult",
+    "TransferCohortResult",
+    "VDJdbEvidenceSummary",
+    "VDJdbReference",
+    "aggregate_rfu",
+    "annotate_vdjdb",
+    "benchmark_representation_stability",
+    "bootstrap_longitudinal_statistic",
     "call_rfu",
     "call_rfu_repo",
     "call_rfu_table",
     "compare_antigen_groupings",
+    "create_heldout_validation_manifest",
+    "deterministic_subsample",
+    "donor_retrieval",
+    "donor_leave_one_out",
     "global_antigen_coherence",
+    "harmonize_cohort_metadata",
+    "list_comparators",
     "load_vdjdb_reference",
+    "longitudinal_compartment_comparison",
+    "longitudinal_similarity",
+    "multinomial_abundance_resample",
     "normalize_vdjdb_cdr3",
     "normalize_vdjdb_v_gene",
-    "RFUTableResult",
-    "RFUOverlapResult",
-    "RFUPseudobulkResult",
+    "permute_longitudinal_labels",
+    "reference_coverage",
+    "register_comparator",
     "repertoire_metrics",
-    "rfu_metrics",
+    "repertoire_representation",
     "rfu_antigen_abundance",
     "rfu_antigen_coherence",
     "rfu_antigen_permutation_test",
+    "rfu_longitudinal_dynamics",
+    "rfu_longitudinal_matrix",
+    "rfu_metrics",
     "rfu_overlap",
     "rfu_phenotype_coupling",
     "rfu_pseudobulk",
     "rfu_sequence_matrix",
     "rfu_summary",
+    "shuffle_input_order",
     "summarize_antigen_context",
+    "summarize_longitudinal_similarity",
     "summarize_vdjdb_evidence",
+    "threshold_sensitivity",
+    "transfer_cohort",
     "validate_airr",
+    "validate_frozen_reference",
+    "validate_longitudinal_design",
     "validate_vdjdb_reference",
-    "VDJdbEvidenceSummary",
-    "VDJdbReference",
 ]
