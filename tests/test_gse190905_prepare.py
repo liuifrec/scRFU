@@ -137,6 +137,62 @@ def test_gse190905_prepare_explicit_column_mapping(tmp_path: Path) -> None:
     assert report["n_productive_trb_rows"] == 1
 
 
+def test_gse190905_prepare_actual_wide_primary_trb_layout(tmp_path: Path) -> None:
+    tcr_path = tmp_path / "tcr.csv.gz"
+    metadata_path = tmp_path / "meta.csv.gz"
+    out_path = tmp_path / "prepared.h5ad"
+    report_path = tmp_path / "report.json"
+    _write_csv_gz(
+        tcr_path,
+        pd.DataFrame(
+            {
+                "Unnamed: 0": ["c1", "c2"],
+                "TRB_1_cdr3": ["CASSA", "CASST"],
+                "TRB_1_v_gene": ["TRBV1", "TRBV2"],
+                "TRB_1_j_gene": ["TRBJ1", "TRBJ2"],
+                "TRB_2_cdr3": [pd.NA, "CASSQ"],
+                "TRB_2_v_gene": [pd.NA, "TRBV3"],
+                "clonotype": [1, 2],
+            }
+        ),
+    )
+    _write_csv_gz(
+        metadata_path,
+        pd.DataFrame({"Unnamed: 0": ["c1", "c2", "c3"], "sample": ["s1", "s1", "s2"]}),
+    )
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(SCRIPT),
+            "--tcr",
+            str(tcr_path),
+            "--metadata",
+            str(metadata_path),
+            "--out",
+            str(out_path),
+            "--report",
+            str(report_path),
+            "--cell-col",
+            "Unnamed: 0",
+            "--metadata-cell-col",
+            "Unnamed: 0",
+        ],
+        cwd=tmp_path,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 0, _subprocess_output(result)
+    report = json.loads(report_path.read_text(encoding="utf-8"))
+    assert report["inferred_columns"]["source_layout"] == "gse190905_wide_primary_trb"
+    data = ad.read_h5ad(out_path)
+    assert data.obsm["airr"]["chain"].tolist() == ["TRB", "TRB", ""]
+    assert data.obsm["airr"]["cdr3aa"].tolist() == ["CASSA", "CASST", ""]
+    assert data.obsm["airr"]["j_call"].tolist() == ["TRBJ1", "TRBJ2", ""]
+    assert data.obsm["airr"]["clonotype_id"].tolist() == ["1", "2", ""]
+
+
 def test_gse190905_prepare_missing_cdr3_column_fails_clearly(tmp_path: Path) -> None:
     tcr_path = tmp_path / "tcr.csv.gz"
     metadata_path = tmp_path / "meta.csv.gz"

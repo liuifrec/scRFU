@@ -1,0 +1,50 @@
+{
+  "schema_version": "1-preregistration",
+  "created_at": "2026-08-24T00:00:00+09:00",
+  "status": "immutable_inputs_registered_before_rfu_evaluation",
+  "development_cohorts": ["PRJNA602091_longitudinal_aging"],
+  "validation_cohorts": ["Wells_25k", "GSE190905_public_validation"],
+  "held_out_cohort": "GSE157007_heldout_aging_frailty",
+  "held_out_input_sha256": "6e311d8c537da80f1aa023e06c5708c58ebbf4e4ce902415d98074db1ca75732",
+  "metadata_sha256": "61056e7766a7cca0bbe8d24b99e09a31cbc9588519b488332a45e525c75fd95f",
+  "input_file_count": 17,
+  "frozen_reference_id": "scrfu-ref-db43f0ffe17d9fe6ec4d0d36231e08b48e52f5b508b7039cc08024fdf0158518",
+  "frozen_parameters": {
+    "rfu_r_sha256": "92c2faa33f2e7f60d6470ad7dfd653eb0ca54859aa198ed53ad0c876aae8640b",
+    "trimer_reference_sha256": "820fb71428913974e994543cbbbaa591f54355cdb73d651f068f0e691a6cdffd",
+    "centroid_reference_sha256": "64783074360edeca84b3f49ab9d682263e954752fc09bb208edaabde0fd82553",
+    "assignment_mode": "standard",
+    "threshold": 0.6,
+    "eligibility_rule": "amino-acid CDR3 starts with C",
+    "chain": "TRB",
+    "chain_selection": "productive primary TRB per cell using source order after productive preference",
+    "deduplication_key": "exact CDR3 amino-acid sequence",
+    "weighting": "cell",
+    "assignment_policies": ["nearest", "threshold_pass"],
+    "metadata_harmonization": {
+      "sample": "GEO sample accession",
+      "donor": "subject id; for the three later VDJ additions lacking that field, the sample-title prefix is the frozen donor label",
+      "condition": "age group",
+      "tissue": "PBMC"
+    },
+    "comparators": ["exact_cdr3", "clonotype", "v_gene", "j_gene", "cdr3_length", "shannon", "simpson"],
+    "edit_distance": "run only if unique TRB CDR3 count is at most 2000; otherwise report skipped without replacement",
+    "no_target_refitting": true,
+    "no_threshold_tuning": true
+  },
+  "primary_evaluation_statistics": [
+    "eligible fraction",
+    "threshold-pass fraction",
+    "RFU richness and donor prevalence",
+    "sample-level stability under deterministic subsampling",
+    "donor structure when repeated technical samples exist",
+    "RFU-versus-comparator sample-structure metrics"
+  ],
+  "secondary_descriptive_statistics": ["age-group RFU prevalence and phenotype coupling"],
+  "input_integrity_checks": [
+    "17 receptor filenames and SHA256 values recorded in docs/acquisition_manifests/gse157007.json",
+    "one GEO sample and one donor label per receptor file",
+    "age-group mapping frozen before RFU assignment",
+    "no outcome-driven parameter changes permitted"
+  ]
+}

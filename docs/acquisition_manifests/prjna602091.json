@@ -1,0 +1,16 @@
+{
+  "schema_version": "1",
+  "dataset_label": "PRJNA602091_longitudinal_aging",
+  "accession": "PRJNA602091",
+  "publication": "Longitudinal analysis reveals age-related changes in the T cell receptor repertoire of human T cell subsets; DOI 10.1172/JCI158122",
+  "source_url": "https://www.ncbi.nlm.nih.gov/sra/?term=PRJNA602091",
+  "expected_files": ["SRA run table", "paired-end sequencing objects enumerated by the frozen run table"],
+  "hashes_after_download": null,
+  "receptor_format": "raw paired-end UMI-based TCRA/TCRB RNA sequencing; processed clonotype format not verified",
+  "metadata_file": "publication supplemental tables and SRA run metadata; exact join requires verification",
+  "chain": ["TRA", "TRB"],
+  "cohort_role": "development",
+  "preprocessing_command": "BLOCKED: freeze the SRA run list, total byte size, UMI-aware processing workflow, and sample join before downloading",
+  "frozen_reference_id": "scrfu-ref-db43f0ffe17d9fe6ec4d0d36231e08b48e52f5b508b7039cc08024fdf0158518",
+  "status": "selected_not_acquired"
+}

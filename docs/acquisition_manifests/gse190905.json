@@ -1,0 +1,22 @@
+{
+  "schema_version": "1",
+  "dataset_label": "GSE190905_public_validation",
+  "accession": "GSE190905",
+  "publication": "Single-cell RNA and TCR sequencing reveals distinct systematic immune response induced by SABR with or without prior anti-PD-1 therapy; PMID 39891774",
+  "source_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE190905",
+  "expected_files": [
+    "GSE190905_TCR_data.csv.gz",
+    "GSE190905_meta_data.csv.gz"
+  ],
+  "hashes_after_download": {
+    "GSE190905_TCR_data.csv.gz": "85a9db858306b68d328b82b53b99ed38f3f4228d18c06a446c4d461c813e47c1",
+    "GSE190905_meta_data.csv.gz": "568297bbba944323b860cc3df89e7d1377c04bcab93246eca94749886c617537"
+  },
+  "receptor_format": "wide per-cell CSV with TRB_1/TRB_2 amino-acid CDR3, V/D/J, nucleotide junction, clonotype, and abundance fields",
+  "metadata_file": "GSE190905_meta_data.csv.gz",
+  "chain": ["TRA", "TRB"],
+  "cohort_role": "validation",
+  "preprocessing_command": "python examples/gse190905_prepare.py --tcr \"$SCRFU_PUBLIC_DATA_DIR/GSE190905/GSE190905_TCR_data.csv.gz\" --metadata \"$SCRFU_PUBLIC_DATA_DIR/GSE190905/GSE190905_meta_data.csv.gz\" --out \"$SCRFU_PUBLIC_DATA_DIR/GSE190905/gse190905_scrfu_input.h5ad\" --report \"$SCRFU_PUBLIC_DATA_DIR/GSE190905/preparation_report.json\" --cell-col 'Unnamed: 0' --metadata-cell-col 'Unnamed: 0'",
+  "frozen_reference_id": "scrfu-ref-db43f0ffe17d9fe6ec4d0d36231e08b48e52f5b508b7039cc08024fdf0158518",
+  "status": "acquired_and_technically_evaluated"
+}
