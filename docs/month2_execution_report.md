@@ -26,7 +26,7 @@ was made.
    labels, scores, threshold status, reconstruction, and order all matched;
    maximum absolute score difference 0 at tolerance `1e-12`. Total backend time
    3.924 s; child peak RSS 352,116 KB. Evidence:
-   `original_rfu_parity/parity_summary.json`.
+   `original_rfu_parity/summary.json`.
 5. **Wells subset construction.** Selective HDF reads only; no `X` or `raw/X`.
    Fixed seed 20260824 and deterministic random sampling preserved source order.
    Source: 610,429 cells, 24 donors, 17 cell types, 10 tissues, 247 libraries.
@@ -41,8 +41,10 @@ was made.
    25.859 s with two process workers; 1,000-query chunks took 63.809 s and
    36.102 s. Four workers were not required.
 9. **Restart/cache benefit.** At 25k, resumed runs were 0.210–0.222 s versus
-   25.859–63.809 s fresh. Held-out GSE157007 reused all nine chunks in 0.871 s
-   after a 117.300 s fresh run.
+   25.859–63.809 s fresh. Held-out GSE157007 reused all nine chunks in 0.871 s.
+   Its fresh end-to-end time was observed during execution but was overwritten
+   by the resumed run manifest, so that fresh timing is excluded from
+   manuscript-facing claims.
 10. **Peak-memory results.** Wells 25k Python peak RSS was 482,296 KB and the
     largest reported RFU backend peak was 1,802,608 KB. GSE157007 fresh backend
     peak was 947,596 KB.
@@ -56,8 +58,8 @@ was made.
     source-order result.
 14. **Downsampling robustness.** For nearest-policy cell subsampling, median
     cosine similarity to the 25k reference was 0.526/0.730/0.885/1.000 at
-    25/50/75/100%; corresponding median Spearman values were approximately
-    0.510/0.712/0.867/1.000. Full metrics, seeds, undefined constant-vector
+    25/50/75/100%; corresponding median Spearman values were
+    0.510/0.713/0.873/1.000. Full metrics, seeds, undefined constant-vector
     correlations, sequence subsampling, and multinomial resampling are retained
     in `wells_bounded/figure1_robustness_source.tsv`.
 15. **Reference coverage.** Wells 25k threshold-pass fraction was 0.7694;
