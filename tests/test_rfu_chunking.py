@@ -404,6 +404,12 @@ def test_failed_middle_chunk_resumes_without_repeating_completed_chunk(
     with pytest.raises(RuntimeError, match=r"index 1.*injected failure"):
         backend.run(_features(), chunk_size=2, workdir=workdir)
     assert calls == ["chunk_00000", "chunk_00001"]
+    run_manifests = list((workdir / "runs").glob("*/run_manifest.json"))
+    assert len(run_manifests) == 1
+    failed_manifest = json.loads(run_manifests[0].read_text())
+    assert failed_manifest["status"] == "failed"
+    assert failed_manifest["failed_chunk_count"] == 1
+    assert failed_manifest["completed_chunk_count"] == 1
 
     resumed = backend.run(_features(), chunk_size=2, workdir=workdir, resume=True)
     assert calls.count("chunk_00000") == 1

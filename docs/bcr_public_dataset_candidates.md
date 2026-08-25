@@ -31,17 +31,22 @@ data.
   requires field-completeness QC, a prespecified receptor distance, donor-aware
   construction, defined missing-data behavior and an independent holdout.
 
-## Completed compact real-data QC
+## Completed bounded real-data QC
 
-Only the 3.0 MB GSE266519 filtered-contig table was acquired for adapter
-validation. Its gzip SHA256 is
+The processed GSE219098 and compact GSE266519 receptor tables were acquired
+outside Git. The GSE266519 gzip SHA256 is
 `ce615c2ca41ed460617328f1b0280d8ad348974e6636eb156e6174cd7a562f3c`.
 It contains 34,477 productive contigs from 16,143 cells: 16,852 IGH, 10,636
 IGK and 6,989 IGL rows. Deterministic pairing yielded 15,494 paired, 177
 heavy-only and 472 light-only cells. Explicit/constant-derived isotype was
 available for 16,837 rows; mutation-frequency and clonal-family fields were
 absent. The file remains external and no source rows are redistributed. These
-results validate preprocessing behavior but reinforce the BCR-reference NO-GO.
+GSE219098 yielded 379,741 productive contigs from 177,663 cells, including
+171,642 paired cells. Neither dataset supplied SHM/germline-identity or inferred
+clonal-family fields in the acquired tables. Exact outcome-independent
+representations transferred to only 0–0.236% of eligible GSE266519 cells. These
+results validate preprocessing and feature extraction but reinforce the
+BCR-reference NO-GO documented in `bcr_feasibility_report.md`.
 
 ## Authoritative sources
 

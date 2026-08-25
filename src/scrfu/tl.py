@@ -21,6 +21,7 @@ from .comparators import (
     register_comparator,
     repertoire_representation,
 )
+from .completed_run import validate_completed_rfu_run
 from .diagnostics import reference_coverage
 from .downstream import (
     RFUOverlapResult,
@@ -226,6 +227,7 @@ __all__ = [
     "threshold_sensitivity",
     "transfer_cohort",
     "validate_airr",
+    "validate_completed_rfu_run",
     "validate_frozen_reference",
     "validate_longitudinal_design",
     "validate_vdjdb_reference",

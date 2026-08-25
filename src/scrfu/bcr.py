@@ -36,6 +36,8 @@ BCR_CANONICAL_FIELDS = (
     "mutation_count",
     "mutation_frequency",
     "germline_identity",
+    "umi_count",
+    "read_count",
     "source_row_id",
 )
 
@@ -62,6 +64,8 @@ _ALIASES: dict[str, tuple[str, ...]] = {
         "v_mutation_frequency",
     ),
     "germline_identity": ("germline_identity", "v_identity", "v_identity_fraction"),
+    "umi_count": ("umi_count", "umis", "umi"),
+    "read_count": ("read_count", "reads", "read"),
     "source_row_id": ("source_row_id", "row_id", "source_id"),
 }
 
@@ -72,6 +76,16 @@ class BCRPreparationResult:
     pairs: pd.DataFrame
     qc: dict[str, Any]
     provenance: dict[str, Any]
+
+
+@dataclass(frozen=True)
+class BCRFeatureMatrixResult:
+    """Experimental one-row-per-cell BCR feature matrix plus missingness QC."""
+
+    features: pd.DataFrame
+    missingness: pd.DataFrame
+    qc: dict[str, Any]
+    parameters: dict[str, Any]
 
 
 def _header(value: Any) -> str:
@@ -201,6 +215,8 @@ def canonicalize_bcr_table(
     output["mutation_count"] = pd.to_numeric(output["mutation_count"], errors="coerce").astype(
         "Float64"
     )
+    output["umi_count"] = pd.to_numeric(output["umi_count"], errors="coerce").astype("Float64")
+    output["read_count"] = pd.to_numeric(output["read_count"], errors="coerce").astype("Float64")
     output["mutation_frequency"] = output["mutation_frequency"].map(_fraction).astype("Float64")
     output["germline_identity"] = output["germline_identity"].map(_fraction).astype("Float64")
     derive_mutation = output["mutation_frequency"].isna() & output["germline_identity"].notna()
@@ -338,7 +354,97 @@ def bcr_state_features(table: pd.DataFrame, pairs: pd.DataFrame | None = None) -
     return frame
 
 
+def bcr_feature_matrix(
+    table: pd.DataFrame,
+    *,
+    pairs: pd.DataFrame | None = None,
+) -> BCRFeatureMatrixResult:
+    """Build an interpretable experimental BCR feature matrix per cell.
+
+    Features are receptor-derived only. Missing SHM, isotype, light-chain, or
+    clonal-family values remain explicitly missing; no phenotype or outcome
+    label is inferred or used to fit this representation.
+    """
+    pairing = pair_bcr_chains(table) if pairs is None else pairs.copy()
+    states = bcr_state_features(table, pairing)
+    selected = states.loc[states["selected_for_pair"]].copy()
+    common = [
+        "cell_id",
+        "source_row_id",
+        "cdr3aa",
+        "cdr3_length",
+        "v_call",
+        "j_call",
+        "isotype",
+        "class_switched",
+        "mutation_count",
+        "mutation_frequency",
+        "germline_identity",
+        "clonotype_id",
+        "clonotype_size",
+        "clonal_family_id",
+        "clonal_family_size",
+        "within_family_cdr3_diversity",
+    ]
+
+    def arm_frame(arm: str) -> pd.DataFrame:
+        arm_rows = selected.loc[selected["bcr_arm"].eq(arm), common].copy()
+        if arm_rows["cell_id"].duplicated().any():
+            raise RuntimeError(
+                f"Deterministic BCR selection produced multiple {arm} rows per cell."
+            )
+        return arm_rows.rename(
+            columns={column: f"{arm}_{column}" for column in common if column != "cell_id"}
+        )
+
+    features = pairing.copy()
+    features = features.merge(arm_frame("heavy"), on="cell_id", how="left", validate="one_to_one")
+    features = features.merge(arm_frame("light"), on="cell_id", how="left", validate="one_to_one")
+    if len(features) != pairing["cell_id"].nunique() or features["cell_id"].duplicated().any():
+        raise RuntimeError("BCR feature construction changed the one-row-per-cell contract.")
+    feature_columns = [
+        column
+        for column in features
+        if column
+        not in {
+            "cell_id",
+            "pair_status",
+            "paired_receptor_id",
+            "heavy_candidate_count",
+            "light_candidate_count",
+        }
+    ]
+    missingness = pd.DataFrame(
+        {
+            "feature": feature_columns,
+            "available_count": [int(features[column].notna().sum()) for column in feature_columns],
+            "missing_count": [int(features[column].isna().sum()) for column in feature_columns],
+        }
+    )
+    missingness["available_fraction"] = missingness["available_count"] / max(1, len(features))
+    qc = {
+        "schema_version": BCR_SCHEMA_VERSION,
+        "experimental": True,
+        "cell_count": len(features),
+        "feature_count": len(feature_columns),
+        "paired_cell_count": int(features["pair_status"].eq("paired").sum()),
+        "heavy_only_cell_count": int(features["pair_status"].eq("heavy_only").sum()),
+        "light_only_cell_count": int(features["pair_status"].eq("light_only").sum()),
+        "tcr_rfu_assignment_permitted": False,
+    }
+    parameters = {
+        "unit": "cell",
+        "heavy_chain": "IGH",
+        "light_chains": ["IGK", "IGL"],
+        "selection": "productive, UMI, read count, source order",
+        "outcome_labels_used": False,
+        "functional_unit_reference": None,
+    }
+    return BCRFeatureMatrixResult(features.reset_index(drop=True), missingness, qc, parameters)
+
+
 def bcr_qc_summary(table: pd.DataFrame, pairs: pd.DataFrame | None = None) -> dict[str, Any]:
+    """Summarize experimental BCR chain, pairing, and field completeness QC."""
     pairing = pair_bcr_chains(table) if pairs is None else pairs
     return {
         "schema_version": BCR_SCHEMA_VERSION,
@@ -365,6 +471,11 @@ def prepare_bcr_table(
     column_mapping: Mapping[str, str] | None = None,
     source_label: str = "bcr_table",
 ) -> BCRPreparationResult:
+    """Canonicalize, retain, pair, and summarize BCR receptor records.
+
+    This experimental function never invokes TCR RFU assignment and does not
+    construct a BCR functional reference.
+    """
     receptors, provenance = canonicalize_bcr_table(
         data, column_mapping=column_mapping, source_label=source_label
     )
@@ -378,6 +489,8 @@ __all__ = [
     "BCR_CHAINS",
     "BCR_SCHEMA_VERSION",
     "BCRPreparationResult",
+    "BCRFeatureMatrixResult",
+    "bcr_feature_matrix",
     "bcr_qc_summary",
     "bcr_state_features",
     "canonicalize_bcr_table",

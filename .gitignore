@@ -36,3 +36,4 @@ pip-wheel-metadata/
 .ruff_cache/
 # scRFU scratch
 .scrfu/
+docs/_build/

@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
+import scrfu
 from examples.synthetic_scaling_benchmark import generate_receptors
 from scrfu import pp, tl
 
@@ -58,3 +59,37 @@ def test_generated_random_state_is_bitwise_deterministic() -> None:
     first = generate_receptors(1_000, random_state=101)
     second = generate_receptors(1_000, random_state=101)
     pd.testing.assert_frame_equal(first, second, check_exact=True)
+
+
+def test_generated_bcr_pairing_and_feature_ids_are_deterministic_without_expansion() -> None:
+    rng = np.random.default_rng(20260825)
+    source_rows: list[dict[str, object]] = []
+    for cell_index in range(150):
+        chains = ["IGH", "IGK" if cell_index % 2 else "IGL"]
+        if cell_index % 7 == 0:
+            chains.append("IGH")
+        for chain_index, chain in enumerate(chains):
+            source_rows.append(
+                {
+                    "cell_id": f"cell_{cell_index:04d}",
+                    "sequence_id": f"sequence_{cell_index:04d}_{chain_index}",
+                    "chain": chain,
+                    "cdr3aa": f"C{cell_index:04d}{chain_index}F",
+                    "v_call": f"{chain}V{cell_index % 5 + 1}",
+                    "j_call": f"{chain}J{cell_index % 3 + 1}",
+                    "productive": True,
+                    "umi_count": int(rng.integers(1, 100)),
+                    "read_count": int(rng.integers(1, 1000)),
+                }
+            )
+    source = pd.DataFrame(source_rows)
+    first = scrfu.bcr.prepare_bcr_table(source, source_label="generated")
+    second = scrfu.bcr.prepare_bcr_table(source, source_label="generated")
+    pd.testing.assert_frame_equal(first.receptors, second.receptors, check_exact=True)
+    pd.testing.assert_frame_equal(first.pairs, second.pairs, check_exact=True)
+    assert len(first.receptors) == len(source)
+    assert len(first.pairs) == source["cell_id"].nunique()
+    assert first.pairs["cell_id"].is_unique
+    matrix = scrfu.bcr.bcr_feature_matrix(first.receptors, pairs=first.pairs)
+    assert len(matrix.features) == len(first.pairs)
+    assert matrix.features["cell_id"].tolist() == first.pairs["cell_id"].tolist()

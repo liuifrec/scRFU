@@ -68,7 +68,7 @@ dev = [
 ]
 
 [project.scripts]
-scrfu = "scrfu.cli:main"
+scrfu = "scrfu.cli:entrypoint"
 
 [project.urls]
 Homepage = "https://github.com/liuifrec/scRFU"

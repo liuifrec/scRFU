@@ -11,6 +11,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Literal, cast
 
+import numpy as np
 import pandas as pd
 
 from .._version import __version__
@@ -280,6 +281,7 @@ class RFURepoBackend:
         mode: str = "standard",
         wrapper_r_path: PathLike | None = None,
         rscript_bin: str = "Rscript",
+        timeout_seconds: float | None = None,
         environ: Mapping[str, str] | None = None,
     ) -> None:
         self.paths = RFURepoPaths.resolve(rfu_dir, environ=environ)
@@ -296,6 +298,13 @@ class RFURepoBackend:
                 "Expected r/run_rfu_repo.R inside scrfu repo."
             )
         self.rscript_bin = rscript_bin
+        if timeout_seconds is not None and (
+            isinstance(timeout_seconds, bool)
+            or not isinstance(timeout_seconds, (int, float))
+            or not float(timeout_seconds) > 0
+        ):
+            raise ValueError("timeout_seconds must be a positive number or None.")
+        self.timeout_seconds = float(timeout_seconds) if timeout_seconds is not None else None
 
     def _run_query_file(
         self,
@@ -324,11 +333,23 @@ class RFURepoBackend:
             str(float(threshold)),
         ] + list(extra_args)
         try:
-            proc = subprocess.run(cmd, capture_output=True, text=True)
+            proc = subprocess.run(
+                cmd,
+                capture_output=True,
+                text=True,
+                timeout=self.timeout_seconds,
+            )
         except FileNotFoundError as exc:
             raise RFUConfigurationError(
                 f"R executable {self.rscript_bin!r} was not found. Install R or pass "
                 "rscript_bin='/path/to/Rscript'. No RFU result was produced."
+            ) from exc
+        except subprocess.TimeoutExpired as exc:
+            raise RFUChunkError(
+                f"RFURepoBackend timed out after {self.timeout_seconds:g} seconds. "
+                f"Failed workdir: {execution_dir}. Completed validated chunks remain reusable.",
+                stdout=str(exc.stdout or ""),
+                stderr=str(exc.stderr or ""),
             ) from exc
         if proc.returncode != 0:
             raise RFUChunkError(
@@ -347,7 +368,12 @@ class RFURepoBackend:
             )
         try:
             assignments = pd.read_csv(output_path, sep="\t")
-        except (OSError, UnicodeDecodeError, pd.errors.ParserError) as exc:
+        except (
+            OSError,
+            UnicodeDecodeError,
+            pd.errors.EmptyDataError,
+            pd.errors.ParserError,
+        ) as exc:
             raise RFUChunkError(
                 f"RFU wrapper output is unreadable or malformed: {output_path}",
                 stdout=proc.stdout,
@@ -376,6 +402,40 @@ class RFURepoBackend:
                 stdout=proc.stdout,
                 stderr=proc.stderr,
             )
+        numeric_score = pd.to_numeric(assignments["rfu_score"], errors="coerce")
+        numeric_id = pd.to_numeric(assignments["rfu_id"], errors="coerce")
+        assigned = assignments["rfu_id"].notna()
+        invalid_id = assigned & (
+            numeric_id.isna()
+            | ~np.isfinite(numeric_id)
+            | numeric_id.le(0)
+            | numeric_id.mod(1).ne(0)
+        )
+        invalid_score = assigned & (numeric_score.isna() | ~np.isfinite(numeric_score))
+        labels = assignments["rfu_label"].astype("string").str.strip()
+        invalid_label = assigned & (labels.isna() | labels.eq(""))
+        pass_text = assignments["pass_thr"].astype("string").str.strip().str.lower()
+        invalid_pass = ~pass_text.isin(["true", "false"])
+        upstream = pd.to_numeric(assignments["upstream_n_miss"], errors="coerce")
+        invalid_upstream = (
+            upstream.isna() | ~np.isfinite(upstream) | upstream.lt(0) | upstream.mod(1).ne(0)
+        )
+        if invalid_id.any() or invalid_score.any() or invalid_label.any() or invalid_pass.any():
+            raise RFUChunkError(
+                "RFU wrapper output contains invalid RFU IDs, labels, scores, or threshold flags.",
+                stdout=proc.stdout,
+                stderr=proc.stderr,
+            )
+        if invalid_upstream.any():
+            raise RFUChunkError(
+                "RFU wrapper output contains an invalid upstream_n_miss value.",
+                stdout=proc.stdout,
+                stderr=proc.stderr,
+            )
+        assignments["rfu_id"] = numeric_id.astype("Int64")
+        assignments["rfu_score"] = numeric_score.astype(float)
+        assignments["pass_thr"] = pass_text.eq("true").astype("boolean")
+        assignments["upstream_n_miss"] = upstream.astype("Int64")
         return RFURunResult(
             df=assignments,
             stdout=proc.stdout,

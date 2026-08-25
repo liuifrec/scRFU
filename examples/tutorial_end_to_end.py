@@ -109,6 +109,7 @@ def run_tutorial(
         pd.read_csv(bcr_path, sep="\t"), source_label="synthetic_tutorial"
     )
     bcr_states = bcr.bcr_state_features(bcr_result.receptors, bcr_result.pairs)
+    bcr_features = bcr.bcr_feature_matrix(bcr_result.receptors, pairs=bcr_result.pairs)
 
     outdir.mkdir(parents=True, exist_ok=True)
     outputs = {
@@ -124,6 +125,8 @@ def run_tutorial(
         "bcr_receptors.tsv": bcr_result.receptors,
         "bcr_pairs.tsv": bcr_result.pairs,
         "bcr_state_features.tsv": bcr_states,
+        "bcr_feature_matrix.tsv": bcr_features.features,
+        "bcr_feature_missingness.tsv": bcr_features.missingness,
     }
     output_manifest: dict[str, Any] = {}
     for name, table in outputs.items():
@@ -144,6 +147,7 @@ def run_tutorial(
         "rfu_provenance": rfu_provenance,
         "receptor_qc": receptor_qc,
         "bcr_qc": bcr_result.qc,
+        "bcr_feature_parameters": bcr_features.parameters,
         "fixtures": {
             path.name: {"sha256": _sha256(path), "synthetic": True}
             for path in (receptor_path, vdjdb_path, bcr_path)

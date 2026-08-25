@@ -60,6 +60,50 @@ def test_bcr_state_features_are_conservative_and_bounded() -> None:
     assert result.qc["pair_status_counts"] == {"paired": 2, "heavy_only": 1}
 
 
+def test_bcr_feature_matrix_is_one_row_per_cell_and_explicit_about_missingness() -> None:
+    prepared = scrfu.bcr.prepare_bcr_table(_bcr_source())
+    result = scrfu.bcr.bcr_feature_matrix(prepared.receptors, pairs=prepared.pairs)
+    assert result.features["cell_id"].tolist() == ["c1", "c2", "c3"]
+    assert result.features["cell_id"].is_unique
+    assert result.features.set_index("cell_id").loc["c1", "heavy_sequence_id"] == "h1"
+    assert result.features.set_index("cell_id").loc["c2", "light_chain"] == "IGL"
+    missing = result.missingness.set_index("feature")
+    assert missing.loc["light_mutation_frequency", "missing_count"] >= 1
+    assert result.parameters["outcome_labels_used"] is False
+    assert result.parameters["functional_unit_reference"] is None
+
+
+def test_bcr_feature_matrix_is_stable_after_serialization_and_has_no_row_expansion(
+    tmp_path,
+) -> None:
+    prepared = scrfu.bcr.prepare_bcr_table(_bcr_source())
+    first = scrfu.bcr.bcr_feature_matrix(prepared.receptors, pairs=prepared.pairs)
+    path = tmp_path / "features.tsv"
+    first.features.to_csv(path, sep="\t", index=False)
+    restored = pd.read_csv(path, sep="\t")
+    assert len(restored) == prepared.receptors["cell_id"].nunique()
+    assert restored["cell_id"].is_unique
+    assert restored["cell_id"].tolist() == first.features["cell_id"].tolist()
+    assert restored["heavy_sequence_id"].tolist() == first.features["heavy_sequence_id"].tolist()
+    assert (
+        restored["light_sequence_id"].fillna("<missing>").tolist()
+        == first.features["light_sequence_id"].fillna("<missing>").tolist()
+    )
+
+
+def test_bcr_productive_chain_selection_uses_retained_umi_count() -> None:
+    source = _bcr_source()
+    source.loc[source["contig_id"].eq("h1-low"), "is_productive"] = True
+    prepared = scrfu.bcr.prepare_bcr_table(source)
+    selected = prepared.receptors.loc[
+        prepared.receptors["cell_id"].eq("c1")
+        & prepared.receptors["bcr_arm"].eq("heavy")
+        & prepared.receptors["selected_for_pair"]
+    ]
+    assert selected["sequence_id"].tolist() == ["h1-low"]
+    assert selected["umi_count"].tolist() == [100.0]
+
+
 def test_bcr_schema_rejects_missing_or_duplicate_identifiers_and_never_assigns_tcr_rfu() -> None:
     with pytest.raises(ValueError, match="missing required"):
         scrfu.bcr.prepare_bcr_table(pd.DataFrame({"cell_id": ["c1"]}))

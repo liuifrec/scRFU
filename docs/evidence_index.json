@@ -1,0 +1,101 @@
+{
+  "schema_version": 1,
+  "entries": [
+    {
+      "dataset_label": "official RFU parity fixture",
+      "analysis_type": "canonical parity",
+      "external_manifest_filename": "original_rfu_parity/summary.json",
+      "manifest_sha256": "4adc57d3415e6377cee4dcfe2be450a906c688fbd1b80e9a40dff76f0ff943e5",
+      "public_source_accession": "s175573/RFU",
+      "result_status": "previously_verified_source_unavailable"
+    },
+    {
+      "dataset_label": "Wells atlas",
+      "analysis_type": "full RFU assignment",
+      "external_manifest_filename": "evidence_manifest_full_rfu.json",
+      "manifest_sha256": "9e93719eb4b20808f800f64f6976da66715f9f574cf8f8502b72c496e6ec3ec8",
+      "public_source_accession": "Wells-atlas-public",
+      "result_status": "sealed"
+    },
+    {
+      "dataset_label": "Wells atlas",
+      "analysis_type": "full receptor downstream",
+      "external_manifest_filename": "evidence_manifest_downstream.json",
+      "manifest_sha256": "5411ec56584641c315c29c75831ded9707a646069c660c273ccbb1666554d7be",
+      "public_source_accession": "Wells-atlas-public",
+      "result_status": "sealed"
+    },
+    {
+      "dataset_label": "GSE190905",
+      "analysis_type": "frozen RFU transfer",
+      "external_manifest_filename": "evidence_manifest_rfu.json",
+      "manifest_sha256": "e7bb244d89f8ffd07d3baa258a5cf96cc9910779a70c3a88fd3bf6e8aa594d13",
+      "public_source_accession": "GSE190905",
+      "result_status": "sealed"
+    },
+    {
+      "dataset_label": "GSE157007",
+      "analysis_type": "preregistered held-out RFU transfer",
+      "external_manifest_filename": "evidence_manifest_rfu.json",
+      "manifest_sha256": "260abade0f91ea0bd5d4fb24e9f9b2824883e95bb08a543368bea73c6fd86eab",
+      "public_source_accession": "GSE157007",
+      "result_status": "sealed"
+    },
+    {
+      "dataset_label": "VDJdb 2026-06-03",
+      "analysis_type": "external antigen-evidence validation",
+      "external_manifest_filename": "evidence_manifest.json",
+      "manifest_sha256": "c32da31575bcfae7cbffbaf4e3cb2e2d08e8156295568f051b299e588320f242",
+      "public_source_accession": "VDJdb-2026-06-03",
+      "result_status": "sealed"
+    },
+    {
+      "dataset_label": "synthetic scaling",
+      "analysis_type": "pure-Python scaling benchmark",
+      "external_manifest_filename": "evidence_manifest.json",
+      "manifest_sha256": "0025641dbb15bfe8e0415c5fede331881744c2de666eac744f25bf681e1a07c6",
+      "public_source_accession": "synthetic",
+      "result_status": "sealed"
+    },
+    {
+      "dataset_label": "Wells atlas",
+      "analysis_type": "completed-run validation",
+      "external_manifest_filename": "full_run_validation_report.json",
+      "manifest_sha256": "e613840a742bd58ea8f72a32c47b08fbc44f7381ef08d384973d1e97d6cac043",
+      "public_source_accession": "Wells-atlas-public",
+      "result_status": "sealed"
+    },
+    {
+      "dataset_label": "VDJdb representative subsets",
+      "analysis_type": "deterministic reproducibility check",
+      "external_manifest_filename": "reproducibility_check.json",
+      "manifest_sha256": "bdcd7785020c1800fe0ae067b398d740785d63397526454064336e16dff6fbd4",
+      "public_source_accession": "VDJdb-2026-06-03",
+      "result_status": "sealed"
+    },
+    {
+      "dataset_label": "GSE219098",
+      "analysis_type": "experimental BCR adapter and feature QC",
+      "external_manifest_filename": "GSE219098/qc/run_manifest.json",
+      "manifest_sha256": "bf7ff9b609f1002cd27b0f9ccc4b7cc7c32b80871e77d0a184d277667d57653b",
+      "public_source_accession": "GSE219098",
+      "result_status": "sealed"
+    },
+    {
+      "dataset_label": "GSE266519",
+      "analysis_type": "experimental BCR adapter and feature QC",
+      "external_manifest_filename": "GSE266519/qc/run_manifest.json",
+      "manifest_sha256": "0044c846354755a21d968c0b01d92f6dad5f6f8b4fd0730de8873464e78be8db",
+      "public_source_accession": "GSE266519",
+      "result_status": "sealed"
+    },
+    {
+      "dataset_label": "GSE219098 to GSE266519",
+      "analysis_type": "experimental BCR representation feasibility",
+      "external_manifest_filename": "bcr_representation_feasibility.json",
+      "manifest_sha256": "fa692f99748df4bf3c6949bcc449342bce1bbbef5a9ef5af87d926574389407d",
+      "public_source_accession": "GSE219098+GSE266519",
+      "result_status": "sealed"
+    }
+  ]
+}

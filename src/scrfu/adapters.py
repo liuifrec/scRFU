@@ -577,6 +577,7 @@ _ALIASES = {
 
 
 def get_receptor_adapter(name: str) -> ReceptorAdapter:
+    """Return a registered receptor adapter or raise for an unknown name."""
     normalized = str(name).strip().lower()
     normalized = _ALIASES.get(normalized, normalized)
     if normalized not in _ADAPTERS:
@@ -587,6 +588,7 @@ def get_receptor_adapter(name: str) -> ReceptorAdapter:
 
 
 def list_receptor_adapters() -> list[str]:
+    """Return sorted names of all built-in receptor adapters."""
     return sorted(_ADAPTERS)
 
 

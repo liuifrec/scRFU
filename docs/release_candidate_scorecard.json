@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "candidate_version": "0.4.0rc1",
+  "assessment_date": "2026-08-25",
+  "domains": [
+    {"domain": "correctness", "status": "PASS", "evidence": "test suite; official RFU integration; docs/evidence_index.md"},
+    {"domain": "determinism", "status": "PASS", "evidence": "restart/chunk/order tests; representative VDJdb reproducibility report"},
+    {"domain": "scalability", "status": "PASS", "evidence": "full Wells manifest; benchmarks/synthetic_python_baseline.json"},
+    {"domain": "failure recovery", "status": "PASS", "evidence": "tests/test_rfu_chunking.py; tests/test_rfu_repo_backend.py"},
+    {"domain": "API stability", "status": "PASS", "evidence": "docs/public_api_0.4.json; tests/test_public_api_snapshot.py"},
+    {"domain": "documentation", "status": "PASS", "evidence": "warning-clean local Sphinx build; docs/api/; docs/tutorial.md"},
+    {"domain": "portability", "status": "PARTIAL", "evidence": ".github/workflows/ci.yml OS smoke matrix is configured but not run on the unpushed tree"},
+    {"domain": "CI", "status": "PARTIAL", "evidence": "Linux Python and cross-OS workflows configured; remote run awaits maintainer push"},
+    {"domain": "installation", "status": "PASS", "evidence": "isolated wheel and sdist import/CLI/tutorial smoke"},
+    {"domain": "provenance", "status": "PASS", "evidence": "docs/evidence_index.json; external immutable manifests"},
+    {"domain": "privacy", "status": "PASS", "evidence": "wheel/sdist/tracked-file content audit"},
+    {"domain": "dependency hygiene", "status": "PASS", "evidence": "core import without plotting; optional extras and clean core install"},
+    {"domain": "TCR scientific validation", "status": "PASS", "evidence": "official parity, Wells, GSE190905, preregistered GSE157007 manifests"},
+    {"domain": "VDJdb external validation", "status": "PASS", "evidence": "pinned 2026-06-03 external analysis and reproducibility manifest"},
+    {"domain": "BCR status", "status": "PARTIAL", "evidence": "preprocessing/features validated; docs/bcr_feasibility_report.md records reference NO-GO"}
+  ]
+}

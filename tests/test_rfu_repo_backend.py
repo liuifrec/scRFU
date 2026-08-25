@@ -221,6 +221,85 @@ def test_malformed_r_output_is_not_presented_as_success(
         backend.run(features, workdir=tmp_path / "work")
 
 
+def test_r_timeout_is_actionable_and_preserves_workdir(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    rfu_dir = _write_fake_rfu_dir(tmp_path / "RFU")
+    wrapper = _write_wrapper(tmp_path / "wrapper.R")
+    backend = RFURepoBackend(rfu_dir=rfu_dir, wrapper_r_path=wrapper, timeout_seconds=0.01)
+
+    def timeout(cmd: list[str], **_: object) -> subprocess.CompletedProcess[str]:
+        raise subprocess.TimeoutExpired(cmd, 0.01, output="partial", stderr="timed out")
+
+    monkeypatch.setattr("scrfu.backends.rfu_repo.subprocess.run", timeout)
+    features = pd.DataFrame({"cell_id": ["c1"], "cdr3aa": ["CASSA"], "trbv": ["TRBV1"]})
+    workdir = tmp_path / "work"
+    with pytest.raises(RFUChunkError, match=r"timed out.*Completed validated chunks"):
+        backend.run(features, workdir=workdir)
+    assert workdir.is_dir()
+
+
+@pytest.mark.parametrize(
+    ("column", "value", "message"),
+    [
+        ("rfu_id", -1, "invalid RFU IDs"),
+        ("rfu_score", float("nan"), "invalid RFU IDs"),
+        ("pass_thr", "maybe", "invalid RFU IDs"),
+        ("upstream_n_miss", -1, "invalid upstream_n_miss"),
+    ],
+)
+def test_invalid_scientific_output_is_rejected(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    column: str,
+    value: object,
+    message: str,
+) -> None:
+    rfu_dir = _write_fake_rfu_dir(tmp_path / "RFU")
+    wrapper = _write_wrapper(tmp_path / "wrapper.R")
+    backend = RFURepoBackend(rfu_dir=rfu_dir, wrapper_r_path=wrapper)
+
+    def invalid(cmd: list[str], **_: object) -> subprocess.CompletedProcess[str]:
+        input_path = Path(cmd[cmd.index("--in") + 1])
+        output_path = Path(cmd[cmd.index("--out") + 1])
+        queries = pd.read_csv(input_path, sep="\t")
+        output = pd.DataFrame(
+            {
+                "unique_sequence_id": queries["unique_sequence_id"],
+                "rfu_id": [1] * len(queries),
+                "rfu_label": ["RFU1"] * len(queries),
+                "rfu_score": [0.8] * len(queries),
+                "pass_thr": [True] * len(queries),
+                "upstream_n_miss": [0] * len(queries),
+            }
+        )
+        if column == "pass_thr":
+            output[column] = output[column].astype(object)
+        output.loc[0, column] = value
+        output.to_csv(output_path, sep="\t", index=False)
+        return subprocess.CompletedProcess(cmd, 0, stdout="", stderr="")
+
+    monkeypatch.setattr("scrfu.backends.rfu_repo.subprocess.run", invalid)
+    features = pd.DataFrame({"cell_id": ["c1"], "cdr3aa": ["CASSA"], "trbv": ["TRBV1"]})
+    with pytest.raises(RFUChunkError, match=message):
+        backend.run(features, workdir=tmp_path / "work")
+
+
+def test_empty_r_output_is_rejected(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    rfu_dir = _write_fake_rfu_dir(tmp_path / "RFU")
+    wrapper = _write_wrapper(tmp_path / "wrapper.R")
+    backend = RFURepoBackend(rfu_dir=rfu_dir, wrapper_r_path=wrapper)
+
+    def empty(cmd: list[str], **_: object) -> subprocess.CompletedProcess[str]:
+        Path(cmd[cmd.index("--out") + 1]).write_text("")
+        return subprocess.CompletedProcess(cmd, 0, stdout="", stderr="")
+
+    monkeypatch.setattr("scrfu.backends.rfu_repo.subprocess.run", empty)
+    features = pd.DataFrame({"cell_id": ["c1"], "cdr3aa": ["CASSA"], "trbv": ["TRBV1"]})
+    with pytest.raises(RFUChunkError, match="unreadable or malformed"):
+        backend.run(features, workdir=tmp_path / "work")
+
+
 def test_backend_provenance_records_resolution_capabilities_and_hashes(tmp_path: Path) -> None:
     rfu_dir = _write_fake_rfu_dir(tmp_path / "RFU", map_aware=True, batch_maps=True)
     wrapper = _write_wrapper(tmp_path / "wrapper.R")

@@ -2,11 +2,14 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 from pathlib import Path
 
 import pandas as pd
 
+from ._version import __version__
 from .adapters import list_receptor_adapters, prepare_receptors
+from .doctor import doctor_report
 from .io import (
     migrate_wells_receptor_cache,
     read_h5ad,
@@ -21,8 +24,18 @@ from .wells import prepare_wells_receptor_cache
 
 
 def build_parser() -> argparse.ArgumentParser:
+    """Construct the command-line parser without reading runtime configuration."""
     p = argparse.ArgumentParser(prog="scrfu", description="scRFU: RFU calling for scirpy/AnnData.")
+    p.add_argument("--version", action="version", version=f"scrfu {__version__}")
     sub = p.add_subparsers(dest="cmd", required=True)
+
+    doctor = sub.add_parser("doctor", help="Diagnose installation and external RFU setup.")
+    doctor.add_argument(
+        "--verbose", action="store_true", help="Show full runtime paths instead of redaction"
+    )
+    doctor.add_argument(
+        "--output-dir", default=".scrfu", help="Prospective cache/output directory to check"
+    )
 
     c = sub.add_parser("call-rfu", help="Run RFU calling and attach results to AnnData.")
     c.add_argument("input", type=str, help="Input .h5ad")
@@ -244,6 +257,7 @@ def _prepare_receptors_command(args: argparse.Namespace) -> dict[str, object]:
 
 
 def main(argv: list[str] | None = None) -> None:
+    """Execute a scRFU command from ``argv`` or the process command line."""
     p = build_parser()
     args = p.parse_args(argv)
 
@@ -280,9 +294,26 @@ def main(argv: list[str] | None = None) -> None:
         _prepare_receptors_command(args)
     elif args.cmd == "migrate-receptor-cache":
         migrate_wells_receptor_cache(args.input, args.outdir, force=args.force)
+    elif args.cmd == "doctor":
+        print(
+            json.dumps(
+                doctor_report(verbose=args.verbose, output_dir=args.output_dir),
+                indent=2,
+                sort_keys=True,
+            )
+        )
     else:
         raise SystemExit(f"Unknown command: {args.cmd}")
 
 
+def entrypoint() -> None:
+    """Console-script wrapper that formats ordinary user errors without a traceback."""
+    try:
+        main()
+    except (FileNotFoundError, ImportError, KeyError, ValueError) as error:
+        print(f"scrfu: error: {error}", file=sys.stderr)
+        raise SystemExit(2) from None
+
+
 if __name__ == "__main__":
-    main()
+    entrypoint()

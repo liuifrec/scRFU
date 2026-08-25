@@ -43,10 +43,16 @@ class ReceptorCacheData:
 
 
 def read_h5ad(path: PathLike) -> ad.AnnData:
+    """Read a complete AnnData file, including its expression matrix.
+
+    Use :func:`read_h5ad_obs` or :func:`read_h5ad_dataframe` when selective
+    metadata or receptor access is sufficient.
+    """
     return ad.read_h5ad(str(path))
 
 
 def write_h5ad(adata: ad.AnnData, path: PathLike) -> None:
+    """Write an AnnData object to H5AD at ``path``."""
     adata.write_h5ad(str(path))
 
 
@@ -362,6 +368,7 @@ def read_h5ad_shape(path: PathLike) -> tuple[int, int]:
 
 
 def file_sha256(path: PathLike) -> str:
+    """Return the lowercase SHA256 digest of a file's bytes."""
     digest = hashlib.sha256()
     with Path(path).open("rb") as stream:
         for block in iter(lambda: stream.read(1024 * 1024), b""):
@@ -370,6 +377,7 @@ def file_sha256(path: PathLike) -> str:
 
 
 def source_fingerprint(path: PathLike) -> dict[str, Any]:
+    """Return a bounded source-file fingerprint and runtime metadata."""
     source = Path(path).expanduser().resolve()
     stat = source.stat()
     sample_size = 1024 * 1024
@@ -479,6 +487,7 @@ def validate_receptor_cache(
     *,
     source_path: PathLike | None = None,
 ) -> dict[str, Any]:
+    """Validate cache schema, source identity, checksums, and receptor rows."""
     cache = Path(cache_dir).expanduser().resolve()
     manifest_path = cache / "preparation_manifest.json"
     errors: list[str] = []
@@ -534,6 +543,7 @@ def read_receptor_cache(
     *,
     source_path: PathLike | None = None,
 ) -> ReceptorCacheData:
+    """Read a validated receptor cache and return tables plus provenance."""
     validation = validate_receptor_cache(cache_dir, source_path=source_path)
     if validation["status"] == "legacy_wells_cache":
         raise ValueError(

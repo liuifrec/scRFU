@@ -4,7 +4,7 @@ The default tutorial is fully synthetic and redistributable. It validates a
 canonical TRB table, uses clearly labelled mock RFU assignments, calculates
 repertoire metrics, pseudobulk, phenotype coupling and longitudinal summaries,
 matches a tiny synthetic VDJdb-like reference, and exercises experimental BCR
-preprocessing. It does not contain RFU assets, VDJdb records, public-cohort rows
+preprocessing and feature extraction. It does not contain RFU assets, VDJdb records, public-cohort rows
 or private data.
 
 The frozen fixture SHA256 values are:
@@ -37,4 +37,4 @@ python examples/tutorial_end_to_end.py \
 
 The real-backend command requires R and the upstream assets; they are never
 bundled with scRFU. BCR processing in this tutorial is experimental and never
-invokes the TCR RFU backend.
+invokes the TCR RFU backend. It does not construct BCR functional units.

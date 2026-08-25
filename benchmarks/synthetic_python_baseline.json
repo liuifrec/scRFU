@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "baseline_file": "synthetic_python_baseline.tsv",
+  "baseline_sha256": "537570f9e80e900fbe370c70075980939b1f4cbba10893a98d0363d8e12255d4",
+  "scrfu_version": "0.4.0rc1",
+  "python_version": "3.10.20",
+  "platform": "Linux x86_64",
+  "created_date": "2026-08-25",
+  "random_seed": 20260825,
+  "sizes": [10000, 100000, 500000],
+  "operations": [
+    "generate",
+    "canonical_validation",
+    "deduplication",
+    "reconstruction",
+    "repertoire_metrics",
+    "pseudobulk",
+    "overlap",
+    "phenotype_coupling"
+  ],
+  "advisory_wall_ratio": 1.5,
+  "advisory_rss_ratio": 1.5,
+  "ci_enforcement": false
+}

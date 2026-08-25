@@ -32,6 +32,7 @@ def register_comparator(name: str, comparator: Comparator, *, replace: bool = Fa
 
 
 def list_comparators() -> list[str]:
+    """Return the deterministic registry of comparator representations."""
     builtins = [
         "cdr3_length",
         "clonotype",
