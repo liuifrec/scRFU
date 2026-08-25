@@ -12,8 +12,8 @@ honest boundary, not a hidden failure.
 | Failure recovery | PASS | Injected R, output, checksum, cache, and interrupted-run failures |
 | API stability | PASS | Machine-readable 0.4 snapshot with stable-removal guard |
 | Documentation | PASS | Navigable, warning-clean local Sphinx API build and synthetic tutorial |
-| Portability | PARTIAL | Cross-OS Python-only workflow is configured but cannot be observed until reviewed and pushed |
-| CI | PARTIAL | Linux Python 3.10/3.11/3.12 and OS smoke jobs configured; current unpushed tree has no remote run |
+| Portability | PASS | Exact-commit CI run 32807983086 passed Ubuntu, macOS, and Windows Python-only smoke jobs for `4314ff5b3c44064ccf1dea3c5ad748ae2de197b5` |
+| CI | PASS | Exact-commit CI run 32807983086 passed Linux Python 3.10/3.11/3.12, cross-OS smoke, docs, optional-dependency, and package jobs |
 | Installation | PASS | Isolated wheel and sdist import, CLI, fixture, and tutorial checks |
 | Provenance | PASS | Hashed external evidence manifests and portable repository index |
 | Privacy | PASS | Tracked files and distributions contain no public/private runtime datasets or external databases/assets |
@@ -24,9 +24,8 @@ honest boundary, not a hidden failure.
 
 ## Release blockers
 
-- Maintainer review of the complete uncommitted diff.
-- A successful remote CI run on the exact reviewed commit, especially macOS and
-  Windows smoke jobs, before promoting the candidate.
+- Maintainer review of the exact CI-tested commit and this uncommitted
+  scorecard evidence update.
 - Final release authorization and version promotion from `0.4.0rc1` to `0.4.0`.
 
 ## Strong recommendations, not blockers
@@ -38,4 +37,3 @@ honest boundary, not a hidden failure.
 
 BCR functional-unit construction, manuscript work, DOI creation, and additional
 public cohorts are not required for the TCR software release.
-
