@@ -1160,7 +1160,7 @@ def global_antigen_coherence(
             aggfunc="sum",
             fill_value=0.0,
         )
-        probabilities = table.to_numpy(dtype=float)
+        probabilities = table.to_numpy(dtype=float, copy=True)
         probabilities /= probabilities.sum()
         row_p = probabilities.sum(axis=1, keepdims=True)
         col_p = probabilities.sum(axis=0, keepdims=True)

@@ -317,7 +317,7 @@ def rfu_overlap(
     if matrix.index.has_duplicates:
         raise ValueError("RFU overlap matrix sample index must be unique.")
     try:
-        values = matrix.apply(pd.to_numeric, errors="raise").to_numpy(dtype=float)
+        values = matrix.apply(pd.to_numeric, errors="raise").to_numpy(dtype=float, copy=True)
     except (TypeError, ValueError) as exc:
         raise ValueError("RFU overlap matrix must contain numeric values.") from exc
     if not np.isfinite(values).all():

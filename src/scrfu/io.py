@@ -74,6 +74,40 @@ def _string_list(values: Any) -> list[str]:
     return [_text(value) for value in values]
 
 
+def _encoded_row_count(element: Any, logical_name: str) -> int:
+    """Return the logical length of a supported one-dimensional H5AD element."""
+    import h5py
+
+    if isinstance(element, h5py.Dataset):
+        if element.ndim != 1:
+            raise UnsupportedH5ADLayout(
+                f"{logical_name} must be one-dimensional; found shape {element.shape}."
+            )
+        return int(element.shape[0])
+    if not isinstance(element, h5py.Group):
+        raise UnsupportedH5ADLayout(f"{logical_name} is not a supported HDF5 element.")
+    encoding = _encoding_type(element)
+    length_key = "codes" if encoding == "categorical" else "values"
+    required = {length_key} if encoding == "categorical" else {"values", "mask"}
+    if encoding not in {
+        "categorical",
+        "nullable-integer",
+        "nullable-boolean",
+        "nullable-string-array",
+    } or not required.issubset(element):
+        raise UnsupportedH5ADLayout(
+            f"{logical_name} has unsupported encoding-type {encoding or 'missing'!r}."
+        )
+    values = element[length_key]
+    if not isinstance(values, h5py.Dataset) or values.ndim != 1:
+        raise UnsupportedH5ADLayout(f"{logical_name} has invalid one-dimensional values.")
+    if "mask" in required:
+        mask = element["mask"]
+        if not isinstance(mask, h5py.Dataset) or mask.ndim != 1 or mask.shape != values.shape:
+            raise UnsupportedH5ADLayout(f"{logical_name} has an invalid missing-value mask.")
+    return int(values.shape[0])
+
+
 def _validate_dataframe(group: Any, logical_name: str) -> tuple[str, list[str], int]:
     import h5py
 
@@ -91,9 +125,12 @@ def _validate_dataframe(group: Any, logical_name: str) -> tuple[str, list[str], 
     if not index_key or index_key not in group:
         raise UnsupportedH5ADLayout(f"{logical_name} does not declare a readable '_index'.")
     index = group[index_key]
-    if not isinstance(index, h5py.Dataset) or index.ndim != 1:
-        raise UnsupportedH5ADLayout(f"{logical_name} index must be a one-dimensional dataset.")
-    if _encoding_type(index) not in {"array", "string-array"}:
+    if _encoding_type(index) not in {
+        "array",
+        "string-array",
+        "categorical",
+        "nullable-string-array",
+    }:
         raise UnsupportedH5ADLayout(
             f"{logical_name} index has unsupported encoding-type "
             f"{_encoding_type(index) or 'missing'!r}."
@@ -104,17 +141,10 @@ def _validate_dataframe(group: Any, logical_name: str) -> tuple[str, list[str], 
     missing = [column for column in columns if column not in group]
     if missing:
         raise UnsupportedH5ADLayout(f"{logical_name} declares missing columns: {missing}.")
-    row_count = int(index.shape[0])
+    row_count = _encoded_row_count(index, f"{logical_name} index")
     for column in columns:
         element = group[column]
-        if isinstance(element, h5py.Dataset):
-            column_rows = element.shape[0] if element.ndim else -1
-        elif isinstance(element, h5py.Group) and "codes" in element:
-            column_rows = element["codes"].shape[0]
-        elif isinstance(element, h5py.Group) and "values" in element:
-            column_rows = element["values"].shape[0]
-        else:
-            column_rows = row_count
+        column_rows = _encoded_row_count(element, f"{logical_name}[{column!r}]")
         if column_rows != row_count:
             raise UnsupportedH5ADLayout(
                 f"{logical_name}[{column!r}] has {column_rows} rows; expected {row_count}."
@@ -161,7 +191,16 @@ def _read_column(element: Any, positions: np.ndarray, logical_name: str) -> Any:
         if _encoding_version(element) != "0.2.0" or not {"codes", "categories"}.issubset(element):
             raise UnsupportedH5ADLayout(f"{logical_name} has an invalid categorical encoding.")
         codes = _take(element["codes"], positions).astype(np.int64, copy=False)
-        categories = _decode(np.asarray(element["categories"][:]))
+        category_element = element["categories"]
+        category_count = _encoded_row_count(category_element, f"{logical_name} categories")
+        categories = np.asarray(
+            _read_column(
+                category_element,
+                np.arange(category_count, dtype=np.int64),
+                f"{logical_name} categories",
+            ),
+            dtype=object,
+        )
         if np.any(codes < -1) or np.any(codes >= len(categories)):
             raise UnsupportedH5ADLayout(f"{logical_name} categorical codes are out of range.")
         return pd.Categorical.from_codes(
@@ -183,6 +222,14 @@ def _read_column(element: Any, positions: np.ndarray, logical_name: str) -> Any:
     raise UnsupportedH5ADLayout(
         f"{logical_name} has unsupported encoding-type {encoding or 'missing'!r}."
     )
+
+
+def _read_index(group: Any, index_key: str, positions: np.ndarray, logical_name: str) -> list[str]:
+    values = _read_column(group[index_key], positions, f"{logical_name} index")
+    array = np.asarray(values, dtype=object)
+    if pd.isna(array).any():
+        raise UnsupportedH5ADLayout(f"{logical_name} index contains missing values.")
+    return [_text(value) for value in array]
 
 
 def _validate_h5ad_root(handle: Any) -> int:
@@ -217,7 +264,9 @@ def _positions_for_index(
     if selected_names is None:
         return np.arange(row_count, dtype=np.int64)
     index_key, _, _ = _validate_dataframe(group, "selected dataframe")
-    names = [_text(value) for value in _decode(np.asarray(group[index_key][:]))]
+    names = _read_index(
+        group, index_key, np.arange(row_count, dtype=np.int64), "selected dataframe"
+    )
     if len(set(names)) != len(names):
         raise UnsupportedH5ADLayout("Selected dataframe index contains duplicates.")
     lookup = {name: position for position, name in enumerate(names)}
@@ -244,9 +293,7 @@ def _read_dataframe_group(
         raise ValueError(
             f"Requested columns are missing from {logical_name}: {missing}. Available: {available}"
         )
-    index = pd.Index(
-        [_text(value) for value in _decode(_take(group[index_key], positions))], name=None
-    )
+    index = pd.Index(_read_index(group, index_key, positions, logical_name), name=None)
     data = {
         column: _read_column(group[column], positions, f"{logical_name}[{column!r}]")
         for column in selected
@@ -293,10 +340,15 @@ def read_h5ad_dataframe(
         if location == "obsm":
             obsm_index_key, _, _ = _validate_dataframe(group, f"obsm[{key!r}]")
             obs_index_key, _, _ = _validate_dataframe(handle["obs"], "obs")
-            obsm_index = [_text(value) for value in _decode(np.asarray(group[obsm_index_key][:]))]
-            obs_index = [
-                _text(value) for value in _decode(np.asarray(handle["obs"][obs_index_key][:]))
-            ]
+            obsm_index = _read_index(
+                group, obsm_index_key, np.arange(row_count, dtype=np.int64), f"obsm[{key!r}]"
+            )
+            obs_index = _read_index(
+                handle["obs"],
+                obs_index_key,
+                np.arange(obs_count, dtype=np.int64),
+                "obs",
+            )
             if obsm_index != obs_index:
                 raise UnsupportedH5ADLayout(
                     f"obsm[{key!r}] index does not exactly match the obs index."
