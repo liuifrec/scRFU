@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+Development version: `0.4.0rc1`. The intended next public release is 0.4.0;
+no release or tag has been created.
+
 ### Added
 
 - Canonical receptor rows; Wells, AIRR/scirpy, generic DataFrame, and Cell
@@ -24,6 +27,11 @@
   transfer summaries, explicit metadata harmonization, deterministic robustness
   utilities, and a common comparator representation interface.
 - Optional MuData-like modality routing without a mandatory MuData dependency.
+- Experimental BCR canonicalization, heavy/light pairing, QC, conservative
+  receptor-state features, and synthetic AnnData/MuData-like integration tests;
+  no BCR functional-unit reference is defined.
+- A redistributable synthetic end-to-end tutorial fixture, generated scaling
+  benchmark, and advisory performance-regression comparison utility.
 
 ### Changed
 
@@ -44,6 +52,11 @@
 - Ineligible and upstream-unassigned rows are retained explicitly.
 - Unsafe many-to-many CDR3 merges and unstable sequence-to-cell reconstruction
   were replaced by identifier-validated mappings.
+- VDJdb CDR3+V evidence queries now remain distinct from CDR3-based RFU
+  sequence identity, including heterogeneous or missing V calls without an
+  arbitrary V-gene collapse.
+- Missing R executables and malformed RFU wrapper outputs now produce explicit,
+  actionable failures rather than ambiguous subprocess/parser errors.
 - Map-aware identifier shifting, location-dependent subprocess tests, Python
   3.10 datetime handling, and large-H5AD expression materialization were
   corrected.
@@ -64,5 +77,5 @@
 - Legacy Wells caches can be migrated to the generic receptor-cache schema.
 - Serial execution remains the default. Parallelism requires explicit chunking
   and `max_workers > 1`.
-- The package version remains unchanged until the pre-existing Git tag/package
-  inconsistency is resolved; do not infer a release solely from this section.
+- The development version is `0.4.0rc1` because historical `v0.2.0` and
+  `v0.3.0` tags already exist. Do not infer a release solely from this section.

@@ -53,7 +53,19 @@ def build_parser() -> argparse.ArgumentParser:
         "--chunk-size",
         type=int,
         default=20_000,
-        help="Unique CDR3 queries per serial restartable chunk (default: 20000).",
+        help="Unique CDR3 queries per restartable chunk (default: 20000).",
+    )
+    parser.add_argument(
+        "--max-workers",
+        type=int,
+        default=1,
+        help="Independent RFU chunk workers (default: 1).",
+    )
+    parser.add_argument(
+        "--executor",
+        choices=("process", "thread"),
+        default="process",
+        help="Chunk executor used when max-workers is greater than one (default: process).",
     )
     chain_group = parser.add_mutually_exclusive_group()
     chain_group.add_argument(
@@ -251,6 +263,8 @@ def run_workflow(args: argparse.Namespace) -> int:
         threshold=args.threshold,
         deduplicate=True,
         chunk_size=args.chunk_size,
+        max_workers=args.max_workers,
+        executor=args.executor,
         resume=args.resume,
         force_recompute=args.force_recompute,
         workdir=outdir / "backend",
@@ -270,8 +284,10 @@ def run_workflow(args: argparse.Namespace) -> int:
         ],
     ]
     sequence_summary = eligible.groupby("unique_sequence_id", sort=False, as_index=False).agg(
-        cdr3aa=("cdr3aa", "first"), query_trbv=("trbv", "first"), multiplicity=("cell_id", "size")
+        cdr3aa=("cdr3aa", "first"), v_call=("trbv", "first"), multiplicity=("cell_id", "size")
     )
+    sequence_summary.insert(2, "chain", "TRB")
+    sequence_summary["query_trbv"] = sequence_summary["v_call"]
     sequence_assignments = eligible.drop_duplicates("unique_sequence_id", keep="first").loc[
         :,
         [
@@ -315,6 +331,8 @@ def run_workflow(args: argparse.Namespace) -> int:
         "selected_metadata_columns": list(receptor_data.obs.columns),
         "primary_chain": args.primary_chain,
         "max_cells": args.max_cells,
+        "max_workers": args.max_workers,
+        "executor": args.executor,
         "outputs": [
             "extracted_trb.tsv.gz",
             "receptors.tsv.gz",

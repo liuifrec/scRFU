@@ -4,6 +4,7 @@ import pandas as pd
 import pytest
 
 import scrfu
+from scrfu.comparators import _edit_distance, _edit_distance_within
 
 
 def _hash(character: str) -> str:
@@ -197,3 +198,24 @@ def test_comparator_representations_share_sample_interface(method: str) -> None:
     assert result.matrix.index.tolist() == ["s1", "s2"]
     assert result.parameters["unit"] == "biological_sample"
     assert result.matrix.shape[1] >= 1
+
+
+@pytest.mark.parametrize(
+    ("left", "right"),
+    [
+        ("", ""),
+        ("A", ""),
+        ("CASS", "CASS"),
+        ("CASS", "CASR"),
+        ("CASS", "CASSA"),
+        ("CASS", "CSS"),
+        ("CASSLG", "CASSPQ"),
+    ],
+)
+@pytest.mark.parametrize("threshold", [0, 1, 2, 3])
+def test_banded_edit_distance_threshold_matches_exact_distance(
+    left: str, right: str, threshold: int
+) -> None:
+    assert _edit_distance_within(left, right, threshold) is (
+        _edit_distance(left, right) <= threshold
+    )

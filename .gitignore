@@ -26,6 +26,10 @@ pip-wheel-metadata/
 *.tsv
 *.tsv.gz
 *.log
+!benchmarks/synthetic_python_baseline.tsv
+!src/scrfu/data/tutorial_bcr.tsv
+!src/scrfu/data/tutorial_receptors.tsv
+!src/scrfu/data/tutorial_vdjdb.tsv
 
 # Ruff/Mypy
 .mypy_cache/

@@ -414,6 +414,16 @@ def rfu_phenotype_coupling(
     counts = units.groupby([rfu_col, phenotype_key], observed=True).size().unstack(fill_value=0)
     counts = counts.reindex(columns=phenotypes, fill_value=0)
     all_sample_count = int(frame[sample_key].dropna().nunique()) if sample_key is not None else 0
+    if sample_key is not None:
+        phenotype_sample_counts = frame.groupby(phenotype_key, observed=True)[sample_key].nunique()
+        rfu_sample_counts = assigned.groupby(rfu_col, observed=True)[sample_key].nunique()
+        rfu_phenotype_sample_counts = assigned.groupby([rfu_col, phenotype_key], observed=True)[
+            sample_key
+        ].nunique()
+    else:
+        phenotype_sample_counts = pd.Series(dtype="int64")
+        rfu_sample_counts = pd.Series(dtype="int64")
+        rfu_phenotype_sample_counts = pd.Series(dtype="int64")
     rows: list[dict[str, Any]] = []
     for rfu in _ordered(counts.index):
         abundance = counts.loc[rfu]
@@ -424,8 +434,7 @@ def rfu_phenotype_coupling(
         normalized_entropy = entropy / math.log(len(phenotypes)) if len(phenotypes) > 1 else 0.0
         maximum = abundance.max()
         dominant = _ordered(abundance.index[abundance.eq(maximum)])[0]
-        rfu_assigned = assigned.loc[assigned[rfu_col].eq(rfu)]
-        recurrence = int(rfu_assigned[sample_key].dropna().nunique()) if sample_key else 0
+        recurrence = int(rfu_sample_counts.get(rfu, 0)) if sample_key else 0
         for phenotype in phenotypes:
             phenotype_abundance = int(abundance.loc[phenotype])
             row: dict[str, Any] = {
@@ -444,14 +453,8 @@ def rfu_phenotype_coupling(
                 "represented_phenotype_count": int((abundance > 0).sum()),
             }
             if sample_key is not None:
-                phenotype_samples = int(
-                    frame.loc[frame[phenotype_key].eq(phenotype), sample_key].dropna().nunique()
-                )
-                phenotype_recurrence = int(
-                    rfu_assigned.loc[rfu_assigned[phenotype_key].eq(phenotype), sample_key]
-                    .dropna()
-                    .nunique()
-                )
+                phenotype_samples = int(phenotype_sample_counts.get(phenotype, 0))
+                phenotype_recurrence = int(rfu_phenotype_sample_counts.get((rfu, phenotype), 0))
                 row.update(
                     {
                         "sample_recurrence_count": recurrence,

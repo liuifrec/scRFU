@@ -83,6 +83,32 @@ def _edit_distance(left: str, right: str) -> int:
     return previous[-1]
 
 
+def _edit_distance_within(left: str, right: str, threshold: int) -> bool:
+    """Return exact threshold membership using a bounded dynamic-programming band."""
+    if abs(len(left) - len(right)) > threshold:
+        return False
+    if threshold == 0:
+        return left == right
+    if len(left) > len(right):
+        left, right = right, left
+    limit = threshold + 1
+    previous = {index: index for index in range(min(len(right), threshold) + 1)}
+    for left_index, left_character in enumerate(left, start=1):
+        start = max(1, left_index - threshold)
+        stop = min(len(right), left_index + threshold)
+        current: dict[int, int] = {0: left_index} if left_index <= threshold else {}
+        for right_index in range(start, stop + 1):
+            current[right_index] = min(
+                current.get(right_index - 1, limit) + 1,
+                previous.get(right_index, limit) + 1,
+                previous.get(right_index - 1, limit) + (left_character != right[right_index - 1]),
+            )
+        if not current or min(current.values()) > threshold:
+            return False
+        previous = current
+    return previous.get(len(right), limit) <= threshold
+
+
 def _edit_distance_labels(sequences: pd.Series, threshold: int) -> pd.Series:
     unique = sorted(sequences.dropna().astype(str).unique())
     parent = {sequence: sequence for sequence in unique}
@@ -95,10 +121,7 @@ def _edit_distance_labels(sequences: pd.Series, threshold: int) -> pd.Series:
 
     for left_index, left in enumerate(unique):
         for right in unique[left_index + 1 :]:
-            if (
-                abs(len(left) - len(right)) <= threshold
-                and _edit_distance(left, right) <= threshold
-            ):
+            if _edit_distance_within(left, right, threshold):
                 left_root, right_root = find(left), find(right)
                 if left_root != right_root:
                     parent[max(left_root, right_root)] = min(left_root, right_root)

@@ -160,6 +160,19 @@ def test_grouping_baselines_are_tidy_and_deterministic() -> None:
     assert set(first["metric"]) == {"purity", "entropy", "same_antigen_pair_fraction"}
 
 
+def test_edit_distance_grouping_completes_or_records_scale_skip() -> None:
+    completed = compare_antigen_groupings(
+        _results(), _evidence(), groupings=("edit_distance",), max_edit_distance_sequences=10
+    )
+    assert completed["status"].eq("completed").all()
+    assert completed["group_count"].notna().all()
+    skipped = compare_antigen_groupings(
+        _results(), _evidence(), groupings=("edit_distance",), max_edit_distance_sequences=2
+    )
+    assert skipped["status"].eq("skipped").all()
+    assert skipped["reason"].str.contains("quadratic limit").all()
+
+
 def _baseline_case(*, rfu_coherent: bool) -> tuple[pd.DataFrame, pd.DataFrame]:
     results = pd.DataFrame(
         {

@@ -33,6 +33,8 @@ adapter and bounded public benchmark, not the data model.
 - Records immutable frozen-reference manifests and produces target-cohort
   coverage, pseudobulk, and harmonization diagnostics without refitting the RFU
   reference in the target cohort.
+- Provides explicitly experimental BCR canonicalization, heavy/light pairing,
+  QC, and conservative receptor-state features without applying TCR RFUs.
 
 ## What scRFU Does Not Do
 
@@ -41,7 +43,8 @@ adapter and bounded public benchmark, not the data model.
 - scRFU does not download real datasets.
 - scRFU does not bundle or silently download VDJdb, and a database match is not
   proof that an RFU is antigen-specific.
-- B-cell/ALFU support is design-only future work.
+- Experimental BCR preprocessing is not a validated BCR functional-unit model;
+  no frozen BCR reference is shipped or claimed.
 - Current longitudinal and transfer APIs are methodological foundations; they
   are not population-level evidence until evaluated on independent cohorts.
 - Accepting IGH/IGK/IGL rows in the receptor schema does not constitute a BCR
@@ -74,6 +77,11 @@ records hashes and detected optional capabilities, but the files remain outside
 this repository.
 
 ## Quickstart
+
+For a runnable data-free walkthrough, see
+[`docs/tutorial.md`](docs/tutorial.md). The default tutorial uses synthetic
+fixtures and clearly labelled mock assignments; real RFU execution remains an
+explicit external-backend step.
 
 ```python
 import scrfu

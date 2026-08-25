@@ -1,0 +1,7 @@
+barcode	contig_id	locus	junction_aa	junction	v_gene	d_gene	j_gene	constant	is_productive	clone_id	family_id	v_identity
+b01	b01_h	IGH	CARAAA	TGT	IGHV1	IGHD1	IGHJ1	IGHM*01	true	bclone1	bfamily1	99%
+b01	b01_k	IGK	CQQAA	TGT	IGKV1		IGKJ1	IGKC	true	bclone1	bfamily1	100%
+b02	b02_h	IGH	CARCCC	TGT	IGHV2	IGHD2	IGHJ2	IGHG1*01	true	bclone2	bfamily2	95%
+b02	b02_l	IGL	CQQCC	TGT	IGLV2		IGLJ2	IGLC	true	bclone2	bfamily2	98%
+b03	b03_h_low	IGH	CARDDE	TGT	IGHV3	IGHD3	IGHJ3	IGHA1*01	false	bclone3	bfamily3	90%
+b03	b03_h	IGH	CARDDD	TGT	IGHV3	IGHD3	IGHJ3	IGHA1*01	true	bclone3	bfamily3	92%

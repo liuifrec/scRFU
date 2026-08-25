@@ -7,6 +7,11 @@ from pathlib import Path
 
 import scrfu
 
+try:
+    import tomllib
+except ModuleNotFoundError:  # pragma: no cover - Python 3.10 compatibility
+    import tomli as tomllib
+
 ROOT = Path(__file__).parents[1]
 
 
@@ -17,6 +22,20 @@ def test_package_metadata_has_no_placeholders_and_correct_urls() -> None:
     assert 'Homepage = "https://github.com/liuifrec/scRFU"' in metadata
     assert 'Repository = "https://github.com/liuifrec/scRFU"' in metadata
     assert 'Issues = "https://github.com/liuifrec/scRFU/issues"' in metadata
+
+
+def test_package_metadata_policy_and_citation_are_consistent() -> None:
+    metadata = tomllib.loads((ROOT / "pyproject.toml").read_text())
+    project = metadata["project"]
+    assert project["requires-python"] == ">=3.10"
+    assert project["authors"] == [{"name": "Yu-Chen Liu", "email": "liu_y@rerf.or.jp"}]
+    classifiers = set(project["classifiers"])
+    for minor in (10, 11, 12):
+        assert f"Programming Language :: Python :: 3.{minor}" in classifiers
+    citation = (ROOT / "CITATION.cff").read_text()
+    assert f"version: {scrfu.__version__}" in citation
+    assert "orcid" not in citation.lower()
+    assert "doi" not in citation.lower()
 
 
 def test_runtime_version_matches_declared_version_source() -> None:

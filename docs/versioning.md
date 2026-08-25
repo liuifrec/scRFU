@@ -1,15 +1,13 @@
 # Versioning and release policy
 
-The source package currently reports 0.1.0. Historical Git tags and package
-metadata have not been demonstrated to be mutually consistent, so no existing
-tag is treated as a methods-paper release solely by its name. This Month 1 work
-does not change, move, or create tags and does not change the package version.
+The source package now reports the unreleased development version `0.4.0rc1`.
+Historical Git tags `v0.2.0` and `v0.3.0` already exist, so the next coherent
+public release line is 0.4.0. No historical tag is moved or reused, and this
+development version is not itself a tag or published release.
 
-Before the next release, inspect each historical tag, confirm whether it is
-annotated or lightweight, compare its package version, and document whether a
-GitHub Release exists. The next version must not reuse a historical tag. Given
-existing `v0.2.0` and `v0.3.0` names, 0.4.0 is the default recommendation unless
-the audit establishes a different coherent policy.
+Before the final 0.4.0 release, confirm that runtime, wheel, sdist, changelog,
+release notes, and the future tag all report 0.4.0. The release candidate must
+not be published or tagged until clean-install and integration gates pass.
 
 For every future release:
 

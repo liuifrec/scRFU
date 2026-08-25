@@ -48,6 +48,17 @@ def test_cli_parser_requires_subcommand():
         parser.parse_args([])
 
 
+@pytest.mark.parametrize(
+    "subcommand",
+    ["call-rfu", "prepare-wells", "prepare-receptors", "migrate-receptor-cache"],
+)
+def test_every_cli_subcommand_has_help(subcommand: str, capsys) -> None:
+    with pytest.raises(SystemExit) as error:
+        main([subcommand, "--help"])
+    assert error.value.code == 0
+    assert "usage:" in capsys.readouterr().out
+
+
 def test_cli_parser_allows_rfu_dir_environment_fallback():
     parser = build_parser()
 

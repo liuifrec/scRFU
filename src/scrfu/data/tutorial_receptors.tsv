@@ -1,0 +1,13 @@
+input_row_id	cell_id	chain	cdr3aa	v_call	productive	source_adapter	source_row_id	sample	donor	time	phenotype	clonotype_id	mock_rfu_id	mock_rfu_label	mock_rfu_score	mock_pass_thr
+r01	c01	TRB	CASSAAA	TRBV7-9	true	synthetic_tutorial	r01	d1_t0	d1	0	state_a	clone01	1	RFU1	0.91	true
+r02	c02	TRB	CASSDDD	TRBV2	true	synthetic_tutorial	r02	d1_t0	d1	0	state_b	clone02	2	RFU2	0.82	true
+r03	c03	TRB	CASSAAA	TRBV1	true	synthetic_tutorial	r03	d1_t1	d1	1	state_a	clone01	1	RFU1	0.91	true
+r04	c04	TRB	CASSGGG	TRBV3	true	synthetic_tutorial	r04	d1_t1	d1	1	state_b	clone03	3	RFU3	0.55	false
+r05	c05	TRB	CASSLLL	TRBV4	true	synthetic_tutorial	r05	d2_t0	d2	0	state_a	clone04	4	RFU4	0.78	true
+r06	c06	TRB	CASSMMM	TRBV5	true	synthetic_tutorial	r06	d2_t0	d2	0	state_b	clone05	1	RFU1	0.88	true
+r07	c07	TRB	CASSLLL	TRBV4	true	synthetic_tutorial	r07	d2_t1	d2	1	state_a	clone04	4	RFU4	0.78	true
+r08	c08	TRB	CASSNNN	TRBV6	true	synthetic_tutorial	r08	d2_t1	d2	1	state_b	clone06	2	RFU2	0.58	false
+r09	c09	TRB	CASSPPP	TRBV10	true	synthetic_tutorial	r09	d3_t0	d3	0	state_a	clone07	5	RFU5	0.73	true
+r10	c10	TRB	CASSQQQ	TRBV11	true	synthetic_tutorial	r10	d3_t0	d3	0	state_b	clone08	5	RFU5	0.69	true
+r11	c11	TRB	CASSPPP	TRBV10	true	synthetic_tutorial	r11	d3_t1	d3	1	state_a	clone07	5	RFU5	0.73	true
+r12	c12	TRB	CASSDDD	TRBV2	true	synthetic_tutorial	r12	d3_t1	d3	1	state_b	clone02	2	RFU2	0.82	true

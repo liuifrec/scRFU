@@ -1,0 +1,10 @@
+cff-version: 1.2.0
+message: "If you use scRFU, please cite the software and the upstream RFU method."
+title: "scRFU: transferable frozen-reference receptor-state analysis"
+type: software
+authors:
+  - family-names: Liu
+    given-names: Yu-Chen
+version: 0.4.0rc1
+repository-code: "https://github.com/liuifrec/scRFU"
+license: MIT

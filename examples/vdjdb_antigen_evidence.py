@@ -124,11 +124,13 @@ def run_analysis(
         release_label=vdjdb_release,
         expected_sha256=expected_sha256,
     )
+    evidence_input = rows if rows is not None else sequences
     evidence = tl.annotate_vdjdb(
-        sequences,
+        evidence_input,
         reference,
         match_mode=match_mode,
         v_gene_mode=v_gene_mode,
+        expand_rows=False,
     )
     sequence_summaries = tl.summarize_vdjdb_evidence(sequences, evidence)
     row_summary = None
@@ -158,7 +160,14 @@ def run_analysis(
     comparison = tl.compare_antigen_groupings(
         sequences,
         evidence,
-        groupings=("rfu", "trbv", "cdr3_length", "trbv_cdr3_length", "size_matched_random"),
+        groupings=(
+            "rfu",
+            "trbv",
+            "cdr3_length",
+            "trbv_cdr3_length",
+            "size_matched_random",
+            "edit_distance",
+        ),
         assignment_policy=assignment_policy,
         ambiguity_policy=ambiguity_policy,
         random_state=random_state,
@@ -286,6 +295,7 @@ def run_analysis(
         "join_qc": join_qc,
         "dimensions": {
             "evidence_rows": len(evidence),
+            "matched_query_variants": int(evidence["match_query_id"].nunique()),
             "matched_unique_sequences": int(evidence["unique_sequence_id"].nunique()),
             "matched_rfus": int(
                 sequences.loc[
@@ -295,6 +305,17 @@ def run_analysis(
             ),
             "coherence_rows": len(coherence),
             "comparison_rows": len(comparison),
+            "ambiguous_matched_sequences": int(
+                sequence_summaries.sequence_summary["antigen_ambiguity"].sum()
+            ),
+            "ambiguous_matched_sequence_fraction": float(
+                sequence_summaries.sequence_summary.loc[
+                    sequence_summaries.sequence_summary["has_vdjdb_evidence"],
+                    "antigen_ambiguity",
+                ].mean()
+            )
+            if sequence_summaries.sequence_summary["has_vdjdb_evidence"].any()
+            else 0.0,
         },
         "permutation": permutation_summary,
         "plots": plots,

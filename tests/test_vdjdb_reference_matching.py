@@ -124,6 +124,123 @@ def test_exact_matching_tiers_ambiguity_and_safe_reconstruction() -> None:
     ]
 
 
+def test_cdr3_identity_and_cdr3_v_match_queries_remain_distinct() -> None:
+    reference = load_vdjdb_reference(_reference_frame(), release_label="snapshot-1")
+    sequence_query = _queries().iloc[[0]].copy()
+    repeated = pd.concat(
+        [
+            sequence_query,
+            sequence_query.assign(input_row_id="r5", cell_id="c5", v_call="TRBV1"),
+            sequence_query.assign(input_row_id="r6", cell_id="c6", v_call=pd.NA),
+        ],
+        ignore_index=True,
+    )
+
+    cdr3_evidence = annotate_vdjdb(repeated, reference, match_mode="cdr3")
+    cdr3_summary = summarize_vdjdb_evidence(repeated, cdr3_evidence)
+
+    assert cdr3_evidence["match_query_id"].nunique() == 1
+    assert len(cdr3_summary.sequence_summary) == 1
+    assert len(cdr3_summary.row_summary) == len(repeated)
+    assert cdr3_summary.row_summary["input_row_id"].tolist() == repeated["input_row_id"].tolist()
+    assert cdr3_summary.row_summary["has_vdjdb_evidence"].all()
+
+    cdr3_v_evidence = annotate_vdjdb(repeated, reference, match_mode="cdr3_v")
+    assert cdr3_v_evidence["unique_sequence_id"].nunique() == 1
+    assert cdr3_v_evidence["match_query_id"].nunique() == 1
+    assert set(cdr3_v_evidence["input_row_id"]) == {"r1"}
+    cdr3_v_summary = summarize_vdjdb_evidence(repeated, cdr3_v_evidence)
+    assert len(cdr3_v_summary.row_summary) == len(repeated)
+    assert cdr3_v_summary.row_summary["input_row_id"].tolist() == repeated["input_row_id"].tolist()
+    assert cdr3_v_summary.row_summary["has_vdjdb_evidence"].tolist() == [True, False, False]
+    assert pd.isna(cdr3_v_summary.sequence_summary.loc[0, "v_call"])
+
+
+def test_cdr3_v_retains_multiple_v_queries_for_one_rfu_sequence() -> None:
+    reference = load_vdjdb_reference(
+        pd.DataFrame(
+            {
+                "cdr3aa": ["CASSAAA", "CASSAAA"],
+                "v_call": ["TRBV7-9*01", "TRBV1*01"],
+                "chain": ["TRB", "TRB"],
+                "epitope": ["A", "B"],
+            }
+        ),
+        release_label="multi-v",
+    )
+    rows = pd.DataFrame(
+        {
+            "input_row_id": ["r3", "r1", "r2", "r4"],
+            "unique_sequence_id": ["s1"] * 4,
+            "cdr3aa": ["CASSAAA"] * 4,
+            "v_call": ["TRBV1*02", "TRBV7-9*03", "TRBV7-9*01", pd.NA],
+            "chain": ["TRB"] * 4,
+            "rfu_label": ["RFU1"] * 4,
+            "pass_thr": [True] * 4,
+        }
+    )
+
+    evidence = annotate_vdjdb(rows, reference, match_mode="cdr3_v")
+    compact = annotate_vdjdb(rows, reference, match_mode="cdr3_v", expand_rows=False)
+
+    assert evidence["unique_sequence_id"].unique().tolist() == ["s1"]
+    assert evidence["match_query_id"].nunique() == 2
+    assert evidence.groupby("match_query_id")["query_v_call"].nunique().eq(1).all()
+    assert set(evidence["input_row_id"]) == {"r1", "r2", "r3"}
+    assert (
+        evidence.loc[evidence["input_row_id"].isin(["r1", "r2"]), "match_query_id"].nunique() == 1
+    )
+    summary = summarize_vdjdb_evidence(rows, evidence)
+    assert summary.row_summary["input_row_id"].tolist() == rows["input_row_id"].tolist()
+    assert summary.row_summary["has_vdjdb_evidence"].tolist() == [True, True, True, False]
+    assert len(compact) == 2
+    assert compact["match_query_id"].nunique() == 2
+    assert "input_row_id" not in compact
+    compact_summary = summarize_vdjdb_evidence(rows, compact)
+    assert compact_summary.row_summary["has_vdjdb_evidence"].tolist() == [
+        True,
+        True,
+        True,
+        False,
+    ]
+
+    shuffled = annotate_vdjdb(rows.sample(frac=1, random_state=4), reference, match_mode="cdr3_v")
+    expected = evidence.set_index("input_row_id")["match_query_id"].to_dict()
+    observed = shuffled.set_index("input_row_id")["match_query_id"].to_dict()
+    assert observed == expected
+
+
+def test_same_cdr3_different_chains_have_distinct_match_queries() -> None:
+    reference = load_vdjdb_reference(
+        pd.DataFrame(
+            {
+                "cdr3aa": ["CASSAAA", "CASSAAA"],
+                "v_call": ["TRBV1*01", "TRAV1*01"],
+                "chain": ["TRB", "TRA"],
+                "epitope": ["B", "A"],
+            }
+        ),
+        release_label="multi-chain",
+    )
+    rows = pd.DataFrame(
+        {
+            "input_row_id": ["trb", "tra"],
+            "unique_sequence_id": ["s_trb", "s_tra"],
+            "cdr3aa": ["CASSAAA", "CASSAAA"],
+            "v_call": ["TRBV1", "TRAV1"],
+            "chain": ["TRB", "TRA"],
+        }
+    )
+
+    evidence = annotate_vdjdb(rows, reference, match_mode="cdr3_v", chain=None)
+
+    assert evidence["match_query_id"].nunique() == 2
+    assert evidence.set_index("input_row_id")["matched_chain"].to_dict() == {
+        "trb": "TRB",
+        "tra": "TRA",
+    }
+
+
 def test_exact_allele_mode_chain_mismatch_and_no_match() -> None:
     reference = load_vdjdb_reference(_reference_frame(), release_label="snapshot-1")
     exact = annotate_vdjdb(_queries(), reference, match_mode="cdr3_v", v_gene_mode="exact")

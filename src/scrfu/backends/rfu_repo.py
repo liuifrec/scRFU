@@ -323,7 +323,13 @@ class RFURepoBackend:
             "--threshold",
             str(float(threshold)),
         ] + list(extra_args)
-        proc = subprocess.run(cmd, capture_output=True, text=True)
+        try:
+            proc = subprocess.run(cmd, capture_output=True, text=True)
+        except FileNotFoundError as exc:
+            raise RFUConfigurationError(
+                f"R executable {self.rscript_bin!r} was not found. Install R or pass "
+                "rscript_bin='/path/to/Rscript'. No RFU result was produced."
+            ) from exc
         if proc.returncode != 0:
             raise RFUChunkError(
                 "RFURepoBackend execution failed.\n"
@@ -339,7 +345,14 @@ class RFURepoBackend:
                 stdout=proc.stdout,
                 stderr=proc.stderr,
             )
-        assignments = pd.read_csv(output_path, sep="\t")
+        try:
+            assignments = pd.read_csv(output_path, sep="\t")
+        except (OSError, UnicodeDecodeError, pd.errors.ParserError) as exc:
+            raise RFUChunkError(
+                f"RFU wrapper output is unreadable or malformed: {output_path}",
+                stdout=proc.stdout,
+                stderr=proc.stderr,
+            ) from exc
         required = {
             "unique_sequence_id",
             "rfu_id",

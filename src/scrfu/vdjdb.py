@@ -317,6 +317,7 @@ def _prepare_queries(
     *,
     chain: str | None,
     v_gene_mode: str,
+    consistency_fields: Sequence[str] = ("_cdr3_norm", "_chain_norm"),
     cdr3_col: str = "cdr3aa",
     v_col: str = "v_call",
     chain_col: str = "chain",
@@ -329,16 +330,24 @@ def _prepare_queries(
     if frame["input_row_id"].isna().any() or frame["input_row_id"].duplicated().any():
         raise ValueError("VDJdb matching requires unique, non-missing input_row_id values.")
     frame["_source_order"] = range(len(frame))
-    frame["_cdr3_norm"] = frame[cdr3_col].map(normalize_vdjdb_cdr3).astype("string")
+    frame["_cdr3_norm"] = (
+        frame["_cdr3_norm"].astype("string")
+        if "_cdr3_norm" in frame
+        else frame[cdr3_col].map(normalize_vdjdb_cdr3).astype("string")
+    )
     frame["_v_norm"] = (
-        frame[v_col]
+        frame["_v_norm"].astype("string")
+        if "_v_norm" in frame
+        else frame[v_col]
         .map(lambda value: normalize_vdjdb_v_gene(value, mode=v_gene_mode))
         .astype("string")
         if v_col in frame
         else pd.Series(pd.NA, index=frame.index, dtype="string")
     )
     frame["_chain_norm"] = (
-        frame[chain_col].map(normalize_chain).astype("string")
+        frame["_chain_norm"].astype("string")
+        if "_chain_norm" in frame
+        else frame[chain_col].map(normalize_chain).astype("string")
         if chain_col in frame
         else pd.Series(pd.NA, index=frame.index, dtype="string")
     )
@@ -346,20 +355,50 @@ def _prepare_queries(
         selected_chain = normalize_chain(chain)
         frame = frame.loc[frame["_chain_norm"].eq(selected_chain).fillna(False)].copy()
     if "unique_sequence_id" not in frame:
-        keys = list(zip(frame["_cdr3_norm"], frame["_v_norm"], frame["_chain_norm"], strict=True))
-        lookup: dict[tuple[Any, ...], str] = {}
-        ids: list[str] = []
-        for key in keys:
-            if key not in lookup:
-                lookup[key] = f"query_{len(lookup):09d}"
-            ids.append(lookup[key])
-        frame["unique_sequence_id"] = ids
+        frame["unique_sequence_id"] = [
+            _stable_query_id("sequence", (cdr3, receptor_chain))
+            for cdr3, receptor_chain in zip(frame["_cdr3_norm"], frame["_chain_norm"], strict=True)
+        ]
+    unknown_consistency = sorted(
+        set(consistency_fields).difference({"_cdr3_norm", "_v_norm", "_chain_norm"})
+    )
+    if unknown_consistency:
+        raise ValueError(f"Unknown query consistency fields: {unknown_consistency}")
     consistency = frame.groupby("unique_sequence_id", observed=True)[
-        ["_cdr3_norm", "_v_norm", "_chain_norm"]
+        list(consistency_fields)
     ].nunique(dropna=False)
     if (consistency > 1).any().any():
-        raise ValueError("A unique_sequence_id maps to conflicting receptor features.")
+        raise ValueError(
+            "A unique_sequence_id maps to conflicting receptor features required by this "
+            f"operation: {list(consistency_fields)}."
+        )
     return frame
+
+
+def _stable_query_id(prefix: str, values: Sequence[Any]) -> str:
+    """Return an order-independent identifier for normalized match features."""
+    payload = "\x1f".join("<missing>" if pd.isna(value) else str(value) for value in values)
+    return f"{prefix}_{hashlib.sha256(payload.encode()).hexdigest()}"
+
+
+def _add_match_query_ids(frame: pd.DataFrame, *, match_mode: str) -> pd.DataFrame:
+    result = frame.copy()
+    if match_mode == "cdr3":
+        fields = ("_chain_norm", "_cdr3_norm")
+    elif match_mode == "cdr3_v":
+        fields = ("_chain_norm", "_cdr3_norm", "_v_norm")
+    elif match_mode == "paired_exact":
+        fields = ["_chain_norm", "_cdr3_norm", "_v_norm", "_paired_cdr3_norm"]
+        if "_paired_v_norm" in result:
+            fields.append("_paired_v_norm")
+        fields = tuple(fields)
+    else:  # pragma: no cover - guarded by the public API
+        raise ValueError(f"Unsupported VDJdb match mode {match_mode!r}.")
+    result["match_query_id"] = [
+        _stable_query_id(f"vdjdb_{match_mode}", values)
+        for values in zip(*(result[field] for field in fields), strict=True)
+    ]
+    return result
 
 
 def annotate_vdjdb(
@@ -369,8 +408,14 @@ def annotate_vdjdb(
     match_mode: str = "cdr3_v",
     chain: str | None = "TRB",
     v_gene_mode: str = "strip_allele",
+    expand_rows: bool = True,
 ) -> pd.DataFrame:
-    """Return cell/input-row-expanded exact evidence without mutating query results."""
+    """Return exact evidence without mutating receptor or RFU identities.
+
+    By default, evidence is expanded to matching input rows for compatibility.
+    Set ``expand_rows=False`` for the authoritative, scalable representation with
+    one record per RFU-sequence/match-query/reference combination.
+    """
     if not isinstance(reference, VDJdbReference):
         raise TypeError("reference must be loaded with load_vdjdb_reference().")
     if match_mode not in {"cdr3", "cdr3_v", "paired_exact"}:
@@ -391,17 +436,14 @@ def annotate_vdjdb(
     if chain is not None:
         selected_chain = normalize_chain(chain)
         refs = refs.loc[refs["_chain_norm"].isna() | refs["_chain_norm"].eq(selected_chain)].copy()
-    unique = queries.drop_duplicates("unique_sequence_id", keep="first").copy()
     keys = ["_cdr3_norm"]
     if match_mode in {"cdr3_v", "paired_exact"}:
-        if unique["_v_norm"].isna().any():
-            unique = unique.loc[unique["_v_norm"].notna()].copy()
         refs = refs.loc[refs["_v_norm"].notna()].copy()
         keys.append("_v_norm")
     if match_mode == "paired_exact":
         required = ["paired_cdr3aa"]
         missing = [
-            column for column in required if column not in unique or unique[column].isna().all()
+            column for column in required if column not in queries or queries[column].isna().all()
         ]
         if missing or refs["paired_cdr3aa"].isna().all():
             raise ValueError(
@@ -410,23 +452,15 @@ def annotate_vdjdb(
         queries["_paired_cdr3_norm"] = (
             queries["paired_cdr3aa"].map(normalize_vdjdb_cdr3).astype("string")
         )
-        paired_consistency = queries.groupby("unique_sequence_id", observed=True)[
-            "_paired_cdr3_norm"
-        ].nunique(dropna=False)
-        if (paired_consistency > 1).any():
-            raise ValueError("A unique_sequence_id maps to conflicting paired CDR3 sequences.")
-        unique["_paired_cdr3_norm"] = (
-            unique["paired_cdr3aa"].map(normalize_vdjdb_cdr3).astype("string")
-        )
         refs["_paired_cdr3_norm"] = refs["paired_cdr3aa"].map(normalize_vdjdb_cdr3).astype("string")
         keys.append("_paired_cdr3_norm")
         if (
-            "paired_v_call" in unique
-            and unique["paired_v_call"].notna().any()
+            "paired_v_call" in queries
+            and queries["paired_v_call"].notna().any()
             and refs["paired_v_call"].notna().any()
         ):
-            unique["_paired_v_norm"] = (
-                unique["paired_v_call"]
+            queries["_paired_v_norm"] = (
+                queries["paired_v_call"]
                 .map(lambda value: normalize_vdjdb_v_gene(value, mode=v_gene_mode))
                 .astype("string")
             )
@@ -436,6 +470,22 @@ def annotate_vdjdb(
                 .astype("string")
             )
             keys.append("_paired_v_norm")
+    queries = _add_match_query_ids(queries, match_mode=match_mode)
+    unique = queries.drop_duplicates("match_query_id", keep="first").copy()
+    if match_mode in {"cdr3_v", "paired_exact"}:
+        unique = unique.loc[unique["_v_norm"].notna()].copy()
+    query_specific = {
+        "unique_sequence_id",
+        "input_row_id",
+        "_source_order",
+        "cell_id",
+        "source_row_id",
+        "rfu_label",
+        "pass_thr",
+    }
+    unique = unique.drop(
+        columns=[column for column in query_specific if column in unique], errors="ignore"
+    )
     refs = refs.rename(
         columns={
             "cdr3aa": "matched_cdr3aa",
@@ -476,8 +526,8 @@ def annotate_vdjdb(
         | matched["_chain_norm"].isna()
         | matched["_reference_chain_norm"].eq(matched["_chain_norm"])
     ].copy()
-    if matched.duplicated(["unique_sequence_id", "reference_row_id"]).any():
-        raise ValueError("VDJdb matching produced duplicate sequence/reference pairs.")
+    if matched.duplicated(["match_query_id", "reference_row_id"]).any():
+        raise ValueError("VDJdb matching produced duplicate match-query/reference pairs.")
     matched = matched.rename(
         columns={
             "_cdr3_norm": "query_cdr3aa",
@@ -494,8 +544,21 @@ def annotate_vdjdb(
     matched["evidence_tier"] = tier
     matched["reference_release"] = reference.provenance["release_label"]
     matched["reference_sha256"] = reference.provenance["sha256"]
+    if match_mode == "cdr3":
+        matched["query_v_call"] = pd.NA
+    query_links = queries[["unique_sequence_id", "match_query_id"]].drop_duplicates()
+    matched = matched.merge(
+        query_links,
+        on="match_query_id",
+        how="left",
+        sort=False,
+        validate="many_to_many",
+    )
+    if matched.duplicated(["unique_sequence_id", "match_query_id", "reference_row_id"]).any():
+        raise RuntimeError("VDJdb match-query evidence contains duplicate records.")
     sequence_evidence_columns = [
         "unique_sequence_id",
+        "match_query_id",
         "query_cdr3aa",
         "query_v_call",
         "query_chain",
@@ -523,7 +586,12 @@ def annotate_vdjdb(
         "reference_sha256",
     ]
     matched = matched.reindex(columns=sequence_evidence_columns)
+    if not expand_rows:
+        return matched.sort_values(
+            ["unique_sequence_id", "match_query_id", "reference_row_id"], kind="stable"
+        ).reset_index(drop=True)
     row_columns = [
+        "match_query_id",
         "unique_sequence_id",
         "input_row_id",
         "_source_order",
@@ -534,14 +602,17 @@ def annotate_vdjdb(
         ],
     ]
     expected_rows = int(
-        matched.groupby("unique_sequence_id", observed=True)
+        matched.groupby(["unique_sequence_id", "match_query_id"], observed=True)
         .size()
-        .mul(queries.groupby("unique_sequence_id", observed=True).size(), fill_value=0)
+        .mul(
+            queries.groupby(["unique_sequence_id", "match_query_id"], observed=True).size(),
+            fill_value=0,
+        )
         .sum()
     )
     evidence = matched.merge(
         queries[row_columns],
-        on="unique_sequence_id",
+        on=["unique_sequence_id", "match_query_id"],
         how="left",
         sort=False,
         validate="many_to_many",
@@ -554,6 +625,7 @@ def annotate_vdjdb(
     evidence = evidence.sort_values(["_source_order", "reference_row_id"], kind="stable")
     output = [
         "unique_sequence_id",
+        "match_query_id",
         "input_row_id",
         *[
             column
@@ -591,47 +663,126 @@ def annotate_vdjdb(
 
 def summarize_vdjdb_evidence(queries: Any, evidence: pd.DataFrame) -> VDJdbEvidenceSummary:
     """Summarize authoritative long evidence without selecting an ambiguous epitope."""
-    rows = _prepare_queries(queries, chain=None, v_gene_mode="strip_allele")
-    sequences = rows.drop_duplicates("unique_sequence_id", keep="first")
+    match_modes = (
+        evidence.get("match_mode", pd.Series(dtype="string")).dropna().astype(str).unique()
+    )
+    match_mode = match_modes[0] if len(match_modes) == 1 else "cdr3"
+    rows = _prepare_queries(
+        queries,
+        chain=None,
+        v_gene_mode="strip_allele",
+        consistency_fields=("_cdr3_norm", "_chain_norm"),
+    )
+    rows = _add_match_query_ids(rows, match_mode=match_mode)
+    sequences = rows.drop_duplicates("unique_sequence_id", keep="first").copy()
+    v_counts = rows.groupby("unique_sequence_id", observed=True)["_v_norm"].nunique(dropna=False)
+    heterogeneous_v = sequences["unique_sequence_id"].map(v_counts).gt(1)
+    sequences.loc[heterogeneous_v, "_v_norm"] = pd.NA
     pairs = evidence.drop_duplicates(["unique_sequence_id", "reference_row_id"]).copy()
-    summaries: list[dict[str, Any]] = []
-    for sequence_id in sequences["unique_sequence_id"]:
-        subset = pairs.loc[pairs["unique_sequence_id"].eq(sequence_id)]
-        epitopes = (
-            sorted(subset["epitope"].dropna().astype(str).unique()) if "epitope" in subset else []
+    summary_columns = [
+        "unique_sequence_id",
+        "evidence_record_count",
+        "distinct_epitope_count",
+        "maximum_evidence_score",
+        "evidence_tiers",
+        "dominant_epitope",
+        "antigen_ambiguity",
+        "has_vdjdb_evidence",
+    ]
+    if pairs.empty:
+        summaries = pd.DataFrame(columns=summary_columns)
+    else:
+        pairs["_score"] = pd.to_numeric(pairs.get("evidence_score"), errors="coerce")
+        grouped = pairs.groupby("unique_sequence_id", observed=True, sort=False)
+        summaries = grouped.agg(
+            evidence_record_count=("reference_row_id", "size"),
+            distinct_epitope_count=("epitope", "nunique"),
+            maximum_evidence_score=("_score", "max"),
+            evidence_tiers=(
+                "evidence_tier",
+                lambda values: "|".join(sorted(values.dropna().astype(str).unique())),
+            ),
+        ).reset_index()
+        single = (
+            pairs.loc[pairs["epitope"].notna()]
+            .groupby("unique_sequence_id", observed=True)["epitope"]
+            .agg(lambda values: sorted(values.astype(str).unique())[0])
         )
-        tiers = (
-            sorted(subset["evidence_tier"].dropna().astype(str).unique())
-            if "evidence_tier" in subset
-            else []
-        )
-        score = pd.to_numeric(subset.get("evidence_score", pd.Series(dtype=float)), errors="coerce")
-        summaries.append(
-            {
-                "unique_sequence_id": sequence_id,
-                "has_vdjdb_evidence": not subset.empty,
-                "evidence_record_count": len(subset),
-                "distinct_epitope_count": len(epitopes),
-                "dominant_epitope": epitopes[0] if len(epitopes) == 1 else pd.NA,
-                "antigen_ambiguity": len(epitopes) > 1,
-                "maximum_evidence_score": float(score.max())
-                if score.notna().any()
-                else float("nan"),
-                "evidence_tiers": "|".join(tiers),
-            }
-        )
+        summaries["dominant_epitope"] = summaries["unique_sequence_id"].map(single)
+        summaries.loc[summaries["distinct_epitope_count"].ne(1), "dominant_epitope"] = pd.NA
+        summaries["antigen_ambiguity"] = summaries["distinct_epitope_count"].gt(1)
+        summaries["has_vdjdb_evidence"] = True
     sequence_summary = (
         sequences[["unique_sequence_id", "_cdr3_norm", "_v_norm", "_chain_norm"]]
         .rename(columns={"_cdr3_norm": "cdr3aa", "_v_norm": "v_call", "_chain_norm": "chain"})
-        .merge(pd.DataFrame(summaries), on="unique_sequence_id", how="left", validate="one_to_one")
+        .merge(summaries, on="unique_sequence_id", how="left", validate="one_to_one")
     )
-    row_summary = rows.drop(columns=[column for column in rows if column.startswith("_")]).merge(
-        sequence_summary.drop(columns=["cdr3aa", "v_call", "chain"]),
-        on="unique_sequence_id",
+    sequence_summary["has_vdjdb_evidence"] = sequence_summary["has_vdjdb_evidence"].eq(True)
+    sequence_summary["evidence_record_count"] = (
+        sequence_summary["evidence_record_count"].fillna(0).astype(int)
+    )
+    sequence_summary["distinct_epitope_count"] = (
+        sequence_summary["distinct_epitope_count"].fillna(0).astype(int)
+    )
+    sequence_summary["antigen_ambiguity"] = sequence_summary["antigen_ambiguity"].eq(True)
+    sequence_summary["evidence_tiers"] = sequence_summary["evidence_tiers"].fillna("")
+
+    query_pairs = evidence.drop_duplicates(["match_query_id", "reference_row_id"]).copy()
+    query_summary_columns = [
+        "match_query_id",
+        "has_vdjdb_evidence",
+        "evidence_record_count",
+        "distinct_epitope_count",
+        "maximum_evidence_score",
+        "evidence_tiers",
+        "antigen_ambiguity",
+        "dominant_epitope",
+    ]
+    if query_pairs.empty:
+        query_summaries = pd.DataFrame(columns=query_summary_columns)
+    else:
+        query_summaries = (
+            query_pairs.groupby("match_query_id", observed=True, sort=False)
+            .agg(
+                has_vdjdb_evidence=("reference_row_id", "size"),
+                evidence_record_count=("reference_row_id", "size"),
+                distinct_epitope_count=("epitope", "nunique"),
+                maximum_evidence_score=("evidence_score", "max"),
+                evidence_tiers=(
+                    "evidence_tier",
+                    lambda values: "|".join(sorted(values.dropna().astype(str).unique())),
+                ),
+            )
+            .reset_index()
+        )
+        query_summaries["has_vdjdb_evidence"] = True
+        query_summaries["antigen_ambiguity"] = query_summaries["distinct_epitope_count"].gt(1)
+        dominant = (
+            query_pairs.loc[query_pairs["epitope"].notna()]
+            .groupby("match_query_id", observed=True)["epitope"]
+            .agg(lambda values: sorted(values.astype(str).unique())[0])
+        )
+        query_summaries["dominant_epitope"] = query_summaries["match_query_id"].map(dominant)
+        query_summaries.loc[query_summaries["distinct_epitope_count"].ne(1), "dominant_epitope"] = (
+            pd.NA
+        )
+    public_rows = rows.drop(columns=[column for column in rows if column.startswith("_")])
+    row_summary = public_rows.merge(
+        query_summaries,
+        on="match_query_id",
         how="left",
         sort=False,
         validate="many_to_one",
     )
+    row_summary["has_vdjdb_evidence"] = row_summary["has_vdjdb_evidence"].eq(True)
+    row_summary["evidence_record_count"] = (
+        row_summary["evidence_record_count"].fillna(0).astype(int)
+    )
+    row_summary["distinct_epitope_count"] = (
+        row_summary["distinct_epitope_count"].fillna(0).astype(int)
+    )
+    row_summary["antigen_ambiguity"] = row_summary["antigen_ambiguity"].eq(True)
+    row_summary["evidence_tiers"] = row_summary["evidence_tiers"].fillna("")
     if len(row_summary) != len(rows):
         raise RuntimeError("VDJdb row-summary reconstruction changed the input row count.")
     return VDJdbEvidenceSummary(
@@ -644,7 +795,12 @@ def _assigned_unique(
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
     if assignment_policy not in {"nearest", "threshold_pass"}:
         raise ValueError("assignment_policy must be 'nearest' or 'threshold_pass'.")
-    rows = _prepare_queries(rfu_results, chain=None, v_gene_mode="strip_allele")
+    rows = _prepare_queries(
+        rfu_results,
+        chain=None,
+        v_gene_mode="strip_allele",
+        consistency_fields=("_cdr3_norm", "_chain_norm"),
+    )
     if rfu_col not in rows:
         raise ValueError(f"RFU antigen analysis requires column {rfu_col!r}.")
     mask = rows[rfu_col].notna()
@@ -762,80 +918,141 @@ def rfu_antigen_coherence(
         antigen_key=antigen_key,
         ambiguity_policy=ambiguity_policy,
     )
+    sequence_to_rfu = unique[["unique_sequence_id", "rfu_label"]]
+    cell_identifier = "cell_id" if "cell_id" in rows else "input_row_id"
+    result = (
+        unique.groupby("rfu_label", observed=True, sort=True)["unique_sequence_id"]
+        .size()
+        .rename("total_rfu_sequences")
+        .reset_index()
+    )
+    total_cells = (
+        rows.groupby("rfu_label", observed=True)[cell_identifier]
+        .nunique()
+        .rename("total_rfu_cells")
+    )
+    result["total_rfu_cells"] = result["rfu_label"].map(total_cells).fillna(0).astype(int)
+
+    def _sequence_counts(ids: set[Any]) -> pd.Series:
+        return (
+            sequence_to_rfu.loc[sequence_to_rfu["unique_sequence_id"].isin(ids)]
+            .groupby("rfu_label", observed=True)["unique_sequence_id"]
+            .nunique()
+        )
+
+    evidence_ids = set(pairs["unique_sequence_id"])
     labelled_ids = set(status["unique_sequence_id"])
     contributing_ids = set(labels["unique_sequence_id"])
-    evidence_ids = set(pairs["unique_sequence_id"])
-    output: list[dict[str, Any]] = []
-    for rfu, rfu_unique in unique.groupby("rfu_label", sort=True, observed=True):
-        rfu_rows = rows.loc[rows["rfu_label"].eq(rfu)]
-        sequence_ids = set(rfu_unique["unique_sequence_id"])
-        evidence_matched_sequences = sequence_ids.intersection(evidence_ids)
-        labelled_sequences = sequence_ids.intersection(labelled_ids)
-        contributing_sequences = sequence_ids.intersection(contributing_ids)
-        matched_cells = rfu_rows.loc[rfu_rows["unique_sequence_id"].isin(evidence_ids)]
-        cell_identifier = "cell_id" if "cell_id" in rfu_rows else "input_row_id"
-        total_cells = int(rfu_rows[cell_identifier].nunique())
-        matched_cell_count = int(matched_cells[cell_identifier].nunique())
-        rfu_abundance = abundance.loc[abundance["rfu_label"].eq(rfu)]
-        values = (
-            rfu_abundance.set_index(antigen_key)["antigen_abundance"]
-            if len(rfu_abundance)
-            else pd.Series(dtype=float)
+    for column, ids in (
+        ("vdjdb_matched_sequences", evidence_ids),
+        ("antigen_labelled_sequences", labelled_ids),
+        ("coherence_contributing_sequences", contributing_ids),
+    ):
+        result[column] = result["rfu_label"].map(_sequence_counts(ids)).fillna(0).astype(int)
+    matched_cells = (
+        rows.loc[rows["unique_sequence_id"].isin(evidence_ids)]
+        .groupby("rfu_label", observed=True)[cell_identifier]
+        .nunique()
+    )
+    result["vdjdb_matched_cells"] = result["rfu_label"].map(matched_cells).fillna(0).astype(int)
+    result["sequence_match_rate"] = (
+        result["vdjdb_matched_sequences"] / result["total_rfu_sequences"]
+    )
+    result["cell_match_rate"] = result["vdjdb_matched_cells"] / result["total_rfu_cells"]
+
+    pair_groups = pairs.drop(columns=["rfu_label"], errors="ignore").merge(
+        sequence_to_rfu, on="unique_sequence_id", validate="many_to_one"
+    )
+    evidence_counts = pair_groups.groupby("rfu_label", observed=True).size()
+    result["evidence_record_count"] = result["rfu_label"].map(evidence_counts).fillna(0).astype(int)
+    pair_groups["_score"] = pd.to_numeric(pair_groups["evidence_score"], errors="coerce")
+    mean_score = pair_groups.groupby("rfu_label", observed=True)["_score"].mean()
+    max_score = pair_groups.groupby("rfu_label", observed=True)["_score"].max()
+    result["mean_evidence_score"] = result["rfu_label"].map(mean_score)
+    result["max_evidence_score"] = result["rfu_label"].map(max_score)
+
+    status_groups = status.merge(sequence_to_rfu, on="unique_sequence_id", validate="one_to_one")
+    ambiguous_fraction = status_groups.groupby("rfu_label", observed=True)["ambiguous"].mean()
+    result["ambiguous_sequence_fraction"] = result["rfu_label"].map(ambiguous_fraction).fillna(0.0)
+
+    if abundance.empty:
+        antigen_stats = pd.DataFrame(index=pd.Index([], name="rfu_label"))
+        dominant = pd.Series(dtype="string")
+    else:
+        abundance_groups = abundance.groupby("rfu_label", observed=True)
+        antigen_stats = abundance_groups["antigen_abundance"].agg(
+            total_labelled="sum", maximum_abundance="max", antigen_richness="size"
         )
-        total_labelled = float(values.sum())
-        entropy = shannon(values)
-        richness = len(values)
-        normalized_entropy = (
-            entropy / math.log(richness) if richness > 1 else 0.0 if richness == 1 else float("nan")
-        )
-        eligible = len(contributing_sequences) >= min_matched_sequences and total_labelled > 0
-        dominant = (
-            sorted(values.index[values.eq(values.max())].astype(str))[0] if len(values) else pd.NA
-        )
-        score = pd.to_numeric(
-            pairs.loc[pairs["unique_sequence_id"].isin(sequence_ids), "evidence_score"],
-            errors="coerce",
-        )
-        ambiguous = status.loc[status["unique_sequence_id"].isin(labelled_sequences), "ambiguous"]
-        row: dict[str, Any] = {
-            "rfu_label": rfu,
-            "assignment_policy": assignment_policy,
-            "weighting": weighting,
-            "ambiguity_policy": ambiguity_policy,
-            "total_rfu_sequences": len(rfu_unique),
-            "total_rfu_cells": total_cells,
-            "vdjdb_matched_sequences": len(evidence_matched_sequences),
-            "antigen_labelled_sequences": len(labelled_sequences),
-            "coherence_contributing_sequences": len(contributing_sequences),
-            "vdjdb_matched_cells": matched_cell_count,
-            "sequence_match_rate": len(evidence_matched_sequences) / len(rfu_unique)
-            if len(rfu_unique)
-            else 0.0,
-            "cell_match_rate": matched_cell_count / total_cells if total_cells else 0.0,
-            "evidence_record_count": len(pairs.loc[pairs["unique_sequence_id"].isin(sequence_ids)]),
-            "antigen_richness": richness,
-            "dominant_antigen": dominant if eligible else pd.NA,
-            "dominant_antigen_fraction": float(values.max() / total_labelled)
-            if eligible
-            else float("nan"),
-            "antigen_entropy": entropy if eligible else float("nan"),
-            "normalized_antigen_entropy": normalized_entropy if eligible else float("nan"),
-            "antigen_purity": float(values.max() / total_labelled) if eligible else float("nan"),
-            "ambiguous_sequence_fraction": float(ambiguous.mean()) if len(ambiguous) else 0.0,
-            "mean_evidence_score": float(score.mean()) if score.notna().any() else float("nan"),
-            "max_evidence_score": float(score.max()) if score.notna().any() else float("nan"),
-            "eligible_for_coherence": eligible,
-        }
-        for output_name, key in (
-            ("represented_samples", sample_key),
-            ("represented_donors", donor_key),
-        ):
-            if key is not None:
-                if key not in rfu_rows:
-                    raise ValueError(f"RFU results are missing metadata column {key!r}.")
-                row[output_name] = int(rfu_rows[key].dropna().nunique())
-        output.append(row)
-    return pd.DataFrame(output)
+        antigen_stats["antigen_entropy"] = abundance_groups["antigen_abundance"].apply(shannon)
+        dominant = abundance.drop_duplicates("rfu_label", keep="first").set_index("rfu_label")[
+            antigen_key
+        ]
+    for column in ("total_labelled", "maximum_abundance", "antigen_richness", "antigen_entropy"):
+        result[column] = result["rfu_label"].map(antigen_stats.get(column, pd.Series(dtype=float)))
+    result["antigen_richness"] = result["antigen_richness"].fillna(0).astype(int)
+    result["dominant_antigen"] = result["rfu_label"].map(dominant)
+    result["eligible_for_coherence"] = result["coherence_contributing_sequences"].ge(
+        min_matched_sequences
+    ) & result["total_labelled"].fillna(0).gt(0)
+    result["antigen_purity"] = result["maximum_abundance"] / result["total_labelled"]
+    result["dominant_antigen_fraction"] = result["antigen_purity"]
+    result["normalized_antigen_entropy"] = np.nan
+    multiple_antigens = result["antigen_richness"].gt(1)
+    result.loc[multiple_antigens, "normalized_antigen_entropy"] = result.loc[
+        multiple_antigens, "antigen_entropy"
+    ] / np.log(result.loc[multiple_antigens, "antigen_richness"])
+    result.loc[result["antigen_richness"].eq(1), "normalized_antigen_entropy"] = 0.0
+    ineligible = ~result["eligible_for_coherence"]
+    result.loc[ineligible, "dominant_antigen"] = pd.NA
+    for column in (
+        "dominant_antigen_fraction",
+        "antigen_entropy",
+        "normalized_antigen_entropy",
+        "antigen_purity",
+    ):
+        result.loc[ineligible, column] = np.nan
+
+    for output_name, key in (
+        ("represented_samples", sample_key),
+        ("represented_donors", donor_key),
+    ):
+        if key is not None:
+            if key not in rows:
+                raise ValueError(f"RFU results are missing metadata column {key!r}.")
+            counts = rows.groupby("rfu_label", observed=True)[key].nunique(dropna=True)
+            result[output_name] = result["rfu_label"].map(counts).fillna(0).astype(int)
+
+    result.insert(1, "assignment_policy", assignment_policy)
+    result.insert(2, "weighting", weighting)
+    result.insert(3, "ambiguity_policy", ambiguity_policy)
+    output_columns = [
+        "rfu_label",
+        "assignment_policy",
+        "weighting",
+        "ambiguity_policy",
+        "total_rfu_sequences",
+        "total_rfu_cells",
+        "vdjdb_matched_sequences",
+        "antigen_labelled_sequences",
+        "coherence_contributing_sequences",
+        "vdjdb_matched_cells",
+        "sequence_match_rate",
+        "cell_match_rate",
+        "evidence_record_count",
+        "antigen_richness",
+        "dominant_antigen",
+        "dominant_antigen_fraction",
+        "antigen_entropy",
+        "normalized_antigen_entropy",
+        "antigen_purity",
+        "ambiguous_sequence_fraction",
+        "mean_evidence_score",
+        "max_evidence_score",
+        "eligible_for_coherence",
+        *(["represented_samples"] if sample_key is not None else []),
+        *(["represented_donors"] if donor_key is not None else []),
+    ]
+    return result.loc[:, output_columns]
 
 
 def _same_antigen_pair_fraction(
@@ -999,7 +1216,7 @@ def rfu_antigen_permutation_test(
         raise ValueError("n_permutations must be a positive integer.")
     if metric not in {"same_antigen_pair_fraction", "weighted_mean_purity"}:
         raise ValueError("Unsupported permutation metric.")
-    rows, unique = _assigned_unique(rfu_results, assignment_policy=assignment_policy)
+    _, unique = _assigned_unique(rfu_results, assignment_policy=assignment_policy)
     labelled = set(evidence.loc[evidence[antigen_key].notna(), "unique_sequence_id"])
     if len(labelled.intersection(unique["unique_sequence_id"])) < 2:
         raise ValueError("At least two matched unique sequences are required for permutation.")
@@ -1010,7 +1227,7 @@ def rfu_antigen_permutation_test(
         if isinstance(stratify_by, str)
         else list(stratify_by)
     )
-    working = unique.copy()
+    working = unique.copy().reset_index(drop=True)
     normalized_fields: list[str] = []
     for field in fields:
         field_key = str(field).strip().lower()
@@ -1025,43 +1242,73 @@ def rfu_antigen_permutation_test(
         else:
             normalized_fields.append(str(field))
 
-    def value(frame: pd.DataFrame) -> float:
-        if metric == "same_antigen_pair_fraction":
-            return _same_antigen_pair_fraction(
-                frame,
-                evidence,
-                assignment_policy="nearest",
-                antigen_key=antigen_key,
-                ambiguity_policy=ambiguity_policy,
-            )
-        return global_antigen_coherence(
-            frame,
-            evidence,
-            assignment_policy="nearest",
-            antigen_key=antigen_key,
-            ambiguity_policy=ambiguity_policy,
-        )["weighted_mean_rfu_antigen_purity"]
+    antigen_labels, _ = _sequence_antigens(
+        evidence, antigen_key=antigen_key, ambiguity_policy=ambiguity_policy
+    )
+    distributions = {
+        sequence_id: dict(zip(group[antigen_key].astype(str), group["label_weight"], strict=True))
+        for sequence_id, group in antigen_labels.groupby("unique_sequence_id", observed=True)
+    }
+    sequence_ids = working["unique_sequence_id"].to_numpy()
+    contributing_positions = np.asarray(
+        [index for index, sequence_id in enumerate(sequence_ids) if sequence_id in distributions],
+        dtype=int,
+    )
+    original_assignments = working["rfu_label"].astype(str).to_numpy()
 
-    observed = value(working)
+    def value(assignments: np.ndarray) -> float:
+        grouped: dict[str, list[Any]] = {}
+        for position in contributing_positions:
+            grouped.setdefault(assignments[position], []).append(sequence_ids[position])
+        if metric == "same_antigen_pair_fraction":
+            numerator = 0.0
+            denominator = 0
+            for group_ids in grouped.values():
+                for left_index in range(len(group_ids)):
+                    for right_index in range(left_index + 1, len(group_ids)):
+                        left = distributions[group_ids[left_index]]
+                        right = distributions[group_ids[right_index]]
+                        if ambiguity_policy == "multi_label":
+                            similarity = float(bool(set(left).intersection(right)))
+                        else:
+                            similarity = sum(
+                                left.get(label, 0.0) * right.get(label, 0.0)
+                                for label in set(left).intersection(right)
+                            )
+                        numerator += similarity
+                        denominator += 1
+            return numerator / denominator if denominator else float("nan")
+        weighted_purity = 0.0
+        total_weight = 0
+        for group_ids in grouped.values():
+            abundance: dict[str, float] = {}
+            for sequence_id in group_ids:
+                for label, weight in distributions[sequence_id].items():
+                    abundance[label] = abundance.get(label, 0.0) + weight
+            total = sum(abundance.values())
+            if total:
+                weighted_purity += len(group_ids) * max(abundance.values()) / total
+                total_weight += len(group_ids)
+        return weighted_purity / total_weight if total_weight else float("nan")
+
+    observed = value(original_assignments)
     if not np.isfinite(observed):
         raise ValueError("Observed permutation metric is undefined for the supplied groups.")
     rng = np.random.default_rng(random_state)
-    original_sizes = working["rfu_label"].value_counts().sort_index()
+    if normalized_fields:
+        strata = [
+            np.asarray(indices, dtype=int)
+            for indices in working.groupby(
+                normalized_fields, dropna=False, sort=True
+            ).indices.values()
+        ]
+    else:
+        strata = [np.arange(len(working), dtype=int)]
     null = np.empty(n_permutations, dtype=float)
     for permutation in range(n_permutations):
-        permuted = working.copy()
-        if normalized_fields:
-            for _, indices in working.groupby(
-                normalized_fields, dropna=False, sort=True
-            ).groups.items():
-                positions = list(indices)
-                permuted.loc[positions, "rfu_label"] = rng.permutation(
-                    working.loc[positions, "rfu_label"].to_numpy()
-                )
-        else:
-            permuted["rfu_label"] = rng.permutation(working["rfu_label"].to_numpy())
-        if not permuted["rfu_label"].value_counts().sort_index().equals(original_sizes):
-            raise RuntimeError("Permutation failed to preserve RFU group sizes.")
+        permuted = original_assignments.copy()
+        for positions in strata:
+            permuted[positions] = rng.permutation(original_assignments[positions])
         null[permutation] = value(permuted)
     finite = null[np.isfinite(null)]
     if len(finite) != len(null):
@@ -1083,7 +1330,7 @@ def rfu_antigen_permutation_test(
             "random_state": random_state,
             "stratify_by": normalized_fields,
             "eligible_sequence_count": len(working),
-            "matched_sequence_count": len(labelled.intersection(working["unique_sequence_id"])),
+            "matched_sequence_count": len(contributing_positions),
             "rfu_count": int(working["rfu_label"].nunique()),
             "assignment_policy": assignment_policy,
             "ambiguity_policy": ambiguity_policy,
@@ -1103,13 +1350,18 @@ def compare_antigen_groupings(
     assignment_policy: str = "nearest",
     ambiguity_policy: str = "fractional",
     antigen_key: str = "epitope",
+    max_edit_distance: int = 1,
+    max_edit_distance_sequences: int = 2000,
 ) -> pd.DataFrame:
     """Compare RFU coherence with simple, explicitly limited receptor baselines."""
     _, unique = _assigned_unique(receptor_results, assignment_policy=assignment_policy)
+    matched_ids = set(evidence.loc[evidence[antigen_key].notna(), "unique_sequence_id"])
     rng = np.random.default_rng(random_state)
     rows: list[dict[str, Any]] = []
     for grouping in groupings:
         grouped = unique.copy()
+        edit_distance_status = "completed"
+        edit_distance_reason: Any = pd.NA
         if grouping == "rfu":
             pass
         elif grouping == "trbv":
@@ -1126,10 +1378,44 @@ def compare_antigen_groupings(
             )
         elif grouping in {"random", "size_matched_random"}:
             grouped["rfu_label"] = rng.permutation(grouped["rfu_label"].to_numpy())
+        elif grouping == "edit_distance":
+            from .comparators import _edit_distance_labels
+
+            grouped = grouped.loc[grouped["unique_sequence_id"].isin(matched_ids)].copy()
+            if len(grouped) > max_edit_distance_sequences:
+                edit_distance_status = "skipped"
+                edit_distance_reason = (
+                    f"{len(grouped)} matched sequences exceed deterministic quadratic "
+                    f"limit {max_edit_distance_sequences}"
+                )
+            else:
+                grouped["rfu_label"] = _edit_distance_labels(
+                    grouped["_cdr3_norm"], max_edit_distance
+                )
         else:
             raise ValueError(f"Unknown antigen grouping baseline {grouping!r}.")
+        if edit_distance_status == "skipped":
+            for metric in metrics:
+                rows.append(
+                    {
+                        "grouping_method": grouping,
+                        "group_count": pd.NA,
+                        "matched_sequence_count": len(grouped),
+                        "metric": metric,
+                        "value": float("nan"),
+                        "weighting": "unique_sequence",
+                        "assignment_policy": assignment_policy,
+                        "ambiguity_policy": ambiguity_policy,
+                        "random_state": random_state,
+                        "status": edit_distance_status,
+                        "reason": edit_distance_reason,
+                    }
+                )
+            continue
+        group_count = int(grouped["rfu_label"].nunique())
+        metric_input = grouped.loc[grouped["unique_sequence_id"].isin(matched_ids)].copy()
         global_metrics = global_antigen_coherence(
-            grouped,
+            metric_input,
             evidence,
             assignment_policy="nearest",
             antigen_key=antigen_key,
@@ -1146,7 +1432,7 @@ def compare_antigen_groupings(
             rows.append(
                 {
                     "grouping_method": grouping,
-                    "group_count": int(grouped["rfu_label"].nunique()),
+                    "group_count": group_count,
                     "matched_sequence_count": global_metrics["matched_sequence_count"],
                     "metric": metric,
                     "value": values[metric],
@@ -1154,6 +1440,8 @@ def compare_antigen_groupings(
                     "assignment_policy": assignment_policy,
                     "ambiguity_policy": ambiguity_policy,
                     "random_state": random_state,
+                    "status": edit_distance_status,
+                    "reason": edit_distance_reason,
                 }
             )
     return pd.DataFrame(rows)
@@ -1202,11 +1490,18 @@ def summarize_antigen_context(
                 raise ValueError(
                     f"Conflicting {key!r} labels occur within at least one {sample_key!r}."
                 )
-    query = _prepare_queries(rows, chain=None, v_gene_mode="strip_allele")
-    matches = evidence.drop_duplicates(["unique_sequence_id", "reference_row_id"])
+    match_modes = (
+        evidence.get("match_mode", pd.Series(dtype="string")).dropna().astype(str).unique()
+    )
+    match_mode = match_modes[0] if len(match_modes) == 1 else "cdr3"
+    query = _add_match_query_ids(
+        _prepare_queries(rows, chain=None, v_gene_mode="strip_allele"),
+        match_mode=match_mode,
+    )
+    matches = evidence.drop_duplicates(["unique_sequence_id", "match_query_id", "reference_row_id"])
     evidence_rows = query.merge(
         matches,
-        on="unique_sequence_id",
+        on=["unique_sequence_id", "match_query_id"],
         how="inner",
         suffixes=("", "_evidence"),
         validate="many_to_many",

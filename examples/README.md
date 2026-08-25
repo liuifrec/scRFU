@@ -1,5 +1,18 @@
 # Examples
 
+## End-to-end public tutorial
+
+`tutorial_end_to_end.py` uses the small synthetic fixtures shipped with scRFU
+and requires neither R nor external data in its default mock-backend mode:
+
+```bash
+python examples/tutorial_end_to_end.py --outdir /tmp/scrfu-tutorial
+```
+
+Use `--backend rfu_repo --rfu-dir /path/to/external/RFU` to replace the clearly
+labelled mock assignments with a real official RFU execution. See
+[`docs/tutorial.md`](../docs/tutorial.md) for the output contract and caveats.
+
 ## Dataset-independent receptor workflow
 
 `receptor_table_workflow.py` accepts a canonical receptor cache, canonical TSV,

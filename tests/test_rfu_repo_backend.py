@@ -8,6 +8,7 @@ import pandas as pd
 import pytest
 
 from scrfu._version import __version__
+from scrfu.backends.rfu_chunks import RFUChunkError
 from scrfu.backends.rfu_repo import (
     RFUCapabilities,
     RFUCapabilityError,
@@ -185,6 +186,39 @@ def test_backend_init_fails_when_wrapper_script_is_missing(tmp_path: Path) -> No
 
     with pytest.raises(FileNotFoundError, match="Wrapper R script not found"):
         RFURepoBackend(rfu_dir=rfu_dir, wrapper_r_path=tmp_path / "missing_wrapper.R")
+
+
+def test_missing_r_executable_has_actionable_error(tmp_path: Path) -> None:
+    rfu_dir = _write_fake_rfu_dir(tmp_path / "RFU")
+    wrapper = _write_wrapper(tmp_path / "wrapper.R")
+    backend = RFURepoBackend(
+        rfu_dir=rfu_dir,
+        wrapper_r_path=wrapper,
+        rscript_bin="definitely-missing-rscript",
+    )
+    features = pd.DataFrame({"cell_id": ["c1"], "cdr3aa": ["CASSA"], "trbv": ["TRBV1"]})
+
+    with pytest.raises(RFUConfigurationError, match="was not found.*Install R"):
+        backend.run(features, workdir=tmp_path / "work")
+
+
+def test_malformed_r_output_is_not_presented_as_success(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    rfu_dir = _write_fake_rfu_dir(tmp_path / "RFU")
+    wrapper = _write_wrapper(tmp_path / "wrapper.R")
+    backend = RFURepoBackend(rfu_dir=rfu_dir, wrapper_r_path=wrapper)
+
+    def malformed(cmd: list[str], **_: object) -> subprocess.CompletedProcess[str]:
+        output_path = Path(cmd[cmd.index("--out") + 1])
+        output_path.write_bytes(b'"unterminated\n')
+        return subprocess.CompletedProcess(cmd, 0, stdout="", stderr="")
+
+    monkeypatch.setattr("scrfu.backends.rfu_repo.subprocess.run", malformed)
+    features = pd.DataFrame({"cell_id": ["c1"], "cdr3aa": ["CASSA"], "trbv": ["TRBV1"]})
+
+    with pytest.raises(RFUChunkError, match="unreadable or malformed"):
+        backend.run(features, workdir=tmp_path / "work")
 
 
 def test_backend_provenance_records_resolution_capabilities_and_hashes(tmp_path: Path) -> None:
