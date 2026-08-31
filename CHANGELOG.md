@@ -1,15 +1,17 @@
 # Changelog
 
-## Unreleased
+## 0.4.0
 
-Development version: `0.4.0rc1`. The intended next public release is 0.4.0;
-no release or tag has been created.
+This entry describes the prepared 0.4.0 source. No release or tag is created by
+the version change itself.
 
 ### Added
 
 - Canonical receptor rows; Wells, AIRR/scirpy, generic DataFrame, and Cell
   Ranger VDJ adapters; selective H5AD extraction; and portable checksummed
   receptor caches.
+- A portable backend for user-supplied external RFU implementations and
+  reference assets, with artifact hashing and explicit run provenance.
 - Dataset-independent table RFU engine, exact-CDR3 deduplication, stable row
   reconstruction, restartable chunks, and optional deterministic process/thread
   chunk workers with serial default.
@@ -32,6 +34,9 @@ no release or tag has been created.
   no BCR functional-unit reference is defined.
 - A redistributable synthetic end-to-end tutorial fixture, generated scaling
   benchmark, and advisory performance-regression comparison utility.
+- The `scrfu doctor` installation/configuration diagnostic, navigable Sphinx
+  API documentation, and Python-only CI smoke coverage on Linux, macOS, and
+  Windows.
 
 ### Changed
 
@@ -42,6 +47,8 @@ no release or tag has been created.
 - Chunk provenance now records worker count and executor. Completed chunks are
   reusable across scientifically equivalent serial and parallel orchestration.
 - Plotting imports remain lazy/optional for non-plotting core use.
+- Selective Wells H5AD readers and receptor-only downstream paths avoid loading
+  expression matrices and support bounded-memory processing at atlas scale.
 - Project metadata now identifies the public repository and maintainer instead
   of placeholders.
 
@@ -77,5 +84,12 @@ no release or tag has been created.
 - Legacy Wells caches can be migrated to the generic receptor-cache schema.
 - Serial execution remains the default. Parallelism requires explicit chunking
   and `max_workers > 1`.
-- The development version is `0.4.0rc1` because historical `v0.2.0` and
-  `v0.3.0` tags already exist. Do not infer a release solely from this section.
+- Historical `v0.2.0` and `v0.3.0` tags remain unchanged. Do not infer that a
+  tag, package upload, or hosted release exists solely from this entry.
+
+### BCR scope
+
+- Experimental BCR canonicalization, QC, heavy/light pairing, and conservative
+  feature extraction are included.
+- A BCR functional-unit reference or assignment API is **not** part of 0.4.0;
+  the public-data feasibility gate remained NO-GO.

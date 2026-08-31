@@ -52,20 +52,36 @@ adapter and bounded public benchmark, not the data model.
 
 ## Installation
 
-Development install:
+Install from a source checkout:
 
 ```bash
-pip install -e ".[dev]"
+git clone https://github.com/liuifrec/scRFU.git
+cd scRFU
+python -m pip install .
+```
+
+Or install a reviewed local wheel:
+
+```bash
+python -m pip install /path/to/scrfu-0.4.0-py3-none-any.whl
+```
+
+The project does not document `pip install scrfu` as an available distribution
+until a PyPI upload has actually occurred. For development:
+
+```bash
+python -m pip install -e ".[dev]"
 ```
 
 Optional scirpy extras:
 
 ```bash
-pip install -e ".[dev,scirpy]"
+python -m pip install -e ".[dev,scirpy]"
 ```
 
 Core imports do not require matplotlib. Install plotting support with
-`pip install -e ".[plotting]"`; `.[all]` installs plotting and scirpy extras.
+`python -m pip install ".[plotting]"`; `.[all]` installs plotting, MuData, and
+scirpy extras.
 
 ## External RFU Dependency
 
@@ -75,6 +91,10 @@ argument takes precedence over the environment variable. Standard mode uses the
 official public `AssignRFUs()` implementation and remains the default. scRFU
 records hashes and detected optional capabilities, but the files remain outside
 this repository.
+
+Use `scrfu doctor` to inspect Python, optional dependencies, R availability,
+external RFU configuration, artifact hashes, and output writability. Paths are
+shortened by default; `scrfu doctor --verbose` prints full runtime paths.
 
 ## Quickstart
 
@@ -172,6 +192,12 @@ The canonical schema, adapters, and expression-free cache are documented in
 [docs/receptor_cache.md](docs/receptor_cache.md). Expression matrices are not
 required after receptor preparation.
 
+Reference coverage is the fraction of eligible receptor rows whose nearest RFU
+score passes the configured frozen-reference threshold. Nearest assignment and
+threshold-qualified assignment are separate policies: a threshold miss is a
+low-reference-similarity result, not a calibrated confidence probability or an
+automatic out-of-distribution declaration.
+
 ## Analysis Utilities
 
 The public analysis layer includes legacy summaries plus
@@ -232,5 +258,14 @@ chunk-index order. Worker count and executor are recorded in provenance.
 
 Please cite and attribute the original upstream RFU method when using RFU
 assignments. scRFU is an integration framework around user-provided upstream RFU
-code/data and should be cited separately once a release or manuscript is
-available.
+code/data. Cite scRFU separately using the metadata in
+[`CITATION.cff`](CITATION.cff); no DOI or publication citation is claimed here.
+
+## Documentation and License
+
+The runnable tutorial is in [`docs/tutorial.md`](docs/tutorial.md), the API
+documentation sources are under [`docs/api/`](docs/api/), and configuration is
+documented in [`docs/configuration.md`](docs/configuration.md). scRFU's own code
+is distributed under the [MIT license](LICENSE). External RFU assets, VDJdb,
+Wells, GEO, OAS, and other public datasets retain their separate source terms
+and are not redistributed by the package.

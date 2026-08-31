@@ -42,8 +42,10 @@ def test_runtime_version_matches_declared_version_source() -> None:
     version_source = (ROOT / "src" / "scrfu" / "_version.py").read_text()
     match = re.search(r'^__version__\s*=\s*["\']([^"\']+)', version_source, re.MULTILINE)
     assert match is not None
+    assert match.group(1) == "0.4.0"
     assert scrfu.__version__ == match.group(1)
     assert version("scrfu") == scrfu.__version__
+    assert "## 0.4.0" in (ROOT / "CHANGELOG.md").read_text()
 
 
 def test_submission_gate_is_machine_readable_and_evidence_exists() -> None:

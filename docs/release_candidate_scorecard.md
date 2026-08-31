@@ -1,8 +1,7 @@
 # Release-candidate scorecard
 
-Candidate `0.4.0rc1`, assessed 2026-08-25. PASS means demonstrated for the
-current local tree; it does not authorize a release. PARTIAL identifies an
-honest boundary, not a hidden failure.
+Prepared version `0.4.0`, assessed 2026-08-25. PASS means demonstrated for the
+reviewed release line; it does not authorize a tag, upload, or release.
 
 | Domain | Status | Evidence / boundary |
 |---|---|---|
@@ -20,13 +19,14 @@ honest boundary, not a hidden failure.
 | Dependency hygiene | PASS | Matplotlib/MuData remain optional; core clean install and import pass |
 | TCR scientific validation | PASS | Official parity, Wells scale, independent GSE190905, preregistered GSE157007 |
 | VDJdb external validation | PASS | Pinned 2026-06-03 reference; 24 analyses plus deterministic representative checks |
-| BCR status | PARTIAL | Real-data preprocessing/features pass; frozen BCR reference correctly remains NO-GO |
+| BCR experimental preprocessing | PASS (experimental) | Canonicalization, QC, pairing, and feature extraction are tested and explicitly experimental |
+| BCR functional-unit reference | NOT INCLUDED / NO-GO | The feasibility gate failed; no BCR assignment/reference API is exposed |
 
 ## Release blockers
 
-- Maintainer review of the exact CI-tested commit and this uncommitted
-  scorecard evidence update.
-- Final release authorization and version promotion from `0.4.0rc1` to `0.4.0`.
+- Maintainer review of the uncommitted 0.4.0 release-preparation diff.
+- Green remote CI on the eventual exact release commit.
+- Explicit authorization before tagging, publishing, or creating a release.
 
 ## Strong recommendations, not blockers
 

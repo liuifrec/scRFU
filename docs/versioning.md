@@ -1,13 +1,13 @@
 # Versioning and release policy
 
-The source package now reports the unreleased development version `0.4.0rc1`.
-Historical Git tags `v0.2.0` and `v0.3.0` already exist, so the next coherent
-public release line is 0.4.0. No historical tag is moved or reused, and this
-development version is not itself a tag or published release.
+The release-preparation source reports version `0.4.0`. Historical Git tags
+`v0.2.0` and `v0.3.0` remain unchanged. Changing the source version does not by
+itself create a tag, package upload, GitHub Release, archive, or DOI.
 
-Before the final 0.4.0 release, confirm that runtime, wheel, sdist, changelog,
-release notes, and the future tag all report 0.4.0. The release candidate must
-not be published or tagged until clean-install and integration gates pass.
+Before an approved 0.4.0 release, confirm that runtime, wheel, sdist, changelog,
+release notes, and the future tag all report 0.4.0. The prepared source must not
+be published or tagged until clean-install, integration, artifact, and
+maintainer-review gates pass.
 
 For every future release:
 

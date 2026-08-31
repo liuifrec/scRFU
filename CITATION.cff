@@ -5,6 +5,7 @@ type: software
 authors:
   - family-names: Liu
     given-names: Yu-Chen
-version: 0.4.0rc1
+    email: liu_y@rerf.or.jp
+version: 0.4.0
 repository-code: "https://github.com/liuifrec/scRFU"
 license: MIT

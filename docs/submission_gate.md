@@ -22,8 +22,8 @@ not evidence. Runtime source tables remain external by design.
 | Public test dataset | Complete | packaged fully synthetic tutorial fixtures with expected hashes | Preserve fixture hashes and synthetic provenance. |
 | CI | Complete | Python 3.10–3.12 tests/Ruff/build/wheel smoke | Require green CI on the exact release commit. |
 | Open-source license | Complete | MIT license | Verify inclusion in release artifacts. |
-| Citation metadata | Complete for candidate | `CITATION.cff` contains author, repository, license and 0.4.0rc1 without DOI/ORCID | Change version only with final release approval. |
-| Versioned release and DOI | Blocked by approval | coherent 0.4.0rc1 candidate; historical tags untouched | Review, approve, then finalize 0.4.0 and archive in a later authorized session. |
+| Citation metadata | Complete for preparation | `CITATION.cff` contains author, repository, license and 0.4.0 without DOI/ORCID | Keep metadata synchronized with the eventual approved release. |
+| Versioned release and DOI | Blocked by approval | coherent 0.4.0 source prepared; historical tags untouched; no tag, upload, release, or DOI exists | Review and authorize release actions in a later session. |
 | Reviewer-shareable code/data | Strong partial | public manifests, audit, inventory, and acquisition instructions | Prepare the exact release and disclosure-reviewed source-data deposit. |
 | Complete technical source tables | Strong partial | full Wells and VDJdb source summaries are external; public transfer/held-out sources audited | Assemble the final public disclosure-reviewed deposit; deeper longitudinal dynamics are outside current scope. |
 | Manuscript skeleton | Strong partial | demonstrated prose and explicit blocked markers | Resolve or remove blocked Results claims, add references, and adapt to journal format. |

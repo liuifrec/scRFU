@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "candidate_version": "0.4.0rc1",
+  "candidate_version": "0.4.0",
   "assessment_date": "2026-08-25",
   "domains": [
     {"domain": "correctness", "status": "PASS", "evidence": "test suite; official RFU integration; docs/evidence_index.md"},
@@ -17,6 +17,7 @@
     {"domain": "dependency hygiene", "status": "PASS", "evidence": "core import without plotting; optional extras and clean core install"},
     {"domain": "TCR scientific validation", "status": "PASS", "evidence": "official parity, Wells, GSE190905, preregistered GSE157007 manifests"},
     {"domain": "VDJdb external validation", "status": "PASS", "evidence": "pinned 2026-06-03 external analysis and reproducibility manifest"},
-    {"domain": "BCR status", "status": "PARTIAL", "evidence": "preprocessing/features validated; docs/bcr_feasibility_report.md records reference NO-GO"}
+    {"domain": "BCR experimental preprocessing", "status": "PASS", "scope": "experimental", "evidence": "canonicalization, QC, pairing, and feature extraction tests; docs/bcr_feasibility_report.md"},
+    {"domain": "BCR functional-unit reference", "status": "NOT INCLUDED", "decision": "NO-GO", "evidence": "docs/bcr_feasibility_report.md; no BCR assignment/reference API is exposed"}
   ]
 }

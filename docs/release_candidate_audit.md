@@ -1,6 +1,6 @@
 # Release-candidate audit
 
-Audit date: 2026-08-25. Candidate version: 0.4.0rc1. This document does not
+Audit date: 2026-08-25. Prepared version: 0.4.0. This document does not
 authorize a commit, tag, upload, archive or publication.
 
 ## Release blockers
@@ -9,7 +9,7 @@ authorize a commit, tag, upload, archive or publication.
 |---|---|---|
 | Exact candidate validation | Complete for current uncommitted tree | 349 tests collected: 345 passed and 4 optional integrations skipped; Ruff/build/official integration and isolated wheel/sdist tutorials passed. Rerun on the exact approved release commit. |
 | Artifact privacy/content audit | Complete for current artifacts | Wheel and sdist contain intended source/docs/examples/tests and three synthetic fixtures; no runtime paths, private data, caches, RFU/VDJdb assets or credentials were found. Repeat after any edit. |
-| Release approval | Blocked by policy | A maintainer must review the uncommitted diff and explicitly approve changing 0.4.0rc1 to 0.4.0 and releasing. |
+| Release approval | Blocked by policy | A maintainer must review the uncommitted 0.4.0 preparation diff and explicitly authorize any later tag, upload, or release. |
 
 Private cohort analysis, manuscript formatting, a DOI and a BCR functional-unit
 reference are not software release blockers.
