@@ -20,8 +20,10 @@ UMI/read, duplicate, and consensus fields. Generic primary selection ranks
 productive first, then available UMI, read, duplicate, consensus counts, then
 stable order. A priority is used only when its field exists.
 
-Scirpy is optional. Modern awkward-array AIRR objects should currently be
-converted to pandas. Cell Ranger requires barcode, chain, and amino-acid CDR3;
+Scirpy is optional. Current Awkward-array AIRR objects are accepted directly;
+the adapter flattens every chain before any explicit filtering or primary-chain
+selection. Native RFU assignment should prefer `scrfu.tl.assign_rfu`, which
+preserves chain alignment in `obsm`. Cell Ranger requires barcode, chain, and amino-acid CDR3;
 all other source columns are optional, including V gene. Contigs with missing
 required values are excluded and counted in adapter QC; a missing required
 column raises immediately.

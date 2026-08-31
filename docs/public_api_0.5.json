@@ -1,0 +1,1150 @@
+{
+  "entries": [
+    {
+      "has_docstring": true,
+      "module": "scrfu.adapters",
+      "name": "AdapterResult",
+      "namespace": "scrfu.adapters",
+      "result_type": "None",
+      "signature": "(receptors: 'pd.DataFrame', cell_metadata: 'pd.DataFrame', qc: 'dict[str, Any]', adapter_name: 'str', adapter_version: 'str', provenance: 'dict[str, Any]') -> None",
+      "stability": "stable"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.adapters",
+      "name": "adapt_airr_dataframe",
+      "namespace": "scrfu.adapters",
+      "result_type": "AdapterResult",
+      "signature": "(source: 'Any', *, adapter_name: 'str' = 'generic_airr_dataframe', airr_key: 'str' = 'airr', chain: 'str | None' = None, productive_only: 'bool' = True, primary_chain: 'bool' = True, metadata: 'pd.DataFrame | None' = None, metadata_columns: 'Sequence[str]' = ()) -> 'AdapterResult'",
+      "stability": "stable"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.adapters",
+      "name": "adapt_cellranger_vdj",
+      "namespace": "scrfu.adapters",
+      "result_type": "AdapterResult",
+      "signature": "(source: 'pd.DataFrame | str | Path', *, chain: 'str | None' = None, productive_only: 'bool' = True, primary_chain: 'bool' = True, filter_is_cell: 'bool' = True, filter_high_confidence: 'bool' = True, metadata: 'pd.DataFrame | None' = None, metadata_columns: 'Sequence[str]' = ()) -> 'AdapterResult'",
+      "stability": "stable"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.adapters",
+      "name": "adapt_wells_tcr_ir",
+      "namespace": "scrfu.adapters",
+      "result_type": "AdapterResult",
+      "signature": "(source: 'Any', *, key: 'str' = 'TCR_IR', chain: 'str | None' = 'TRB', productive_only: 'bool' = True, primary_chain: 'bool' = True, metadata_columns: 'Sequence[str]' = ()) -> 'AdapterResult'",
+      "stability": "stable"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.adapters",
+      "name": "get_receptor_adapter",
+      "namespace": "scrfu.adapters",
+      "result_type": "ReceptorAdapter",
+      "signature": "(name: 'str') -> 'ReceptorAdapter'",
+      "stability": "stable"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.adapters",
+      "name": "list_receptor_adapters",
+      "namespace": "scrfu.adapters",
+      "result_type": "list[str]",
+      "signature": "() -> 'list[str]'",
+      "stability": "stable"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.adapters",
+      "name": "prepare_receptors",
+      "namespace": "scrfu.adapters",
+      "result_type": "AdapterResult",
+      "signature": "(source: 'Any', *, adapter: 'str', modality: 'str | None' = None, metadata_modality: 'str | None' = None, **kwargs: 'Any') -> 'AdapterResult'",
+      "stability": "stable"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.bcr",
+      "name": "BCRFeatureMatrixResult",
+      "namespace": "scrfu.bcr",
+      "result_type": "None",
+      "signature": "(features: 'pd.DataFrame', missingness: 'pd.DataFrame', qc: 'dict[str, Any]', parameters: 'dict[str, Any]') -> None",
+      "stability": "experimental"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.bcr",
+      "name": "BCRPreparationResult",
+      "namespace": "scrfu.bcr",
+      "result_type": "None",
+      "signature": "(receptors: 'pd.DataFrame', pairs: 'pd.DataFrame', qc: 'dict[str, Any]', provenance: 'dict[str, Any]') -> None",
+      "stability": "experimental"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.bcr",
+      "name": "BCR_CANONICAL_FIELDS",
+      "namespace": "scrfu.bcr",
+      "result_type": null,
+      "signature": null,
+      "stability": "experimental"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.bcr",
+      "name": "BCR_CHAINS",
+      "namespace": "scrfu.bcr",
+      "result_type": null,
+      "signature": null,
+      "stability": "experimental"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.bcr",
+      "name": "BCR_SCHEMA_VERSION",
+      "namespace": "scrfu.bcr",
+      "result_type": null,
+      "signature": null,
+      "stability": "experimental"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.bcr",
+      "name": "bcr_feature_matrix",
+      "namespace": "scrfu.bcr",
+      "result_type": "BCRFeatureMatrixResult",
+      "signature": "(table: 'pd.DataFrame', *, pairs: 'pd.DataFrame | None' = None) -> 'BCRFeatureMatrixResult'",
+      "stability": "experimental"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.bcr",
+      "name": "bcr_qc_summary",
+      "namespace": "scrfu.bcr",
+      "result_type": "dict[str, Any]",
+      "signature": "(table: 'pd.DataFrame', pairs: 'pd.DataFrame | None' = None) -> 'dict[str, Any]'",
+      "stability": "experimental"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.bcr",
+      "name": "bcr_state_features",
+      "namespace": "scrfu.bcr",
+      "result_type": "pd.DataFrame",
+      "signature": "(table: 'pd.DataFrame', pairs: 'pd.DataFrame | None' = None) -> 'pd.DataFrame'",
+      "stability": "experimental"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.bcr",
+      "name": "canonicalize_bcr_table",
+      "namespace": "scrfu.bcr",
+      "result_type": "tuple[pd.DataFrame, dict[str, Any]]",
+      "signature": "(data: 'pd.DataFrame', *, column_mapping: 'Mapping[str, str] | None' = None, source_label: 'str' = 'bcr_table') -> 'tuple[pd.DataFrame, dict[str, Any]]'",
+      "stability": "experimental"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.bcr",
+      "name": "normalize_bcr_chain",
+      "namespace": "scrfu.bcr",
+      "result_type": "Any",
+      "signature": "(value: 'Any') -> 'Any'",
+      "stability": "experimental"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.bcr",
+      "name": "normalize_isotype",
+      "namespace": "scrfu.bcr",
+      "result_type": "Any",
+      "signature": "(value: 'Any') -> 'Any'",
+      "stability": "experimental"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.bcr",
+      "name": "pair_bcr_chains",
+      "namespace": "scrfu.bcr",
+      "result_type": "pd.DataFrame",
+      "signature": "(table: 'pd.DataFrame') -> 'pd.DataFrame'",
+      "stability": "experimental"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.bcr",
+      "name": "prepare_bcr_table",
+      "namespace": "scrfu.bcr",
+      "result_type": "BCRPreparationResult",
+      "signature": "(data: 'pd.DataFrame', *, column_mapping: 'Mapping[str, str] | None' = None, source_label: 'str' = 'bcr_table') -> 'BCRPreparationResult'",
+      "stability": "experimental"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.bcr",
+      "name": "select_productive_bcr_chains",
+      "namespace": "scrfu.bcr",
+      "result_type": "pd.DataFrame",
+      "signature": "(table: 'pd.DataFrame') -> 'pd.DataFrame'",
+      "stability": "experimental"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.cli",
+      "name": "build_parser",
+      "namespace": "scrfu.cli",
+      "result_type": "argparse.ArgumentParser",
+      "signature": "() -> 'argparse.ArgumentParser'",
+      "stability": "stable"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.cli",
+      "name": "entrypoint",
+      "namespace": "scrfu.cli",
+      "result_type": "None",
+      "signature": "() -> 'None'",
+      "stability": "stable"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.cli",
+      "name": "main",
+      "namespace": "scrfu.cli",
+      "result_type": "None",
+      "signature": "(argv: 'list[str] | None' = None) -> 'None'",
+      "stability": "stable"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.doctor",
+      "name": "doctor_report",
+      "namespace": "scrfu.doctor",
+      "result_type": "dict[str, Any]",
+      "signature": "(*, verbose: 'bool' = False, output_dir: 'str | Path' = '.scrfu', environ: 'Mapping[str, str] | None' = None) -> 'dict[str, Any]'",
+      "stability": "stable"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.io",
+      "name": "H5ADDataFrameInfo",
+      "namespace": "scrfu.io",
+      "result_type": "None",
+      "signature": "(location: 'str', key: 'str', row_count: 'int', index_name: 'str', columns: 'tuple[str, ...]') -> None",
+      "stability": "stable"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.io",
+      "name": "ReceptorCacheData",
+      "namespace": "scrfu.io",
+      "result_type": "None",
+      "signature": "(receptors: 'pd.DataFrame', cell_metadata: 'pd.DataFrame', manifest: 'dict[str, Any]', validation: 'dict[str, Any]') -> None",
+      "stability": "stable"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.io",
+      "name": "UnsupportedH5ADLayout",
+      "namespace": "scrfu.io",
+      "result_type": null,
+      "signature": null,
+      "stability": "stable"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.io",
+      "name": "export_rfu_matrix",
+      "namespace": "scrfu.io",
+      "result_type": "pd.DataFrame",
+      "signature": "(adata: 'object', groupby: 'str', path: 'PathLike', normalize: 'bool' = True, sep: 'str' = '\\t') -> 'pd.DataFrame'",
+      "stability": "stable"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.io",
+      "name": "file_sha256",
+      "namespace": "scrfu.io",
+      "result_type": "str",
+      "signature": "(path: 'PathLike') -> 'str'",
+      "stability": "stable"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.io",
+      "name": "migrate_wells_receptor_cache",
+      "namespace": "scrfu.io",
+      "result_type": "dict[str, Any]",
+      "signature": "(legacy_cache_dir: 'PathLike', output_dir: 'PathLike', *, force: 'bool' = False) -> 'dict[str, Any]'",
+      "stability": "stable"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.io",
+      "name": "read_h5ad",
+      "namespace": "scrfu.io",
+      "result_type": "ad.AnnData",
+      "signature": "(path: 'PathLike') -> 'ad.AnnData'",
+      "stability": "stable"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.io",
+      "name": "read_h5ad_dataframe",
+      "namespace": "scrfu.io",
+      "result_type": "pd.DataFrame | tuple[pd.DataFrame, H5ADDataFrameInfo]",
+      "signature": "(path: 'PathLike', *, location: 'str' = 'uns', key: 'str', selected_names: 'Sequence[str] | None' = None, max_rows: 'int | None' = None, return_info: 'bool' = False) -> 'pd.DataFrame | tuple[pd.DataFrame, H5ADDataFrameInfo]'",
+      "stability": "stable"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.io",
+      "name": "read_h5ad_obs",
+      "namespace": "scrfu.io",
+      "result_type": "pd.DataFrame | tuple[pd.DataFrame, H5ADDataFrameInfo]",
+      "signature": "(path: 'PathLike', *, columns: 'Sequence[str] | None' = None, selected_names: 'Sequence[str] | None' = None, max_rows: 'int | None' = None, return_info: 'bool' = False) -> 'pd.DataFrame | tuple[pd.DataFrame, H5ADDataFrameInfo]'",
+      "stability": "stable"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.io",
+      "name": "read_h5ad_shape",
+      "namespace": "scrfu.io",
+      "result_type": "tuple[int, int]",
+      "signature": "(path: 'PathLike') -> 'tuple[int, int]'",
+      "stability": "stable"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.io",
+      "name": "read_receptor_cache",
+      "namespace": "scrfu.io",
+      "result_type": "ReceptorCacheData",
+      "signature": "(cache_dir: 'PathLike', *, source_path: 'PathLike | None' = None) -> 'ReceptorCacheData'",
+      "stability": "stable"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.io",
+      "name": "source_fingerprint",
+      "namespace": "scrfu.io",
+      "result_type": "dict[str, Any]",
+      "signature": "(path: 'PathLike') -> 'dict[str, Any]'",
+      "stability": "stable"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.io",
+      "name": "validate_receptor_cache",
+      "namespace": "scrfu.io",
+      "result_type": "dict[str, Any]",
+      "signature": "(cache_dir: 'PathLike', *, source_path: 'PathLike | None' = None) -> 'dict[str, Any]'",
+      "stability": "stable"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.io",
+      "name": "write_h5ad",
+      "namespace": "scrfu.io",
+      "result_type": "None",
+      "signature": "(adata: 'ad.AnnData', path: 'PathLike') -> 'None'",
+      "stability": "stable"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.io",
+      "name": "write_receptor_cache",
+      "namespace": "scrfu.io",
+      "result_type": "dict[str, Any]",
+      "signature": "(cache_dir: 'PathLike', receptors: 'pd.DataFrame', cell_metadata: 'pd.DataFrame', *, source_adapter: 'str', source_adapter_version: 'str', source_format: 'str', source_path: 'PathLike | None' = None, adapter_qc: 'dict[str, Any] | None' = None, adapter_configuration: 'dict[str, Any] | None' = None, selected_metadata_columns: 'Sequence[str]' = (), source_atlas_dimensions: 'Sequence[int] | None' = None, force: 'bool' = False) -> 'dict[str, Any]'",
+      "stability": "stable"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.pl",
+      "name": "antigen_permutation_distribution",
+      "namespace": "scrfu.pl",
+      "result_type": "Axes",
+      "signature": "(result: 'AntigenPermutationResult', *, bins: 'int' = 30, ax: 'Axes | None' = None) -> 'Axes'",
+      "stability": "stable"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.pl",
+      "name": "repertoire_metric_comparison",
+      "namespace": "scrfu.pl",
+      "result_type": "Axes",
+      "signature": "(repertoire: 'pd.DataFrame', rfu: 'pd.DataFrame', *, sample_key: 'str', repertoire_metric: 'str', rfu_metric: 'str', ax: 'Axes | None' = None) -> 'Axes'",
+      "stability": "stable"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.pl",
+      "name": "rfu_antigen_bubble",
+      "namespace": "scrfu.pl",
+      "result_type": "Axes",
+      "signature": "(abundance: 'pd.DataFrame', *, rfu_col: 'str' = 'rfu_label', antigen_col: 'str' = 'epitope', size_col: 'str' = 'antigen_abundance', color_col: 'str' = 'within_rfu_proportion', top_n_rfus: 'int | None' = 30, top_n_antigens: 'int | None' = 30, ax: 'Axes | None' = None) -> 'Axes'",
+      "stability": "stable"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.pl",
+      "name": "rfu_antigen_coherence",
+      "namespace": "scrfu.pl",
+      "result_type": "Axes",
+      "signature": "(metrics: 'pd.DataFrame', *, x: 'str' = 'vdjdb_matched_sequences', y: 'str' = 'antigen_purity', size: 'str' = 'total_rfu_sequences', color: 'str | None' = None, ax: 'Axes | None' = None) -> 'Axes'",
+      "stability": "stable"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.pl",
+      "name": "rfu_antigen_heatmap",
+      "namespace": "scrfu.pl",
+      "result_type": "Axes",
+      "signature": "(abundance: 'pd.DataFrame', *, rfu_col: 'str' = 'rfu_label', antigen_col: 'str' = 'epitope', value_col: 'str' = 'within_rfu_proportion', top_n_rfus: 'int | None' = 30, top_n_antigens: 'int | None' = 30, ax: 'Axes | None' = None) -> 'Axes'",
+      "stability": "stable"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.pl",
+      "name": "rfu_bar",
+      "namespace": "scrfu.pl",
+      "result_type": "Axes",
+      "signature": "(adata: 'Any', groupby: 'str', top_n: 'int' = 20, normalize: 'bool' = True, ax: 'Axes | None' = None) -> 'Axes'",
+      "stability": "stable"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.pl",
+      "name": "rfu_convergence",
+      "namespace": "scrfu.pl",
+      "result_type": "Axes",
+      "signature": "(metrics: 'pd.DataFrame', *, richness_col: 'str' = 'unique_cdr3_richness', abundance_col: 'str' = 'cell_abundance', rfu_col: 'str' = 'rfu_label', phenotype_col: 'str | None' = None, annotate_top: 'int' = 0, ax: 'Axes | None' = None) -> 'Axes'",
+      "stability": "stable"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.pl",
+      "name": "rfu_heatmap",
+      "namespace": "scrfu.pl",
+      "result_type": "Axes",
+      "signature": "(adata: 'Any', groupby: 'str', top_n: 'int' = 50, normalize: 'bool' = True, ax: 'Axes | None' = None) -> 'Axes'",
+      "stability": "stable"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.pl",
+      "name": "rfu_metric_heatmap",
+      "namespace": "scrfu.pl",
+      "result_type": "Axes",
+      "signature": "(data: 'RFUPseudobulkResult | pd.DataFrame', *, top_n: 'int | None' = 50, row_standardize: 'bool' = False, value_label: 'str | None' = None, ax: 'Axes | None' = None) -> 'Axes'",
+      "stability": "stable"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.pl",
+      "name": "rfu_overlap_heatmap",
+      "namespace": "scrfu.pl",
+      "result_type": "Axes",
+      "signature": "(data: 'RFUOverlapResult | pd.DataFrame', *, metric: 'str | None' = None, direction: 'str | None' = None, ax: 'Axes | None' = None) -> 'Axes'",
+      "stability": "stable"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.pl",
+      "name": "rfu_phenotype_heatmap",
+      "namespace": "scrfu.pl",
+      "result_type": "Axes",
+      "signature": "(coupling: 'pd.DataFrame', *, rfu_col: 'str' = 'rfu_label', phenotype_col: 'str' = 'phenotype', value_col: 'str' = 'phenotype_specific_proportion', top_n: 'int | None' = 50, min_prevalence: 'float' = 0.0, ax: 'Axes | None' = None) -> 'Axes'",
+      "stability": "stable"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.pl",
+      "name": "rfu_score_hist",
+      "namespace": "scrfu.pl",
+      "result_type": "Axes",
+      "signature": "(adata: 'Any', bins: 'int' = 50, ax: 'Axes | None' = None) -> 'Axes'",
+      "stability": "stable"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.pp",
+      "name": "canonicalize_receptor_table",
+      "namespace": "scrfu.pp",
+      "result_type": "pd.DataFrame",
+      "signature": "(table: 'pd.DataFrame', *, source_adapter: 'str | None' = None, source_row_ids: 'pd.Series | None' = None) -> 'pd.DataFrame'",
+      "stability": "stable"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.pp",
+      "name": "normalize_chain",
+      "namespace": "scrfu.pp",
+      "result_type": "Any",
+      "signature": "(value: 'Any') -> 'Any'",
+      "stability": "stable"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.pp",
+      "name": "normalize_productive",
+      "namespace": "scrfu.pp",
+      "result_type": "Any",
+      "signature": "(value: 'Any') -> 'Any'",
+      "stability": "stable"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.pp",
+      "name": "receptor_schema",
+      "namespace": "scrfu.pp",
+      "result_type": "Mapping[str, Any]",
+      "signature": "() -> 'Mapping[str, Any]'",
+      "stability": "stable"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.pp",
+      "name": "validate_receptor_table",
+      "namespace": "scrfu.pp",
+      "result_type": "dict[str, Any]",
+      "signature": "(table: 'pd.DataFrame', strict: 'bool' = True) -> 'dict[str, Any]'",
+      "stability": "stable"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.vdjdb",
+      "name": "AntigenContextResult",
+      "namespace": "scrfu.tl",
+      "result_type": "None",
+      "signature": "(sequence_prevalence: 'pd.DataFrame', rfu_antigen_recurrence: 'pd.DataFrame', phenotype_abundance: 'pd.DataFrame', phenotype_evidence_tiers: 'pd.DataFrame', phenotype_ambiguity: 'pd.DataFrame', join_qc: 'dict[str, Any]') -> None",
+      "stability": "stable"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.vdjdb",
+      "name": "AntigenPermutationResult",
+      "namespace": "scrfu.tl",
+      "result_type": "None",
+      "signature": "(observed: 'float', permutation_values: 'np.ndarray', null_mean: 'float', null_std: 'float', empirical_upper_tail_probability: 'float', z_score: 'float', parameters: 'dict[str, Any]') -> None",
+      "stability": "stable"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.transfer",
+      "name": "CohortHarmonizationResult",
+      "namespace": "scrfu.tl",
+      "result_type": "None",
+      "signature": "(metadata: 'pd.DataFrame', qc: 'pd.DataFrame', unmapped_values: 'pd.DataFrame', rules: 'dict[str, Any]') -> None",
+      "stability": "experimental"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.comparators",
+      "name": "ComparatorRepresentation",
+      "namespace": "scrfu.tl",
+      "result_type": "None",
+      "signature": "(name: 'str', matrix: 'pd.DataFrame', sample_metadata: 'pd.DataFrame', parameters: 'dict[str, Any]') -> None",
+      "stability": "experimental"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.transfer",
+      "name": "FrozenRFUReference",
+      "namespace": "scrfu.tl",
+      "result_type": "None",
+      "signature": "(rfu_r_sha256: 'str', embedding_sha256: 'str', centroid_atlas_sha256: 'str', threshold: 'float', eligibility_rule: 'str', assignment_mode: 'str', receptor_chain: 'str', receptor_model: 'str', reference_label: 'str', immutable_reference_id: 'str', creation_timestamp: 'str', scrfu_version: 'str', schema_version: 'str' = '1') -> None",
+      "stability": "experimental"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.transfer",
+      "name": "HeldOutValidationManifest",
+      "namespace": "scrfu.tl",
+      "result_type": "None",
+      "signature": "(development_cohorts: 'tuple[str, ...]', validation_cohorts: 'tuple[str, ...]', held_out_cohort: 'str', frozen_reference_id: 'str', frozen_parameters: 'dict[str, Any]', data_hashes: 'dict[str, str]', evaluation_metrics: 'tuple[str, ...]', code_version: 'str', created_at: 'str', schema_version: 'str' = '1') -> None",
+      "stability": "experimental"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.longitudinal",
+      "name": "LongitudinalCompartmentResult",
+      "namespace": "scrfu.tl",
+      "result_type": "None",
+      "signature": "(pairwise_comparison: 'pd.DataFrame', rfu_status: 'pd.DataFrame', parameters: 'dict[str, Any]') -> None",
+      "stability": "experimental"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.longitudinal",
+      "name": "LongitudinalDesign",
+      "namespace": "scrfu.tl",
+      "result_type": "None",
+      "signature": "(design_table: 'pd.DataFrame', qc_table: 'pd.DataFrame', ordered_donors: 'tuple[Any, ...]', ordered_timepoints: 'tuple[Any, ...]', parameters: 'dict[str, Any]', warnings: 'tuple[str, ...]') -> None",
+      "stability": "experimental"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.longitudinal",
+      "name": "LongitudinalDynamicsResult",
+      "namespace": "scrfu.tl",
+      "result_type": "None",
+      "signature": "(classifications: 'pd.DataFrame', trajectories: 'pd.DataFrame', missingness_mask: 'pd.DataFrame', parameters: 'dict[str, Any]') -> None",
+      "stability": "experimental"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.longitudinal",
+      "name": "LongitudinalResamplingResult",
+      "namespace": "scrfu.tl",
+      "result_type": "None",
+      "signature": "(values: 'pd.DataFrame', summary: 'dict[str, Any]', parameters: 'dict[str, Any]') -> None",
+      "stability": "experimental"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.longitudinal",
+      "name": "RFULongitudinalResult",
+      "namespace": "scrfu.tl",
+      "result_type": "None",
+      "signature": "(sample_matrix: 'pd.DataFrame', donor_time_matrix: 'pd.DataFrame', sample_metadata: 'pd.DataFrame', qc: 'pd.DataFrame', parameters: 'dict[str, Any]', missingness_mask: 'pd.DataFrame') -> None",
+      "stability": "experimental"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.downstream",
+      "name": "RFUOverlapResult",
+      "namespace": "scrfu.tl",
+      "result_type": "None",
+      "signature": "(matrix: 'pd.DataFrame', metric: 'str', direction: 'str', parameters: 'dict[str, Any]', sample_metadata: 'pd.DataFrame | None' = None) -> None",
+      "stability": "stable"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.downstream",
+      "name": "RFUPseudobulkResult",
+      "namespace": "scrfu.tl",
+      "result_type": "None",
+      "signature": "(matrix: 'pd.DataFrame', sample_metadata: 'pd.DataFrame', rfu_metadata: 'pd.DataFrame', qc: 'pd.DataFrame', parameters: 'dict[str, Any]') -> None",
+      "stability": "stable"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.tl_rfu_repo",
+      "name": "RFUTableResult",
+      "namespace": "scrfu.tl",
+      "result_type": "None",
+      "signature": "(per_sequence: 'pd.DataFrame', per_row: 'pd.DataFrame', mapping: 'pd.DataFrame', provenance: 'dict[str, Any]') -> None",
+      "stability": "stable"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.scverse",
+      "name": "ScverseRFUResult",
+      "namespace": "scrfu.tl",
+      "result_type": "None",
+      "signature": "(table_result: 'RFUTableResult', chain_records: 'Any', cell_summary: 'pd.DataFrame | None', provenance: 'dict[str, Any]', airr_mod: 'str', airr_key: 'str', key_added: 'str') -> None",
+      "stability": "stable"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.benchmark",
+      "name": "StabilityBenchmarkResult",
+      "namespace": "scrfu.tl",
+      "result_type": "None",
+      "signature": "(metrics: 'pd.DataFrame', parameters: 'dict[str, Any]') -> None",
+      "stability": "experimental"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.transfer",
+      "name": "TransferCohortResult",
+      "namespace": "scrfu.tl",
+      "result_type": "None",
+      "signature": "(reference: 'FrozenRFUReference', coverage: 'pd.DataFrame', score_distribution: 'pd.DataFrame', rfu_summary: 'pd.DataFrame', sample_matrix: 'pd.DataFrame', sample_metadata: 'pd.DataFrame', source_table: 'pd.DataFrame', provenance: 'dict[str, Any]') -> None",
+      "stability": "experimental"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.vdjdb",
+      "name": "VDJdbEvidenceSummary",
+      "namespace": "scrfu.tl",
+      "result_type": "None",
+      "signature": "(sequence_summary: 'pd.DataFrame', row_summary: 'pd.DataFrame') -> None",
+      "stability": "stable"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.vdjdb",
+      "name": "VDJdbReference",
+      "namespace": "scrfu.tl",
+      "result_type": "None",
+      "signature": "(table: 'pd.DataFrame', provenance: 'dict[str, Any]', validation: 'dict[str, Any]') -> None",
+      "stability": "stable"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.summary",
+      "name": "aggregate_rfu",
+      "namespace": "scrfu.tl",
+      "result_type": "pd.DataFrame",
+      "signature": "(adata: 'Any', groupby: 'str', normalize: 'bool' = True) -> 'pd.DataFrame'",
+      "stability": "compatibility"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.vdjdb",
+      "name": "annotate_vdjdb",
+      "namespace": "scrfu.tl",
+      "result_type": "pd.DataFrame",
+      "signature": "(receptors_or_rfu_results: 'Any', reference: 'VDJdbReference', *, match_mode: 'str' = 'cdr3_v', chain: 'str | None' = 'TRB', v_gene_mode: 'str' = 'strip_allele', expand_rows: 'bool' = True) -> 'pd.DataFrame'",
+      "stability": "stable"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.tl",
+      "name": "assign_rfu",
+      "namespace": "scrfu.tl",
+      "result_type": "RFUTableResult | ScverseRFUResult | None",
+      "signature": "(data: 'Any', *, rfu_dir: 'PathLike | None' = None, mode: 'str' = 'standard', threshold: 'float' = 0.6, deduplicate: 'bool' = True, chunk_size: 'int | None' = None, max_workers: 'int' = 1, executor: 'str' = 'process', resume: 'bool' = True, force_recompute: 'bool' = False, wrapper_r_path: 'PathLike' = 'r/run_rfu_repo.R', rscript_bin: 'str' = 'Rscript', extra_r_args: 'Sequence[str] | None' = None, workdir: 'PathLike | None' = None, inplace: 'bool' = True, key_added: 'str' = 'scrfu', airr_mod: 'str' = 'airr', airr_key: 'str' = 'airr', chain_idx_key: 'str' = 'chain_indices', cell_summary: 'bool' = False, summary_policy: 'SummaryPolicy' = 'ambiguity_aware', summary_key_added: 'str | None' = None) -> 'RFUTableResult | ScverseRFUResult | None'",
+      "stability": "stable"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.benchmark",
+      "name": "benchmark_representation_stability",
+      "namespace": "scrfu.tl",
+      "result_type": "StabilityBenchmarkResult",
+      "signature": "(reference: 'pd.DataFrame', perturbed: 'pd.DataFrame', *, metrics: 'Sequence[str]' = ('spearman', 'cosine', 'jaccard', 'mean_absolute_error', 'top_k_overlap', 'mean_rank_displacement'), top_k: 'int' = 10) -> 'StabilityBenchmarkResult'",
+      "stability": "experimental"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.longitudinal",
+      "name": "bootstrap_longitudinal_statistic",
+      "namespace": "scrfu.tl",
+      "result_type": "LongitudinalResamplingResult",
+      "signature": "(data: 'pd.DataFrame', statistic: 'Callable[[pd.DataFrame], float]', *, donor_key: 'str', n_resamples: 'int' = 1000, random_state: 'int' = 0, confidence_level: 'float' = 0.95) -> 'LongitudinalResamplingResult'",
+      "stability": "experimental"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.tl",
+      "name": "call_rfu",
+      "namespace": "scrfu.tl",
+      "result_type": "pd.DataFrame",
+      "signature": "(adata: 'Any', *, backend: 'str' = 'rfu_repo', rfu_dir: 'PathLike | None' = None, mode: 'str' = 'standard', threshold: 'float' = 0.6, deduplicate: 'bool' = True, chunk_size: 'int | None' = None, max_workers: 'int' = 1, executor: 'str' = 'process', resume: 'bool' = True, force_recompute: 'bool' = False, chain: 'str' = 'TRB', airr_key: 'str' = 'airr', prefer_productive: 'bool' = True, wrapper_r_path: 'PathLike' = 'r/run_rfu_repo.R', rscript_bin: 'str' = 'Rscript', extra_r_args: 'Sequence[str] | None' = None, workdir: 'PathLike | None' = None, out_key: 'str' = 'rfu') -> 'pd.DataFrame'",
+      "stability": "stable"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.tl_rfu_repo",
+      "name": "call_rfu_repo",
+      "namespace": "scrfu.tl",
+      "result_type": "pd.DataFrame",
+      "signature": "(adata: 'Any', *, rfu_dir: 'PathLike | None' = None, mode: 'str' = 'standard', threshold: 'float' = 0.6, deduplicate: 'bool' = True, chunk_size: 'int | None' = None, max_workers: 'int' = 1, executor: 'str' = 'process', resume: 'bool' = True, force_recompute: 'bool' = False, chain: 'str' = 'TRB', airr_key: 'str' = 'airr', prefer_productive: 'bool' = True, wrapper_r_path: 'PathLike' = 'r/run_rfu_repo.R', rscript_bin: 'str' = 'Rscript', extra_r_args: 'Sequence[str] | None' = None, workdir: 'PathLike | None' = None, out_key: 'str' = 'rfu') -> 'pd.DataFrame'",
+      "stability": "stable"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.tl_rfu_repo",
+      "name": "call_rfu_table",
+      "namespace": "scrfu.tl",
+      "result_type": "RFUTableResult",
+      "signature": "(receptors: 'pd.DataFrame', *, rfu_dir: 'PathLike | None' = None, chain: 'str' = 'TRB', mode: 'str' = 'standard', threshold: 'float' = 0.6, deduplicate: 'bool' = True, chunk_size: 'int | None' = None, max_workers: 'int' = 1, executor: 'str' = 'process', resume: 'bool' = True, force_recompute: 'bool' = False, workdir: 'PathLike | None' = None, wrapper_r_path: 'PathLike' = 'r/run_rfu_repo.R', rscript_bin: 'str' = 'Rscript', extra_r_args: 'Sequence[str] | None' = None) -> 'RFUTableResult'",
+      "stability": "stable"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.vdjdb",
+      "name": "compare_antigen_groupings",
+      "namespace": "scrfu.tl",
+      "result_type": "pd.DataFrame",
+      "signature": "(receptor_results: 'Any', evidence: 'pd.DataFrame', *, groupings: 'Sequence[str]' = ('rfu', 'trbv', 'cdr3_length'), metrics: 'Sequence[str]' = ('purity', 'entropy', 'same_antigen_pair_fraction'), random_state: 'int' = 0, assignment_policy: 'str' = 'nearest', ambiguity_policy: 'str' = 'fractional', antigen_key: 'str' = 'epitope', max_edit_distance: 'int' = 1, max_edit_distance_sequences: 'int' = 2000) -> 'pd.DataFrame'",
+      "stability": "stable"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.scverse",
+      "name": "concat_scrfu",
+      "namespace": "scrfu.tl",
+      "result_type": "Any",
+      "signature": "(objects: 'list[Any]', *, key_added: 'str' = 'scrfu', **kwargs: 'Any') -> 'Any'",
+      "stability": "stable"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.transfer",
+      "name": "create_heldout_validation_manifest",
+      "namespace": "scrfu.tl",
+      "result_type": "HeldOutValidationManifest",
+      "signature": "(*, development_cohorts: 'Sequence[str]', validation_cohorts: 'Sequence[str]', held_out_cohort: 'str', reference: 'FrozenRFUReference | Mapping[str, Any]', frozen_parameters: 'Mapping[str, Any]', data_hashes: 'Mapping[str, str]', evaluation_metrics: 'Sequence[str]') -> 'HeldOutValidationManifest'",
+      "stability": "experimental"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.benchmark",
+      "name": "deterministic_subsample",
+      "namespace": "scrfu.tl",
+      "result_type": "pd.DataFrame",
+      "signature": "(data: 'pd.DataFrame', *, unit: 'str' = 'cell', fraction: 'float | None' = None, n: 'int | None' = None, random_state: 'int' = 0, cell_col: 'str' = 'cell_id', sequence_col: 'str' = 'cdr3aa', sample_col: 'str' = 'sample', preserve_order: 'bool' = True) -> 'pd.DataFrame'",
+      "stability": "experimental"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.benchmark",
+      "name": "donor_leave_one_out",
+      "namespace": "scrfu.tl",
+      "result_type": "list[tuple[Any, pd.DataFrame]]",
+      "signature": "(data: 'pd.DataFrame', *, donor_key: 'str') -> 'list[tuple[Any, pd.DataFrame]]'",
+      "stability": "experimental"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.longitudinal",
+      "name": "donor_retrieval",
+      "namespace": "scrfu.tl",
+      "result_type": "pd.DataFrame",
+      "signature": "(data: 'RFULongitudinalResult | pd.DataFrame', *, metadata: 'pd.DataFrame | None' = None, donor_key: 'str' = 'donor', time_key: 'str' = 'time', metric: 'str' = 'cosine', top_k: 'int' = 3, exclude_same_timepoint: 'bool' = False, compartment_key: 'str | None' = None, same_compartment_only: 'bool' = False) -> 'pd.DataFrame'",
+      "stability": "experimental"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.vdjdb",
+      "name": "global_antigen_coherence",
+      "namespace": "scrfu.tl",
+      "result_type": "dict[str, Any]",
+      "signature": "(rfu_results: 'Any', evidence: 'pd.DataFrame', *, assignment_policy: 'str' = 'nearest', antigen_key: 'str' = 'epitope', ambiguity_policy: 'str' = 'fractional') -> 'dict[str, Any]'",
+      "stability": "stable"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.transfer",
+      "name": "harmonize_cohort_metadata",
+      "namespace": "scrfu.tl",
+      "result_type": "CohortHarmonizationResult",
+      "signature": "(metadata: 'pd.DataFrame', *, cohort_label: 'str', field_mapping: 'Mapping[str, str]', value_mappings: 'Mapping[str, Mapping[Any, Any]] | None' = None, strict: 'bool' = True) -> 'CohortHarmonizationResult'",
+      "stability": "experimental"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.comparators",
+      "name": "list_comparators",
+      "namespace": "scrfu.tl",
+      "result_type": "list[str]",
+      "signature": "() -> 'list[str]'",
+      "stability": "experimental"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.vdjdb",
+      "name": "load_vdjdb_reference",
+      "namespace": "scrfu.tl",
+      "result_type": "VDJdbReference",
+      "signature": "(source: 'str | Path | pd.DataFrame', *, release_label: 'str', source_url: 'str | None' = None, expected_sha256: 'str | None' = None, column_mappings: 'Mapping[str, str] | None' = None, sep: 'str | None' = None, strict: 'bool' = True) -> 'VDJdbReference'",
+      "stability": "stable"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.longitudinal",
+      "name": "longitudinal_compartment_comparison",
+      "namespace": "scrfu.tl",
+      "result_type": "LongitudinalCompartmentResult",
+      "signature": "(data: 'RFULongitudinalResult', *, metric: 'str' = 'weighted_jaccard', minimum_abundance: 'float' = 0.0) -> 'LongitudinalCompartmentResult'",
+      "stability": "experimental"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.longitudinal",
+      "name": "longitudinal_similarity",
+      "namespace": "scrfu.tl",
+      "result_type": "pd.DataFrame",
+      "signature": "(data: 'RFULongitudinalResult | pd.DataFrame', *, metadata: 'pd.DataFrame | None' = None, donor_key: 'str' = 'donor', time_key: 'str' = 'time', compartment_key: 'str | None' = None, metric: 'str' = 'cosine') -> 'pd.DataFrame'",
+      "stability": "experimental"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.benchmark",
+      "name": "multinomial_abundance_resample",
+      "namespace": "scrfu.tl",
+      "result_type": "pd.DataFrame",
+      "signature": "(matrix: 'pd.DataFrame', *, depth: 'int | pd.Series', random_state: 'int' = 0) -> 'pd.DataFrame'",
+      "stability": "experimental"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.vdjdb",
+      "name": "normalize_vdjdb_cdr3",
+      "namespace": "scrfu.tl",
+      "result_type": "Any",
+      "signature": "(value: 'Any', *, validate: 'bool' = True) -> 'Any'",
+      "stability": "stable"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.vdjdb",
+      "name": "normalize_vdjdb_v_gene",
+      "namespace": "scrfu.tl",
+      "result_type": "Any",
+      "signature": "(value: 'Any', *, mode: 'str' = 'strip_allele') -> 'Any'",
+      "stability": "stable"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.longitudinal",
+      "name": "permute_longitudinal_labels",
+      "namespace": "scrfu.tl",
+      "result_type": "LongitudinalResamplingResult",
+      "signature": "(data: 'pd.DataFrame', statistic: 'Callable[[pd.DataFrame], float]', *, donor_key: 'str', label_key: 'str', n_permutations: 'int' = 1000, random_state: 'int' = 0, exact: 'bool | str' = 'auto') -> 'LongitudinalResamplingResult'",
+      "stability": "experimental"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.diagnostics",
+      "name": "reference_coverage",
+      "namespace": "scrfu.tl",
+      "result_type": "pd.DataFrame",
+      "signature": "(data: 'Any', *, groupby: 'str | Sequence[str] | None' = None, chain: 'str | None' = None, chain_col: 'str' = 'chain', cell_col: 'str' = 'cell_id', sequence_col: 'str' = 'unique_sequence_id', cdr3_col: 'str' = 'cdr3aa', score_col: 'str' = 'rfu_score') -> 'pd.DataFrame'",
+      "stability": "experimental"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.comparators",
+      "name": "register_comparator",
+      "namespace": "scrfu.tl",
+      "result_type": "None",
+      "signature": "(name: 'str', comparator: 'Comparator', *, replace: 'bool' = False) -> 'None'",
+      "stability": "experimental"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.repertoire",
+      "name": "repertoire_metrics",
+      "namespace": "scrfu.tl",
+      "result_type": "pd.DataFrame",
+      "signature": "(data: 'Any', *, groupby: 'str | Sequence[str]', weighting: 'str', cell_col: 'str' = 'cell_id', cdr3_col: 'str' = 'cdr3aa', clonotype_col: 'str' = 'clonotype_id', v_col: 'str' = 'v_call', productive_col: 'str' = 'productive', chain: 'str | None' = None, chain_col: 'str' = 'chain') -> 'pd.DataFrame'",
+      "stability": "stable"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.comparators",
+      "name": "repertoire_representation",
+      "namespace": "scrfu.tl",
+      "result_type": "ComparatorRepresentation",
+      "signature": "(data: 'Any', *, sample_key: 'str', method: 'str' = 'exact_cdr3', cdr3_col: 'str' = 'cdr3aa', clonotype_col: 'str' = 'clonotype_id', v_col: 'str' = 'v_call', j_col: 'str' = 'j_call', cell_col: 'str' = 'cell_id', max_edit_distance: 'int' = 1) -> 'ComparatorRepresentation'",
+      "stability": "experimental"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.vdjdb",
+      "name": "rfu_antigen_abundance",
+      "namespace": "scrfu.tl",
+      "result_type": "pd.DataFrame",
+      "signature": "(rfu_results: 'Any', evidence: 'pd.DataFrame', *, assignment_policy: 'str' = 'nearest', weighting: 'str' = 'unique_sequence', antigen_key: 'str' = 'epitope', ambiguity_policy: 'str' = 'fractional') -> 'pd.DataFrame'",
+      "stability": "stable"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.vdjdb",
+      "name": "rfu_antigen_coherence",
+      "namespace": "scrfu.tl",
+      "result_type": "pd.DataFrame",
+      "signature": "(rfu_results: 'Any', evidence: 'pd.DataFrame', *, assignment_policy: 'str' = 'nearest', weighting: 'str' = 'unique_sequence', antigen_key: 'str' = 'epitope', min_matched_sequences: 'int' = 2, ambiguity_policy: 'str' = 'fractional', sample_key: 'str | None' = None, donor_key: 'str | None' = None) -> 'pd.DataFrame'",
+      "stability": "stable"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.vdjdb",
+      "name": "rfu_antigen_permutation_test",
+      "namespace": "scrfu.tl",
+      "result_type": "AntigenPermutationResult",
+      "signature": "(rfu_results: 'Any', evidence: 'pd.DataFrame', *, n_permutations: 'int' = 1000, random_state: 'int' = 0, stratify_by: 'str | Sequence[str] | None' = None, metric: 'str' = 'same_antigen_pair_fraction', assignment_policy: 'str' = 'nearest', ambiguity_policy: 'str' = 'fractional', antigen_key: 'str' = 'epitope') -> 'AntigenPermutationResult'",
+      "stability": "stable"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.longitudinal",
+      "name": "rfu_longitudinal_dynamics",
+      "namespace": "scrfu.tl",
+      "result_type": "LongitudinalDynamicsResult",
+      "signature": "(data: 'RFULongitudinalResult', *, minimum_abundance: 'float' = 0.0, minimum_timepoints: 'int' = 2, minimum_timepoint_proportion: 'float' = 0.5, appearance_threshold: 'float' = 0.0, disappearance_threshold: 'float' = 0.0, expansion_fold_change: 'float' = 2.0, contraction_fold_change: 'float' = 2.0, pseudocount: 'float' = 0.5) -> 'LongitudinalDynamicsResult'",
+      "stability": "experimental"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.longitudinal",
+      "name": "rfu_longitudinal_matrix",
+      "namespace": "scrfu.tl",
+      "result_type": "RFULongitudinalResult",
+      "signature": "(data: 'Any', *, sample_key: 'str', donor_key: 'str', time_key: 'str', design: 'LongitudinalDesign | pd.DataFrame | None' = None, compartment_key: 'str | None' = None, assignment_policy: 'str' = 'nearest', weighting: 'str' = 'cell', normalize: 'str' = 'count', min_prevalence: 'int | float' = 1, pseudocount: 'float' = 0.5) -> 'RFULongitudinalResult'",
+      "stability": "experimental"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.summary",
+      "name": "rfu_metrics",
+      "namespace": "scrfu.tl",
+      "result_type": "pd.DataFrame",
+      "signature": "(data: 'Any', *, groupby: 'str | Sequence[str]', weighting: 'str', cell_col: 'str' = 'cell_id', cdr3_col: 'str' = 'cdr3aa', rfu_col: 'str' = 'rfu_label', threshold_col: 'str' = 'pass_thr', donor_col: 'str | None' = None, sample_col: 'str | None' = None, chain: 'str | None' = None, chain_col: 'str' = 'chain', assignment_policy: 'str' = 'nearest') -> 'pd.DataFrame'",
+      "stability": "stable"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.downstream",
+      "name": "rfu_overlap",
+      "namespace": "scrfu.tl",
+      "result_type": "RFUOverlapResult",
+      "signature": "(data_or_matrix: 'Any', *, sample_key: 'str | None' = None, metric: 'str' = 'jaccard', assignment_policy: 'str' = 'nearest', weighting: 'str' = 'cell', min_abundance: 'float' = 1, **pseudobulk_kwargs: 'Any') -> 'RFUOverlapResult'",
+      "stability": "stable"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.downstream",
+      "name": "rfu_phenotype_coupling",
+      "namespace": "scrfu.tl",
+      "result_type": "pd.DataFrame",
+      "signature": "(data: 'Any', *, phenotype_key: 'str', sample_key: 'str | None' = None, assignment_policy: 'str' = 'nearest', weighting: 'str' = 'cell', min_abundance: 'int' = 1, cell_col: 'str' = 'cell_id', cdr3_col: 'str' = 'cdr3aa', rfu_col: 'str' = 'rfu_label', threshold_col: 'str' = 'pass_thr') -> 'pd.DataFrame'",
+      "stability": "stable"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.downstream",
+      "name": "rfu_pseudobulk",
+      "namespace": "scrfu.tl",
+      "result_type": "RFUPseudobulkResult",
+      "signature": "(data: 'Any', *, sample_key: 'str', phenotype_keys: 'str | Sequence[str] | None' = None, assignment_policy: 'str' = 'nearest', weighting: 'str' = 'cell', normalize: 'str' = 'count', min_cells: 'int' = 1, min_sequences: 'int' = 1, min_prevalence: 'int | float' = 1, pseudocount: 'float' = 0.5, retain_zero_rfus: 'bool' = False, cell_col: 'str' = 'cell_id', cdr3_col: 'str' = 'cdr3aa', rfu_col: 'str' = 'rfu_label', threshold_col: 'str' = 'pass_thr') -> 'RFUPseudobulkResult'",
+      "stability": "stable"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.sequence",
+      "name": "rfu_sequence_matrix",
+      "namespace": "scrfu.tl",
+      "result_type": "pd.DataFrame",
+      "signature": "(data: 'Any', *, rfu: 'Any | None' = None, sequence_col: 'str' = 'cdr3aa', rfu_col: 'str' = 'rfu_label', weighting: 'str' = 'unique_sequence', cell_col: 'str' = 'cell_id', clonotype_col: 'str' = 'clonotype_id', alignment: 'str' = 'conserved_ends', include_gap: 'bool' = True) -> 'pd.DataFrame'",
+      "stability": "stable"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.summary",
+      "name": "rfu_summary",
+      "namespace": "scrfu.tl",
+      "result_type": "pd.DataFrame",
+      "signature": "(adata: 'Any', groupby: 'str | None' = None) -> 'pd.DataFrame'",
+      "stability": "compatibility"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.benchmark",
+      "name": "shuffle_input_order",
+      "namespace": "scrfu.tl",
+      "result_type": "pd.DataFrame",
+      "signature": "(data: 'pd.DataFrame', *, random_state: 'int' = 0, preserve_index: 'bool' = True) -> 'pd.DataFrame'",
+      "stability": "experimental"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.vdjdb",
+      "name": "summarize_antigen_context",
+      "namespace": "scrfu.tl",
+      "result_type": "AntigenContextResult",
+      "signature": "(rfu_results: 'Any', evidence: 'pd.DataFrame', *, metadata: 'pd.DataFrame | None' = None, cell_key: 'str' = 'cell_id', sample_key: 'str | None' = None, donor_key: 'str | None' = None, phenotype_key: 'str | None' = None, condition_key: 'str | None' = None, antigen_key: 'str' = 'epitope') -> 'AntigenContextResult'",
+      "stability": "stable"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.longitudinal",
+      "name": "summarize_longitudinal_similarity",
+      "namespace": "scrfu.tl",
+      "result_type": "pd.DataFrame",
+      "signature": "(pairs: 'pd.DataFrame', *, interval_bins: 'Sequence[float] | None' = None) -> 'pd.DataFrame'",
+      "stability": "experimental"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.vdjdb",
+      "name": "summarize_vdjdb_evidence",
+      "namespace": "scrfu.tl",
+      "result_type": "VDJdbEvidenceSummary",
+      "signature": "(queries: 'Any', evidence: 'pd.DataFrame') -> 'VDJdbEvidenceSummary'",
+      "stability": "stable"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.benchmark",
+      "name": "threshold_sensitivity",
+      "namespace": "scrfu.tl",
+      "result_type": "pd.DataFrame",
+      "signature": "(data: 'pd.DataFrame', thresholds: 'Sequence[float]', *, score_col: 'str' = 'rfu_score', groupby: 'str | None' = None) -> 'pd.DataFrame'",
+      "stability": "experimental"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.transfer",
+      "name": "transfer_cohort",
+      "namespace": "scrfu.tl",
+      "result_type": "TransferCohortResult",
+      "signature": "(data: 'Any', reference: 'FrozenRFUReference | Mapping[str, Any]', *, cohort_label: 'str', sample_key: 'str', assignment_policy: 'str' = 'nearest', weighting: 'str' = 'cell', groupby: 'str | Sequence[str] | None' = None, observed_reference_id: 'str | None' = None, cell_col: 'str' = 'cell_id', cdr3_col: 'str' = 'cdr3aa', rfu_col: 'str' = 'rfu_label', chain_col: 'str' = 'chain') -> 'TransferCohortResult'",
+      "stability": "experimental"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.validation",
+      "name": "validate_airr",
+      "namespace": "scrfu.tl",
+      "result_type": "pd.DataFrame",
+      "signature": "(adata: 'Any', airr_key: 'str' = 'airr', chain: 'str' = 'TRB', *, strict: 'bool' = False) -> 'pd.DataFrame'",
+      "stability": "stable"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.completed_run",
+      "name": "validate_completed_rfu_run",
+      "namespace": "scrfu.tl",
+      "result_type": "dict[str, Any]",
+      "signature": "(run_dir: 'str | Path', *, evidence_manifest: 'str | Path | None' = None, verify_evidence_inputs: 'bool' = False, expected_provenance: 'dict[str, Any] | None' = None, score_tolerance: 'float' = 1e-12, strict: 'bool' = True) -> 'dict[str, Any]'",
+      "stability": "stable"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.transfer",
+      "name": "validate_frozen_reference",
+      "namespace": "scrfu.tl",
+      "result_type": "FrozenRFUReference",
+      "signature": "(reference: 'FrozenRFUReference | Mapping[str, Any]') -> 'FrozenRFUReference'",
+      "stability": "experimental"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.longitudinal",
+      "name": "validate_longitudinal_design",
+      "namespace": "scrfu.tl",
+      "result_type": "LongitudinalDesign",
+      "signature": "(data: 'Any', *, sample_key: 'str', donor_key: 'str', time_key: 'str', compartment_key: 'str | None' = None, phenotype_key: 'str | None' = None, condition_key: 'str | None' = None, tissue_key: 'str | None' = None, batch_key: 'str | None' = None) -> 'LongitudinalDesign'",
+      "stability": "experimental"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.scverse",
+      "name": "validate_scrfu_schema",
+      "namespace": "scrfu.tl",
+      "result_type": "dict[str, Any]",
+      "signature": "(data: 'Any', *, airr_mod: 'str' = 'airr', airr_key: 'str' = 'airr', key_added: 'str' = 'scrfu') -> 'dict[str, Any]'",
+      "stability": "stable"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.vdjdb",
+      "name": "validate_vdjdb_reference",
+      "namespace": "scrfu.tl",
+      "result_type": "dict[str, Any]",
+      "signature": "(reference: 'VDJdbReference | pd.DataFrame', *, strict: 'bool' = True) -> 'dict[str, Any]'",
+      "stability": "stable"
+    }
+  ],
+  "release_line": "0.5",
+  "removal_policy": "Stable entries may not be removed without an explicit API review.",
+  "schema_version": 1
+}

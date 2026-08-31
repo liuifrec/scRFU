@@ -1,4 +1,4 @@
-"""Generate the machine-readable scRFU 0.4 public API snapshot."""
+"""Generate a machine-readable scRFU public API snapshot."""
 
 from __future__ import annotations
 
@@ -78,6 +78,7 @@ def _entry(namespace: str, name: str, stability: str) -> dict[str, object]:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", type=Path, default=Path("docs/public_api_0.4.json"))
+    parser.add_argument("--release-line", default="0.4")
     args = parser.parse_args()
     entries: list[dict[str, object]] = []
     for namespace in ("scrfu.pp", "scrfu.adapters", "scrfu.io", "scrfu.tl", "scrfu.pl"):
@@ -107,7 +108,7 @@ def main() -> None:
     )
     payload = {
         "schema_version": 1,
-        "release_line": "0.4",
+        "release_line": args.release_line,
         "removal_policy": "Stable entries may not be removed without an explicit API review.",
         "entries": sorted(entries, key=lambda item: (item["namespace"], item["name"])),
     }

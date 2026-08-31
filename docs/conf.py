@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import sys
 from pathlib import Path
 
@@ -17,8 +18,20 @@ extensions = [
     "myst_parser",
     "sphinx.ext.autodoc",
     "sphinx.ext.autosummary",
+    "sphinx.ext.intersphinx",
     "sphinx.ext.napoleon",
 ]
+if os.environ.get("READTHEDOCS") == "True" or os.environ.get("SCRFU_DOCS_INTERSPHINX") == "1":
+    intersphinx_mapping = {
+        "anndata": ("https://anndata.readthedocs.io/en/stable/", None),
+        "scanpy": ("https://scanpy.readthedocs.io/en/stable/", None),
+        "mudata": ("https://mudata.readthedocs.io/en/stable/", None),
+        "scirpy": ("https://scirpy.scverse.org/en/stable/", None),
+    }
+else:
+    # Offline local builds remain deterministic; hosted builds resolve the
+    # authoritative inventories above.
+    intersphinx_mapping = {}
 autosummary_generate = True
 autodoc_typehints = "description"
 napoleon_numpy_docstring = True

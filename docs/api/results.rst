@@ -8,6 +8,7 @@ fields are tracked in the public API snapshot.
    :nosignatures:
 
    scrfu.tl.RFUTableResult
+   scrfu.tl.ScverseRFUResult
    scrfu.tl.RFUPseudobulkResult
    scrfu.tl.RFUOverlapResult
    scrfu.tl.VDJdbReference

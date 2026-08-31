@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "assessment_date": "2026-08-31",
+  "branch": "feature/scverse-native-0.5",
+  "domains": [
+    {"domain": "native AnnData", "status": "PASS", "evidence": "src/scrfu/scverse.py; tests/test_scverse_native.py"},
+    {"domain": "native MuData", "status": "PASS", "evidence": "H5MU modality and slicing tests"},
+    {"domain": "AIRR semantics", "status": "PASS", "evidence": "all-chain Awkward extraction; no chain collapse"},
+    {"domain": "Scirpy interoperability", "status": "PASS", "evidence": "current Scirpy index_chains/end-to-end tests"},
+    {"domain": "chain alignment", "status": "PASS", "evidence": "schema validator and adversarial multi-chain tests"},
+    {"domain": "serialization", "status": "PASS", "evidence": "H5AD/H5MU round-trip tests"},
+    {"domain": "subsetting", "status": "PASS", "evidence": "AnnData/MuData slicing tests"},
+    {"domain": "concatenation", "status": "PASS", "evidence": "concat_scrfu compatible-reference guard tests"},
+    {"domain": "X-independent behavior", "status": "PASS", "evidence": "X=None and unchanged-X tests"},
+    {"domain": "memory safety", "status": "PASS", "evidence": "native code reads only obs_names/obsm; targeted reader retained for large files"},
+    {"domain": "API conventions", "status": "PASS", "evidence": "scrfu.tl.assign_rfu inplace/key_added pattern"},
+    {"domain": "schema/provenance", "status": "PASS", "evidence": "schema 1.0, portable reference identity, validator"},
+    {"domain": "documentation", "status": "PASS", "evidence": "Sphinx API/user docs and warning-clean build"},
+    {"domain": "tutorial", "status": "PASS", "evidence": "packaged-fixture scverse tutorial smoke"},
+    {"domain": "coverage", "status": "PARTIAL", "evidence": "coverage report; some legacy stable modules remain weakly covered"},
+    {"domain": "CI", "status": "PARTIAL", "evidence": "workflow updated; remote execution pending branch push"},
+    {"domain": "dependency compatibility", "status": "PASS", "evidence": "current and coherent minimum scverse stacks pass the native tutorial"},
+    {"domain": "standard registry readiness", "status": "BLOCKED", "evidence": "PyPI project is not published"},
+    {"domain": "hosted documentation readiness", "status": "PARTIAL", "evidence": ".readthedocs.yaml present; service not configured"},
+    {"domain": "ecosystem registry readiness", "status": "BLOCKED", "evidence": "standard registry, hosted docs, and maintainer consent pending"},
+    {"domain": "method validation", "status": "PASS", "evidence": "docs/evidence_index.md; existing frozen 0.4 validation"}
+  ]
+}

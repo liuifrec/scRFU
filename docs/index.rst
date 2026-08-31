@@ -10,6 +10,9 @@ assets are external dependencies and are not redistributed by this package.
    :caption: User guide
 
    tutorial
+   scverse_tutorial
+   scirpy_interoperability_scope
+   scverse_storage_schema
    configuration
    api/index
    release_licensing_boundary
@@ -22,6 +25,15 @@ assets are external dependencies and are not redistributed by this package.
    api_freeze_v1
    evidence_index
    performance_regression
+   scverse_gap_audit
+   scverse_dependency_matrix
+   scverse_method_benchmark
+   scverse_readiness_scorecard
+   scverse_ecosystem_submission_draft
+   scirpy_public_smoke
+   coverage
+   standard_registry_readiness
+   hosted_documentation_readiness
 
 .. toctree::
    :hidden:

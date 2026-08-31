@@ -9,8 +9,8 @@ adapter and bounded public benchmark, not the data model.
 
 ## What scRFU Does
 
-- Extracts TRB CDR3 amino-acid and TRBV features from AnnData/scirpy-style AIRR
-  tables.
+- Reads current Scirpy Awkward AIRR records directly from AnnData or a MuData
+  AIRR modality while preserving every receptor chain and its order.
 - Prepares canonical receptor rows through Wells, scirpy/AIRR, generic
   DataFrame, and Cell Ranger VDJ adapters while keeping metadata separate.
 - Selectively reads receptor and observation data without loading expression
@@ -99,12 +99,25 @@ shortened by default; `scrfu doctor --verbose` prints full runtime paths.
 ## Quickstart
 
 For a runnable data-free walkthrough, see
-[`docs/tutorial.md`](docs/tutorial.md). The default tutorial uses synthetic
+[`docs/tutorial.md`](docs/tutorial.md) and the
+[scverse-native tutorial](docs/scverse_tutorial.md). The default tutorials use synthetic
 fixtures and clearly labelled mock assignments; real RFU execution remains an
 explicit external-backend step.
 
 ```python
 import scrfu
+
+# Primary current Scirpy/AnnData/MuData path. Results are aligned to every
+# source AIRR chain in obsm["scrfu"]. Cell-level obs values are opt-in.
+scrfu.tl.assign_rfu(
+    mdata,
+    rfu_dir="/path/to/RFU",
+    airr_mod="airr",
+    airr_key="airr",
+    key_added="scrfu",
+    cell_summary=True,
+    summary_policy="ambiguity_aware",
+)
 
 prepared = scrfu.adapters.prepare_receptors(
     airr_dataframe,
@@ -120,6 +133,7 @@ table_run = scrfu.tl.call_rfu_table(
 
 qc = scrfu.tl.validate_airr(adata, airr_key="airr", chain="TRB")
 
+# Historical one-row-per-cell compatibility path:
 scrfu.tl.call_rfu(
     adata,
     backend="rfu_repo",
@@ -168,14 +182,28 @@ scrfu.pl.rfu_heatmap(adata, groupby="sample")
 scrfu.pl.rfu_score_hist(adata)
 ```
 
-## Input Schema
+## Native AIRR storage
 
-scRFU reads AIRR-like data from `adata.obsm["airr"]`. Supported aliases include
+The primary path reads current Scirpy records from `adata.obsm["airr"]` or
+`mdata.mod["airr"].obsm["airr"]`. Chain-level results are written to an aligned
+Awkward array in `obsm["scrfu"]`; RFU provenance and schema version are stored
+in `uns["scrfu"]` of the AIRR modality. TRA, BCR, nonproductive, malformed, and
+missing-sequence chains remain explicit non-eligible records. Multiple TRBs are
+never collapsed. H5AD/H5MU round trips and observation subsetting preserve the
+alignment. Use `scrfu.tl.validate_scrfu_schema` after loading and
+`scrfu.tl.concat_scrfu` when concatenating annotated AnnData objects.
+
+Cell-level RFU columns are created only when requested. The default summary is
+ambiguity-aware and leaves the cell RFU missing when eligible TRB chains map to
+different RFUs. `scirpy.pp.index_chains` is not required for chain assignment;
+it is used only by the explicit `primary_vdj` summary policy.
+
+The compatibility table path accepts AIRR-like aliases including
 cell barcode (`cell_id`, `cell`, `barcode`, `cellid`), chain (`chain`, `locus`),
 CDR3 amino-acid sequence (`cdr3aa`, `junction_aa`, `cdr3_aa`, `cdr3`), V gene
 (`v_call`, `v_gene`, `trbv`, `v`), and optional `productive`.
 
-RFU results are written to:
+The historical `call_rfu` wrapper writes one-row-per-cell compatibility fields:
 
 - `adata.obs["trb_cdr3aa"]`
 - `adata.obs["trbv"]`
@@ -183,8 +211,9 @@ RFU results are written to:
 - `adata.obs["rfu_score"]`
 - `adata.uns["scrfu"]`
 
-See [docs/api_contract.md](docs/api_contract.md) for the stable API and AnnData
-contract.
+See [docs/scverse_storage_schema.md](docs/scverse_storage_schema.md) for the
+native schema and [docs/api_contract.md](docs/api_contract.md) for compatibility
+contracts.
 
 The canonical schema, adapters, and expression-free cache are documented in
 [docs/receptor_schema.md](docs/receptor_schema.md),
@@ -217,6 +246,9 @@ describe evidence strength, not biological certainty.
 
 - [examples/synthetic_scirpy_demo.py](examples/synthetic_scirpy_demo.py):
   offline synthetic AnnData/scirpy-style demo.
+- [examples/tutorial_scverse_native.py](examples/tutorial_scverse_native.py):
+  current Scirpy/MuData chain-aligned tutorial with explicitly synthetic mock
+  assignments.
 - [examples/real_scirpy_workflow.py](examples/real_scirpy_workflow.py):
   template for user-provided real h5ad input.
 - [examples/wells_atlas_workflow.py](examples/wells_atlas_workflow.py):

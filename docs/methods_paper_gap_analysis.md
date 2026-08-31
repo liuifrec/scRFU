@@ -1,5 +1,33 @@
 # Methods-paper gap analysis
 
+## 2026-08-31 scverse-native update
+
+This update supersedes the historical Month 1 statuses retained below. It is a
+gap analysis, not manuscript prose.
+
+| Central-claim component | Status | Evidence | Smallest remaining experiment |
+|---|---|---|---|
+| Scalable RFU assignment | Demonstrated | Exact official parity, full Wells run, restart/parallel evidence | None for core claim |
+| scverse-native receptor state | Demonstrated technically | Current Scirpy AIRR, AnnData/MuData chain alignment, H5AD/H5MU, slicing, concat guard, public Scirpy 3k official-backend smoke | Remote optional-stack CI only |
+| Transferable representation | Demonstrated | GSE190905 independent and preregistered GSE157007 held-out frozen-reference results | No retuning; optional additional cohort is not required |
+| Single-cell phenotype linkage | Demonstrated descriptively | Wells phenotype-coupling outputs | No cell-level inferential claim |
+| Longitudinal utility | Demonstrated in public repeated donors | GSE190905 within/between and donor-retrieval evidence | Temporal depth limits dynamics claims |
+| Antigen evidence | Demonstrated as annotation coherence only | Pinned VDJdb external validation/nulls | Do not upgrade to antigen specificity |
+
+Novelty boundaries remain explicit. Original RFU supplies the scientific
+reference/assignment concept. Scirpy supplies the general AIRR/scverse
+ecosystem and clonotype analysis. scRFU's contribution is deterministic,
+restartable, frozen-reference execution; chain-aligned scverse storage; portable
+coverage/provenance; and RFU-specific transferable downstream analyses. Exact
+clonotypes and conventional summaries remain required comparators rather than
+straw baselines.
+
+The smallest unresolved engineering evidence is remote optional-stack CI. The
+coherent minimum and current dependency stacks both pass locally. The smallest unresolved scientific-method
+issue is the limited depth of the public repeated-measures cohort; it constrains
+longitudinal dynamics claims but does not block the core transferability claim.
+
+
 Status reflects repository evidence on 2026-08-17. “Synthetic” is not real-data
 validation. “Bounded public” refers only to previously validated bounded Wells
 workflows, not biological inference. Priorities are P0 (submission-critical), P1

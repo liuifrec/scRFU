@@ -37,13 +37,14 @@ plotting = [
 ]
 scirpy = [
   "scirpy>=0.13",
-  "scanpy>=1.9",
+  "scanpy>=1.9.3",
 ]
 mudata = [
-  "mudata>=0.2",
+  "mudata>=0.2.3",
 ]
 test = [
   "pytest>=7.4",
+  "pytest-cov>=5.0",
   "ruff>=0.6",
   "tomli>=2.0; python_version < '3.11'",
 ]
@@ -53,18 +54,32 @@ docs = [
 ]
 all = [
   "matplotlib>=3.7",
-  "mudata>=0.2",
-  "scanpy>=1.9",
+  "mudata>=0.2.3",
+  "scanpy>=1.9.3",
   "scirpy>=0.13",
 ]
 dev = [
   "build>=1.2",
   "matplotlib>=3.7",
   "pytest>=7.4",
+  "pytest-cov>=5.0",
   "ruff>=0.6",
   "mypy>=1.8",
   "types-requests",
   "tomli>=2.0; python_version < '3.11'",
+  "twine>=5.1",
+]
+
+[tool.coverage.run]
+source = ["scrfu"]
+branch = true
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = false
+exclude_also = [
+  "if TYPE_CHECKING:",
+  "raise NotImplementedError",
 ]
 
 [project.scripts]

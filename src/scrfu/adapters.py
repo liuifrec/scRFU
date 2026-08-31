@@ -54,6 +54,7 @@ _AIRR_ALIASES: dict[str, tuple[str, ...]] = {
     "junction": ("junction",),
     "junction_aa": ("junction_aa",),
     "clonotype_id": ("clonotype_id", "clone_id"),
+    "source_slot": ("source_slot", "source_chain_index"),
 }
 
 
@@ -94,10 +95,22 @@ def _source_frame(source: Any, *, airr_key: str) -> tuple[pd.DataFrame, str]:
         if isinstance(value, pd.DataFrame):
             return value.copy(), f"obsm[{airr_key!r}]"
         if value.__class__.__module__.startswith("awkward"):
-            raise TypeError(
-                "Awkward-array scirpy AIRR objects are not yet supported directly; "
-                "convert the receptor records to a pandas DataFrame first."
-            )
+            try:
+                import awkward as ak
+            except ImportError as exc:  # pragma: no cover - value itself requires awkward
+                raise ImportError("Reading Scirpy AIRR records requires Awkward Array.") from exc
+            if not hasattr(source, "obs_names") or len(value) != len(source.obs_names):
+                raise ValueError("Scirpy AIRR records are not aligned with observations.")
+            rows: list[dict[str, Any]] = []
+            for cell_id, chains in zip(
+                source.obs_names.astype(str), ak.to_list(value), strict=True
+            ):
+                for chain_index, record in enumerate(chains):
+                    row = dict(record)
+                    row["cell_id"] = str(cell_id)
+                    row["source_chain_index"] = chain_index
+                    rows.append(row)
+            return pd.DataFrame(rows), f"obsm[{airr_key!r}]:awkward"
         try:
             return pd.DataFrame(value), f"obsm[{airr_key!r}]"
         except Exception as exc:

@@ -1,0 +1,24 @@
+name: scRFU
+description: >-
+  scRFU assigns frozen-reference receptor functional units to T-cell receptor
+  sequences and supports transferable single-cell and repertoire analyses in
+  AnnData and MuData.
+project_home: https://github.com/liuifrec/scRFU
+documentation_home: https://liuifrec.github.io/scRFU/
+tutorials_home: https://liuifrec.github.io/scRFU/scverse_tutorial.html
+install:
+  pypi: scrfu
+primary_category: Adaptive immune cell receptor
+tags:
+  - immune receptor
+  - functional analysis
+  - interoperability
+  - multimodal
+  - benchmarking
+license: MIT
+language: Python
+contact:
+  - liuifrec
+test_command: pip install ".[scirpy,mudata,test]" && pytest
+category: ecosystem
+

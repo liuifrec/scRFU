@@ -13,6 +13,12 @@ exists, then the documented default. There are no developer-path fallbacks.
 | Workers | `max_workers` / `--max-workers` | none | `1` |
 | Chunk size | `chunk_size` / `--chunk-size` | none | unchunked single backend call |
 
+Native AIRR routing is always explicit in Python: `airr_mod="airr"`,
+`airr_key="airr"`, `chain_idx_key="chain_indices"`, and
+`key_added="scrfu"` are the current Scirpy-compatible defaults. `airr_mod` is
+used only for MuData. Chain indices are optional and affect only an explicitly
+requested `primary_vdj` cell summary; they never affect RFU assignments.
+
 `RFU_DIR` must point to a user-supplied upstream RFU checkout containing the
 required public RFU files. scRFU does not bundle those assets. Runtime manifests
 may contain full local paths for troubleshooting; shareable evidence indexes

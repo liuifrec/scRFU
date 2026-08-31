@@ -43,3 +43,19 @@ def test_public_api_snapshot_fields_and_classifications() -> None:
         keys.add(key)
         if entry["namespace"] == "scrfu.bcr":
             assert entry["stability"] == "experimental"
+
+
+def test_scverse_0_5_snapshot_extends_0_4_without_stable_removals() -> None:
+    docs = Path(__file__).parents[1] / "docs"
+    old = json.loads((docs / "public_api_0.4.json").read_text())
+    new = json.loads((docs / "public_api_0.5.json").read_text())
+    assert new["release_line"] == "0.5"
+    old_stable = {
+        (entry["namespace"], entry["name"])
+        for entry in old["entries"]
+        if entry["stability"] == "stable"
+    }
+    new_entries = {(entry["namespace"], entry["name"]): entry for entry in new["entries"]}
+    assert old_stable.issubset(new_entries)
+    for name in ("assign_rfu", "concat_scrfu", "validate_scrfu_schema"):
+        assert new_entries[("scrfu.tl", name)]["stability"] == "stable"
