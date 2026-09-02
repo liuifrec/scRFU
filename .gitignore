@@ -27,6 +27,9 @@ pip-wheel-metadata/
 *.tsv.gz
 *.log
 !benchmarks/synthetic_python_baseline.tsv
+!manuscript/figure_source_manifest.tsv
+!manuscript/figures/*/*_source_manifest.tsv
+!manuscript/source_table_to_panel_map.tsv
 !src/scrfu/data/tutorial_bcr.tsv
 !src/scrfu/data/tutorial_receptors.tsv
 !src/scrfu/data/tutorial_vdjdb.tsv

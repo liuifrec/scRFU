@@ -1,283 +1,221 @@
-# scRFU manuscript figure architecture
+# scRFU manuscript figure plan
 
-## Scope and central claim
+## Frozen scope
 
-This plan uses only frozen scRFU evidence. It defines figure logic and source
-relationships; it does not authorize new analysis, source-table modification,
-or polished figure generation.
+This plan uses only frozen scRFU evidence. It defines a first-pass visual story;
+it does not authorize new analysis or modification of validated source tables.
 
 > scRFU provides a scalable, scverse-native functional-unit representation
 > that maps heterogeneous T-cell receptor sequences into a transferable
 > repertoire feature space while preserving single-cell context.
 
-The panel-level contract is
-[`source_table_to_panel_map.tsv`](source_table_to_panel_map.tsv). External paths
-in that map are portable labels relative to the sealed evidence roots indexed
-in `docs/evidence_index.json`; they are not developer-machine paths.
+Panel sources and caveats are specified in
+[`source_table_to_panel_map.tsv`](source_table_to_panel_map.tsv). Portable source
+labels resolve against the sealed external evidence roots in
+`docs/evidence_index.json`.
 
-## Interpretation boundaries
+## Editorial compression
 
-- RFU is complementary to exact sequence identity, Scirpy clonotypes, V/J
-  usage, CDR3 length, and diversity summaries. The figures must show where
-  comparators equal or exceed RFU results.
-- Cross-dataset RFU reuse demonstrates a shared frozen feature vocabulary, not
-  biological equivalence between cohorts or receptors.
-- VDJdb results concern coherence of external antigen annotations among
-  distinct matched sequences. They do not establish antigen specificity for
-  an RFU.
-- Threshold qualification is a frozen assignment policy. Threshold failure is
-  not a calibrated out-of-distribution probability.
-- GSE190905 is a six-donor, two-visit repeated-measures demonstration. It does
-  not support claims about deep longitudinal trajectories.
-- Performance and memory measurements describe the audited Linux development
-  host. Python-only CI portability does not imply official RFU/R execution was
-  validated on macOS or Windows.
+The initial plan contained 28 main panels. The compressed plan contains **22**:
 
-## Figure 1 — Concept and scverse-native architecture
+| Figure | Initial | Final | Decision |
+|---|---:|---:|---|
+| Figure 1 | 5 | 5 | Retain five compact architecture panels |
+| Figure 2 | 6 | 4 | Move detailed chunking and storage overhead to Extended Data |
+| Figure 3 | 5 | 5 | Retain the complete representation argument |
+| Figure 4 | 6 | 4 | Merge cohort design into captions and combine held-out coverage/stability |
+| Figure 5 | 6 | 4 | Merge context schematic with phenotype panel and match coverage with coherence |
 
-**Single message.** scRFU adds a frozen, chain-aligned RFU representation to
-standard AIRR AnnData/MuData objects while preserving exact receptor and
-single-cell identities.
+### Panel disposition
 
-| Panel | Content | Evidence role | Priority |
-|---|---|---|---|
-| 1A | Heterogeneous CDR3 sequences mapped to a shared frozen RFU feature vocabulary while exact identities remain available | Conceptual orientation | Indispensable |
-| 1B | Positional alignment of `obsm["airr"]` and `obsm["scrfu"]`, portable `uns["scrfu"]` provenance, and optional `obs` summary | Storage architecture | Indispensable |
-| 1C | Scirpy AIRR object → optional chain indexing → `scrfu.tl.assign_rfu` → explicit summary → Scanpy/Scirpy downstream use | Ecosystem and responsibility boundary | Indispensable |
-| 1D | Public `wu2020_3k` native-versus-table parity: 2,931 eligible TRB chains and zero mismatches | Empirical interoperability | Indispensable |
-| 1E | Ambiguity-aware multi-TRB cell-summary policies | Software behavior | Optional; move to Extended Data if space is limited |
+| Original panel | Classification | Final disposition |
+|---|---|---|
+| 1A concept | ESSENTIAL MAIN | Figure 1A |
+| 1B native storage | ESSENTIAL MAIN | Split into chain alignment (1B) and storage (1C) |
+| 1C workflow/API boundary | ESSENTIAL MAIN | Integrated into 1A–1C rather than retained as a separate software-manual panel |
+| 1D public parity | ESSENTIAL MAIN | Figure 1E |
+| 1E cell-summary policy | SUPPORTING MAIN | Figure 1D |
+| 2A official parity | ESSENTIAL MAIN | Figure 2A |
+| 2B full Wells | ESSENTIAL MAIN | Figure 2B |
+| 2C detailed chunk/worker scaling | MOVE TO EXTENDED DATA | ED2; main invariance badge retained in 2D |
+| 2D restart/cache | SUPPORTING MAIN | Figure 2D |
+| 2E native 25k/100k/250k | ESSENTIAL MAIN | Figure 2C |
+| 2F serialized storage cost | MOVE TO EXTENDED DATA | ED3 |
+| 3A compression | ESSENTIAL MAIN | Figure 3A |
+| 3B sequences per RFU | SUPPORTING MAIN | Figure 3B |
+| 3C dimension/sparsity | ESSENTIAL MAIN | Figure 3C |
+| 3D coverage | ESSENTIAL MAIN | Figure 3D |
+| 3E feature sharing | ESSENTIAL MAIN | Figure 3E |
+| 4A cohort-role schematic | REDUNDANT | Reduced to caption/header context |
+| 4B retrieval | ESSENTIAL MAIN | Figure 4B |
+| 4C within/between | ESSENTIAL MAIN | Figure 4A |
+| 4D GSE190905 downsampling | SUPPORTING MAIN | Figure 4C |
+| 4E held-out coverage | ESSENTIAL MAIN | Merged into Figure 4D |
+| 4F held-out stability | ESSENTIAL MAIN | Merged into Figure 4D |
+| 5A context schematic | REDUNDANT AS STANDALONE | Inset in Figure 5A |
+| 5B phenotype coupling | ESSENTIAL MAIN | Figure 5A |
+| 5C phenotype stability | SUPPORTING MAIN | Figure 5B |
+| 5D VDJdb match coverage | SUPPORTING MAIN | Inset in Figure 5D |
+| 5E VDJdb null | ESSENTIAL MAIN | Figure 5D |
+| 5F native VDJdb linkage | ESSENTIAL MAIN | Figure 5C |
 
-**Panels that should move to Extended Data.** Detailed summary-policy decision
-trees, serialization mechanics, subsetting, and concatenation belong in
-Extended Data 3. Figure 1 should show only the default ambiguity-aware behavior
-in one callout.
+No evidence is discarded. Secondary implementation and sensitivity evidence is
+assigned to Extended Data.
 
-**Reviewer objection addressed.** “Is this merely a table wrapper, or does it
-behave like a native scverse method without discarding receptor chains?”
+## Figure 1 — scverse-native RFU representation
 
-**Evidence support.** Yes. The architecture is implemented and tested, and the
-public Scirpy example provides exact native/table parity plus H5MU reload
-evidence. Panels 1A–1C are explanatory schematics, not performance evidence.
+**Single message.** scRFU maps AIRR receptor chains into a frozen RFU feature
+space while preserving every chain, observation and portable scverse context.
 
-## Figure 2 — Canonical fidelity and scalable deterministic execution
+| Panel | Content | Class |
+|---|---|---|
+| 1A | Heterogeneous receptors → exact CDR3 queries → frozen RFU reference → reusable RFU features | ESSENTIAL MAIN |
+| 1B | Chain-aligned AIRR-to-scRFU records, including explicit noneligible TRA/BCR chains and multiple TRBs | ESSENTIAL MAIN |
+| 1C | AnnData/MuData storage: aligned `obsm`, portable `uns` provenance and optional `obs` summary | ESSENTIAL MAIN |
+| 1D | Ambiguity-aware cell-summary decision for multi-TRB cells | SUPPORTING MAIN |
+| 1E | Public `wu2020_3k` confirmation: 7,544 chains, 2,931 eligible TRBs and zero native/table mismatches | ESSENTIAL MAIN |
 
-**Single message.** scRFU reproduces the official RFU assignment and scales
-deterministically from bounded native objects to a complete 610k-cell
-receptor-only atlas, with effective parallel and restart behavior.
+**Move to Extended Data.** Full serialization, subsetting and concatenation test
+matrix.
 
-| Panel | Content | Evidence role | Priority |
-|---|---|---|---|
-| 2A | Exact official-RFU parity across ID, label, score, threshold and row reconstruction | Scientific fidelity | Indispensable |
-| 2B | Full Wells funnel: 610,429 source cells → 303,088 productive TRB rows → 192,675 unique CDR3 queries; runtime and peak RSS | Full-scale execution | Indispensable |
-| 2C | Bounded 1k/10k/25k serial/parallel timing with assignment-hash invariance across chunking and input order | Determinism and parallelism | Indispensable |
-| 2D | Fresh versus resumed runtime for Wells 25k and full backend execution | Recovery and cache value | Indispensable |
-| 2E | Native Wells 25k/100k/250k runtime, RSS, cached execution and zero table/reload mismatch | Native scale bridge | Indispensable |
-| 2F | Baseline, annotated and cell-summary serialized sizes | Storage cost | Optional; preferred in Extended Data 4 |
+**Reviewer objection.** Is scRFU a native chain-aware scverse method or merely a
+table wrapper that collapses receptor structure?
 
-**Panels that should move to Extended Data.** Detailed chunk-size contrasts,
-child-versus-parent RSS, per-stage provenance, and serialized storage overhead
-should move to Extended Data 1 and 4. Main panel 2E should retain one memory
-trace or point estimate so “native scale” is not presented as runtime alone.
+**Evidence support.** Yes. Architecture behavior is covered by exact tests and
+the public Scirpy smoke provides empirical native/table parity and H5MU reload.
 
-**Reviewer objection addressed.** “Does the portable implementation change
-canonical assignments, and can it operate reproducibly at realistic
-single-cell scale?”
+## Figure 2 — Fidelity, deterministic scale and restartability
 
-**Evidence support.** Yes. Exact official parity, full Wells execution, native
-25k/100k/250k parity, cache reuse, parallel equivalence, chunk invariance and
-order invariance are all frozen. Performance should not be generalized beyond
-the audited host.
+**Single message.** scRFU reproduces the canonical RFU result exactly and
+scales deterministically from native bounded objects to the full Wells atlas.
 
-## Figure 3 — RFU representation properties and frozen feature reuse
+| Panel | Content | Class |
+|---|---|---|
+| 2A | Official assignment/reconstruction parity matrix | ESSENTIAL MAIN |
+| 2B | Full Wells funnel, deduplication, total runtime and peak RSS | ESSENTIAL MAIN |
+| 2C | Native 25k/100k/250k runtime and memory with zero mismatch strip | ESSENTIAL MAIN |
+| 2D | Fresh versus cached/resumed runtime with serial/parallel/chunk/order invariance badges | SUPPORTING MAIN |
 
-**Single message.** RFUs provide a lower-dimensional, less sparse feature
-vocabulary than exact receptor identities and that same frozen vocabulary is
-reused across independent datasets.
+**Move to Extended Data.** Detailed chunk-size/worker timing (ED2), native
+serialized size and write/reload cost (ED3), and adversarial parity details
+(ED1).
 
-| Panel | Content | Evidence role | Priority |
-|---|---|---|---|
-| 3A | Exact CDR3, exact clonotype where available, nearest RFU and threshold-qualified RFU feature counts across four public datasets | Representation compression | Indispensable |
-| 3B | Distribution of distinct CDR3 sequences per RFU, including medians and singleton fractions | Many-to-one representation structure | Indispensable |
-| 3C | Feature count, effective dimensionality and sample-feature sparsity for RFU and comparator representations | Matrix geometry | Indispensable |
-| 3D | Frozen-threshold coverage and RFU richness across Wells, GSE190905, GSE157007 and `wu2020_3k` | Reference coverage | Indispensable |
-| 3E | Pairwise exact-CDR3 versus nearest/threshold-qualified RFU sharing across datasets | Reusable frozen feature space | Indispensable |
-| 3F | Within-dataset RFU sample prevalence distributions | Feature prevalence | Optional; Extended Data |
+**Reviewer objection.** Does portability change the scientific output, and is
+the method practical and recoverable at atlas scale?
 
-**Panels that should move to Extended Data.** Full RFU group-size ECDFs,
-score quantiles and sample-prevalence distributions may move to Extended Data.
-The main compression panel should report absolute counts, not only ratios, to
-avoid exaggerating small-cohort effects.
+**Evidence support.** Yes. Canonical parity, full Wells, native scaling, exact
+configuration invariance and cache reuse are frozen. Timing remains
+host-specific.
 
-**Reviewer objection addressed.** “Does RFU assignment provide a genuinely
-reusable representation, or only relabel exact clonotypes within each cohort?”
+## Figure 3 — Compact, reusable frozen feature space
 
-**Evidence support.** Yes for the representation-property claim. It does not
-show that compression is inherently better, that RFU-sharing implies receptor
-equivalence, or that coverage is calibrated OOD detection.
+**Single message.** Frozen RFUs transform highly sparse exact receptor identity
+into a more compact feature vocabulary that is reused across independent
+datasets.
 
-## Figure 4 — Independent transfer, repeated-donor structure and robustness
+| Panel | Content | Class |
+|---|---|---|
+| 3A | Exact CDR3/clonotype versus nearest/threshold RFU feature counts | ESSENTIAL MAIN |
+| 3B | Sequences-per-RFU ECDF and singleton/median annotations | SUPPORTING MAIN |
+| 3C | Feature dimensionality versus sample-feature sparsity | ESSENTIAL MAIN |
+| 3D | Frozen-threshold coverage and RFU richness across four datasets | ESSENTIAL MAIN |
+| 3E | Cross-dataset exact-CDR3 versus RFU sharing | ESSENTIAL MAIN |
 
-**Single message.** With the reference and policies frozen, RFU sample vectors
-transfer to independent and preregistered held-out cohorts and preserve useful
-repeated-donor structure with behavior complementary to Scirpy clonotypes and
-conventional representations.
+The Wells/GSE157007 annotation must state: **4,898 held-out RFUs are
+represented in Wells, whereas 3,187 exact CDR3 sequences are shared.** It must
+not describe those cohorts or receptors as biologically equivalent.
 
-| Panel | Content | Evidence role | Priority |
-|---|---|---|---|
-| 4A | Wells development/stress, GSE190905 independent repeated-measures, and GSE157007 preregistered held-out roles | Validation design | Indispensable |
-| 4B | GSE190905 leave-one-timepoint-out top-1, top-3 and MRR by representation | Donor retrieval | Indispensable |
-| 4C | GSE190905 within- versus between-donor cosine by representation | Repeated-donor structure | Indispensable |
-| 4D | GSE190905 50%/75% fixed-seed subsampling cosine by representation | Comparative robustness | Indispensable |
-| 4E | GSE157007 held-out coverage and nearest/threshold-qualified richness | Frozen transfer | Indispensable |
-| 4F | GSE157007 nearest and threshold-qualified sample-vector stability | Held-out robustness | Indispensable |
+**Move to Extended Data.** Full prevalence distributions and score quantiles.
 
-**Panels that should move to Extended Data.** Jaccard results, all individual
-query ranks, diversity components, full comparator matrices, and seed-level
-subsampling observations should move to Extended Data 5. Main panels must
-retain V/J and Scirpy clonotypes so the complementary result is visible.
+**Reviewer objection.** Is RFU just a within-dataset relabeling, or does it
+provide a reusable feature vocabulary with measurable compression?
 
-**Reviewer objection addressed.** “Does the RFU feature space generalize beyond
-the development atlas, and were comparators evaluated on identical samples and
-restrictions?”
+**Evidence support.** Yes as a representation-property claim. Compression is
+not itself evidence of improved biological signal, and threshold failure is not
+calibrated OOD probability.
 
-**Evidence support.** Yes for frozen transfer, technical stability and bounded
-two-visit donor representation. RFU does not win every metric: exact CDR3 has
-slightly higher MRR, V/J has the highest MRR among the compared count
-representations, and coarse V/J/length summaries have higher subsampling
-stability partly because they discard receptor detail.
+## Figure 4 — Transfer, robustness and complementary comparators
 
-## Figure 5 — Single-cell interpretability and external antigen evidence
+**Single message.** RFUs transfer without refitting, retain repeated-donor
+structure and show robustness complementary to exact CDR3, genuine Scirpy
+clonotypes and conventional summaries.
 
-**Single message.** Chain-aligned RFUs remain connected to cellular phenotype
-and sample context and show group-level coherence of external antigen
-annotations beyond size-preserving expectations.
+| Panel | Content | Class |
+|---|---|---|
+| 4A | GSE190905 within- versus between-donor cosine by representation | ESSENTIAL MAIN |
+| 4B | Leave-one-timepoint-out top-1, top-3 and MRR by representation | ESSENTIAL MAIN |
+| 4C | GSE190905 50%/75% subsampling stability by representation | SUPPORTING MAIN |
+| 4D | Preregistered GSE157007 frozen coverage/richness with held-out subsampling inset | ESSENTIAL MAIN |
 
-| Panel | Content | Evidence role | Priority |
-|---|---|---|---|
-| 5A | AIRR chain → RFU annotation → explicit cell/phenotype/sample join → pseudobulk and coupling | Single-cell context architecture | Indispensable schematic |
-| 5B | Full Wells RFU-by-cell-type phenotype-coupling heatmap for the 30 most abundant RFUs under nearest and threshold-qualified policies | Descriptive cellular interpretation | Indispensable |
-| 5C | Wells phenotype-coupling stability under cell subsampling | Robustness of descriptive linkage | Indispensable |
-| 5D | VDJdb exact CDR3 and strict CDR3+V matched-sequence/RFU coverage across three datasets | External evidence coverage | Indispensable |
-| 5E | Wells nearest/fractional CDR3 same-antigen pair fraction versus 1,000-permutation size-preserving null | External annotation coherence | Indispensable |
-| 5F | Public `wu2020_3k` AIRR-chain → RFU identity → CDR3/CDR3+V query → cell/sample summary, with all 7,544 chains retained | Native evidence linkage | Indispensable |
+Comparator order is fixed across all Figure 4 panels: RFU, exact CDR3, Scirpy
+clonotype, TRBV+TRBJ, CDR3 length, diversity. RFU uses a distinct but
+non-dominant color; all other methods use equally legible neutral colors.
 
-**Panels that should move to Extended Data.** All 24 VDJdb sensitivity cells,
-ambiguity policies, evidence-score distributions, grouping baselines and four
-null strata belong in Extended Data 6. The main phenotype heatmap ranks RFUs by
-total abundance only, takes the top 30 with ties resolved by RFU label, and
-must not select RFUs for visually strong phenotype enrichment.
+**Move to Extended Data.** Jaccard, individual ranks, complete seed-level
+observations and the full comparator matrix (ED5).
 
-**Reviewer objection addressed.** “Can RFU annotations be interpreted in the
-single-cell ecosystem, and is there any external evidence that sequences
-grouped together share annotation structure?”
+**Reviewer objection.** Does the representation transfer fairly, and are
+comparator outcomes shown even when RFU is tied or beaten?
 
-**Evidence support.** Yes, descriptively. The Wells phenotype analyses retain
-cell context without cell-level inferential testing. The VDJdb result supports
-external annotation coherence only; database bias, ambiguity and sparse strict
-matching remain explicit limitations.
+**Evidence support.** Yes for independent/held-out transfer and bounded
+two-visit representation. Exact CDR3 slightly exceeds RFU MRR; V/J has the
+highest MRR among the count representations; coarse summaries are most stable
+partly because they discard detail.
 
-## Extended Data and Supplementary architecture
+## Figure 5 — Single-cell context and external annotation coherence
 
-### Extended Data 1 — Workflow and provenance
+**Single message.** RFU annotations retain cell-phenotype context and show
+group-level coherence of external antigen annotations without claiming antigen
+specificity.
 
-- Evidence manifests and artifact/reference hashes across every main evidence
-  family.
-- Exact-CDR3 deduplication, chunk orchestration and deterministic row
-  reconstruction.
-- Full run identity, cache compatibility checks and failure/recovery flow.
+| Panel | Content | Class |
+|---|---|---|
+| 5A | Full Wells top-30 abundant RFU × cell-type heatmap with chain-to-phenotype context inset | ESSENTIAL MAIN |
+| 5B | Phenotype-coupling cosine and dominant-phenotype agreement under cell subsampling | SUPPORTING MAIN |
+| 5C | Native `wu2020_3k` AIRR chain → RFU identity → CDR3/CDR3+V evidence linkage | ESSENTIAL MAIN |
+| 5D | Wells observed-versus-null same-antigen pair fraction with exact-match coverage inset | ESSENTIAL MAIN |
 
-### Extended Data 2 — Threshold and assignment-policy sensitivity
+Top phenotype RFUs are selected solely by total abundance, with ties resolved
+by RFU label. They must never be selected by phenotype specificity.
 
-- Coverage and richness across thresholds, retaining 0.6 as the frozen primary
-  threshold.
-- Nearest versus threshold-qualified RFU metrics, pseudobulk and phenotype
-  coupling.
-- Explicit statement that threshold failure is not a calibrated OOD
-  probability.
+**Move to Extended Data.** All 24 matching/assignment/ambiguity combinations,
+grouping baselines, evidence scores and four null models (ED6).
 
-### Extended Data 3 — Scverse object lifecycle
+**Reviewer objection.** Does the representation preserve single-cell
+interpretability, and is there external evidence of within-group annotation
+structure?
 
-- H5AD/H5MU serialization and reload.
-- AnnData/MuData subsetting.
-- Compatible concatenation and rejection of incompatible reference/schema
-  identities.
-- Multi-chain and ambiguity-aware cell-summary behavior.
+**Evidence support.** Yes descriptively. Phenotype analyses have no cell-level
+inferential p-values. VDJdb supports external annotation coherence only, not
+antigen specificity, epitope prediction or antigen-recognition prediction.
 
-This is supported by exact tests and native manifests, but there is no separate
-frozen plot-ready source table. It should therefore be a technical pass/fail
-matrix, not a quantitative performance panel.
+## Extended Data prototypes
 
-### Extended Data 4 — Native memory and storage overhead
+- **ED1:** adversarial canonical parity and reconstruction details.
+- **ED2:** chunking, parallelism, order invariance and cache/restart behavior.
+- **ED3:** native storage/RSS, H5AD/H5MU round-trip, subsetting and guarded
+  concatenation.
+- **ED4:** threshold/reference-coverage sensitivity; 0.6 remains frozen.
+- **ED5:** full comparator and downsampling matrices.
+- **ED6:** VDJdb match tiers, ambiguity, grouping baselines and null sensitivity.
+- **ED7:** scverse dependency, CI, package-install and interoperability matrix.
 
-- Parent and RFU-child peak RSS at 25k/100k/250k.
-- Baseline AIRR, chain-annotated, and optional-summary serialized sizes.
-- Serialization and reload times.
-- Clear distinction between bounded in-memory native objects and the targeted
-  HDF5 route used for full Wells.
+Only ED3, ED5 and ED6 have immediately available plot-ready local tables for
+all quantitative components. The other technical figures may use audited ledger
+values or remain compact pass/fail matrices during first-pass prototyping.
 
-### Extended Data 5 — Full comparator results
+## Unsupported panels removed
 
-- Representation dimensionality, sparsity and effective dimension.
-- All GSE190905 retrieval metrics and query-rank distributions.
-- Cosine and Jaccard within/between summaries.
-- Seed-level 50% and 75% downsampling results.
-- Explicit display of endpoints where exact CDR3, Scirpy clonotypes, V/J,
-  CDR3 length or diversity equal or exceed RFU.
+- New UMAP colored by RFU: no separately frozen plot-ready source table.
+- Deep longitudinal persistence/expansion/contraction: GSE190905 has two visits
+  and GSE345124 RFU analysis was not run.
+- RFU-level antigen specificity or prediction: unsupported by VDJdb evidence.
+- Calibrated out-of-distribution probability: not tested.
+- Universal superiority over Scirpy clonotypes or conventional summaries:
+  contradicted by the complementary comparator results.
 
-### Extended Data 6 — VDJdb sensitivity and null analyses
+## Experiment requirement
 
-- CDR3 versus CDR3+V matching.
-- Nearest versus threshold-qualified assignment.
-- Fractional versus exclude-ambiguous policies.
-- Purity, normalized entropy, same-antigen pair fraction and evidence-score
-  distributions.
-- RFU, TRBV, CDR3 length, TRBV+length, size-matched random and edit-distance
-  grouping comparisons.
-- Unrestricted, CDR3-length, TRBV and TRBV+length stratified 1,000-permutation
-  nulls, retaining sparse/undefined cells.
-
-### Extended Data 7 — Dependency, CI and interoperability evidence
-
-- Python 3.10/3.11/3.12 Linux matrix.
-- Ubuntu, macOS and Windows Python-only smoke.
-- Optional dependency, documentation, wheel, sdist and tutorial jobs.
-- Current AnnData, MuData, Scirpy, Awkward, NumPy and pandas compatibility
-  boundaries.
-- Public `wu2020_3k` official-RFU interoperability details.
-
-This is technical-record evidence rather than a scientific result panel.
-Official RFU/R execution must remain labelled Linux-validated only.
-
-## Evidence gaps and deliberately excluded panels
-
-No proposed quantitative main panel lacks frozen evidence. The following items
-are deliberately not promoted to quantitative panels:
-
-1. **A new UMAP colored by RFU.** The frozen evidence demonstrates native
-   context and phenotype linkage, but no separately frozen UMAP-to-RFU source
-   table exists. A schematic is sufficient for Figure 5A; a new quantitative
-   UMAP should not be fabricated during figure assembly.
-2. **Serialization/subsetting/concatenation effect sizes.** These are exact
-   software invariants, not biological quantities. Tests and manifests support
-   a pass/fail Extended Data matrix.
-3. **Deep longitudinal dynamics.** GSE190905 has two visits. GSE345124 QC is
-   frozen but RFU execution was explicitly deferred; persistence, expansion,
-   contraction and multi-visit trajectory panels are unsupported.
-4. **RFU-level antigen specificity.** VDJdb supports annotation coherence and
-   null comparisons, not specificity labels for individual RFUs.
-5. **Calibrated OOD detection.** Frozen threshold coverage is available, but no
-   probability calibration experiment exists.
-6. **Universal superiority over Scirpy clonotypes or conventional summaries.**
-   The frozen comparator results are complementary and must remain so.
-
-## Is a new experiment required?
-
-**No new experiment is required before manuscript figure design for the stated
-central claim.** The five figures can be assembled entirely from the frozen
-schematics, source tables and sealed manifests listed in the panel map.
-
-A full GSE345124 analysis would become required only if the scope is expanded
-to claim deep longitudinal RFU persistence or multi-visit repertoire dynamics.
-It is not required for scalable scverse-native assignment, transferable feature
-space, bounded repeated-donor representation, phenotype integration or VDJdb
-annotation-coherence claims.
+No new experiment is required for first-pass figure design or for the stated
+central claim. A full GSE345124 analysis would be required only if the scope is
+expanded to deep multi-visit longitudinal dynamics.
