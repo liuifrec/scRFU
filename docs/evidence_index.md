@@ -25,6 +25,14 @@ explicitly rather than reconstructing evidence.
 | GSE219098 | experimental BCR adapter and feature QC | `GSE219098/qc/run_manifest.json` | `bf7ff9b6…653b` | sealed |
 | GSE266519 | experimental BCR adapter and feature QC | `GSE266519/qc/run_manifest.json` | `0044c846…e8db` | sealed |
 | GSE219098 → GSE266519 | experimental BCR feasibility | `bcr_representation_feasibility.json` | `fa692f99…407d` | sealed |
+| Wells atlas | native AIRR 25k scale/parity | `native_scale/25k/run_manifest.json` | `fe65d608…64c7` | sealed |
+| Wells atlas | native AIRR 100k scale/parity | `native_scale/100k/run_manifest.json` | `7ae650ae…bf50` | sealed |
+| Wells atlas | native AIRR 250k scale/parity | `native_scale/250k/run_manifest.json` | `e79c555b…9395` | sealed |
+| GSE190905 | genuine Scirpy clonotype comparator | `GSE190905/scirpy_comparator/run_manifest.json` | `d75ee0e8…52d1` | sealed |
+| Wells/GSE190905/GSE157007/wu2020_3k | representation compression and sharing | `representation_consistency/run_manifest.json` | `942ad5b0…18c0` | sealed |
+| Scirpy wu2020_3k | official-RFU native H5MU interoperability | `wu2020_3k/official_run/run_manifest.json` | `3bcab11e…1cd2` | sealed |
+| Scirpy wu2020_3k + VDJdb 2026-06-03 | native chain-level VDJdb linkage | `wu2020_3k/native_vdjdb_linkage/run_manifest.json` | `3e84401e…79d3` | sealed |
+| GSE345124 | public longitudinal candidate acquisition/QC | `GSE345124/qc/run_manifest.json` | `3fbd7d99…0b78` | verified; frozen-reference execution deferred by bounded gate |
 
 Each sealed external manifest includes full SHA256 values, byte sizes,
 parameters, software/environment metadata, and the paths used at runtime. The

@@ -96,6 +96,70 @@
       "manifest_sha256": "fa692f99748df4bf3c6949bcc449342bce1bbbef5a9ef5af87d926574389407d",
       "public_source_accession": "GSE219098+GSE266519",
       "result_status": "sealed"
+    },
+    {
+      "dataset_label": "Wells atlas",
+      "analysis_type": "native AIRR 25k scale and canonical parity",
+      "external_manifest_filename": "native_scale/25k/run_manifest.json",
+      "manifest_sha256": "fe65d608fecbef95ef8ae7361f4eb3d2e597a0964a75d69759c32fbb400b64c7",
+      "public_source_accession": "Wells-atlas-public",
+      "result_status": "sealed"
+    },
+    {
+      "dataset_label": "Wells atlas",
+      "analysis_type": "native AIRR 100k scale and canonical parity",
+      "external_manifest_filename": "native_scale/100k/run_manifest.json",
+      "manifest_sha256": "7ae650ae2d31cf0b2f22d0045b2a73e3887714bb66de41ba7caedbaa891cbf50",
+      "public_source_accession": "Wells-atlas-public",
+      "result_status": "sealed"
+    },
+    {
+      "dataset_label": "Wells atlas",
+      "analysis_type": "native AIRR 250k scale and canonical parity",
+      "external_manifest_filename": "native_scale/250k/run_manifest.json",
+      "manifest_sha256": "e79c555bdec964bd41dfef58690240abe4646705cb742fde5da99366fe561395",
+      "public_source_accession": "Wells-atlas-public",
+      "result_status": "sealed"
+    },
+    {
+      "dataset_label": "GSE190905",
+      "analysis_type": "genuine Scirpy clonotype comparator",
+      "external_manifest_filename": "GSE190905/scirpy_comparator/run_manifest.json",
+      "manifest_sha256": "d75ee0e8ee4ca332530ac3e5ce6b87d7beacfa94a4ef123caacf5d6a405e52d1",
+      "public_source_accession": "GSE190905",
+      "result_status": "sealed"
+    },
+    {
+      "dataset_label": "Wells/GSE190905/GSE157007/wu2020_3k",
+      "analysis_type": "representation compression and cross-dataset sharing",
+      "external_manifest_filename": "representation_consistency/run_manifest.json",
+      "manifest_sha256": "942ad5b09aba1c08849556ebda4904d4d3313c36e4018c6b0f5023fa25ac18c0",
+      "public_source_accession": "Wells-atlas-public+GSE190905+GSE157007+wu2020_3k",
+      "result_status": "sealed"
+    },
+    {
+      "dataset_label": "Scirpy wu2020_3k",
+      "analysis_type": "official-RFU native H5MU interoperability",
+      "external_manifest_filename": "wu2020_3k/official_run/run_manifest.json",
+      "manifest_sha256": "3bcab11e4a2fdb08396089066524bc17cb2dcdb315306410a5a095ca223a1cd2",
+      "public_source_accession": "wu2020_3k",
+      "result_status": "sealed"
+    },
+    {
+      "dataset_label": "Scirpy wu2020_3k plus VDJdb 2026-06-03",
+      "analysis_type": "native chain-level VDJdb linkage",
+      "external_manifest_filename": "wu2020_3k/native_vdjdb_linkage/run_manifest.json",
+      "manifest_sha256": "3e84401e0d9caac013e3a0e8e4c2913bb727f3f0ba23677340d97d104bd379d3",
+      "public_source_accession": "wu2020_3k+VDJdb-2026-06-03",
+      "result_status": "sealed"
+    },
+    {
+      "dataset_label": "GSE345124",
+      "analysis_type": "public longitudinal candidate acquisition and QC",
+      "external_manifest_filename": "GSE345124/qc/run_manifest.json",
+      "manifest_sha256": "3fbd7d99bf90d2ecb59c353e5da6500429d4d43a12a3089a81a9c40922300b78",
+      "public_source_accession": "GSE345124",
+      "result_status": "sealed"
     }
   ]
 }

@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "assessment_date": "2026-08-31",
+  "assessment_date": "2026-09-01",
   "branch": "feature/scverse-native-0.5",
   "domains": [
     {"domain": "native AnnData", "status": "PASS", "evidence": "src/scrfu/scverse.py; tests/test_scverse_native.py"},
@@ -18,11 +18,11 @@
     {"domain": "documentation", "status": "PASS", "evidence": "Sphinx API/user docs and warning-clean build"},
     {"domain": "tutorial", "status": "PASS", "evidence": "packaged-fixture scverse tutorial smoke"},
     {"domain": "coverage", "status": "PARTIAL", "evidence": "coverage report; some legacy stable modules remain weakly covered"},
-    {"domain": "CI", "status": "PARTIAL", "evidence": "workflow updated; remote execution pending branch push"},
+    {"domain": "CI", "status": "PASS", "evidence": "commit a6d48b60b2a9f0c6dc2f03742473040cc056998d; GitHub Actions run 33362695818 fully green"},
     {"domain": "dependency compatibility", "status": "PASS", "evidence": "current and coherent minimum scverse stacks pass the native tutorial"},
     {"domain": "standard registry readiness", "status": "BLOCKED", "evidence": "PyPI project is not published"},
     {"domain": "hosted documentation readiness", "status": "PARTIAL", "evidence": ".readthedocs.yaml present; service not configured"},
     {"domain": "ecosystem registry readiness", "status": "BLOCKED", "evidence": "standard registry, hosted docs, and maintainer consent pending"},
-    {"domain": "method validation", "status": "PASS", "evidence": "docs/evidence_index.md; existing frozen 0.4 validation"}
+    {"domain": "method validation", "status": "PASS", "evidence": "frozen 0.4 evidence plus native 25k/100k/250k parity, genuine Scirpy comparator, and native VDJdb linkage"}
   ]
 }

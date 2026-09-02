@@ -1,5 +1,31 @@
 # Source-data inventory
 
+## 2026-09-01 scverse methods-evidence supplement
+
+The following new source tables remain beside their external public-data
+outputs. Paths below are portable labels relative to their evidence roots, not
+developer-machine paths. These supplement rows were generated with scRFU 0.4.0.
+For the independent public methods project, the historical governed/private
+Figure 2 placeholders retained later in this file are archived planning records,
+not release or paper requirements; no private cohort was used in this sprint.
+
+| Evidence family | External source table | SHA256 | Analysis unit | Status/caveat |
+|---|---|---|---|---|
+| Native AIRR scale, 25k | `native_scale/25k/source_table.tsv` | `50873116693ac4660bb5d7ddacedcf496e5cbea69a6f11ca8232ba527c9fc065` | bounded Wells source cell / receptor chain | Complete; X absent; zero table/native and reload mismatches |
+| Native AIRR scale, 100k | `native_scale/100k/source_table.tsv` | `ca8ad6a688a43b613e5238302f24d5ce16623f75511bc278460a75566dbb0203` | bounded Wells source cell / receptor chain | Complete; X absent; zero mismatches |
+| Native AIRR scale, 250k | `native_scale/250k/source_table.tsv` | `2f65d3de9bc66fb13aeca45a8857a9a6562d16f97a059400dbb36f532f46eded` | bounded Wells source cell / receptor chain | Complete; optional scale gate passed; zero mismatches |
+| Genuine Scirpy comparator | `GSE190905/scirpy_comparator/representation_summary.tsv` | `5c052a38c0f393ee76982393b8cefeba40f7f5afa36ee68f05f58df579de7efd` | patient-state sample | Complete; Scirpy 0.22.4 identity/NT, all arms, primary-only dual IR |
+| Genuine Scirpy retrieval | `GSE190905/scirpy_comparator/retrieval_summary.tsv` | `1dad4adb237bf4bdc7f8bed8cfd3dc6dbcad9d067c49430a1c92c45f19c6ae65` | held-out patient-state query | Complete; identical candidate sets; descriptive six-donor demonstration |
+| Genuine Scirpy downsampling | `GSE190905/scirpy_comparator/downsampling_summary.tsv` | `a09b7e8bdd9c0110a8589f2f97b1e381965faf0e1ae7ee9677353ed3129b2443` | sample representation | Complete; fixed 50%/75% fractions and seeds |
+| Representation compression | `representation_consistency/representation_compression.tsv` | `7265a42b43b19992be71f6e9c80c4b8c1e35ac79fb31b799e383568542156b14` | dataset / feature representation | Complete; compression is not claimed as biological superiority |
+| Frozen feature sharing | `representation_consistency/cross_dataset_feature_sharing.tsv` | `4306ef66da49c035c3df7109aa03c5d9ad66163dd7ad8a45a5420f3232500878` | dataset pair | Complete; exact CDR3 and RFU spaces compared without outcome fitting |
+| Native VDJdb chain linkage | `wu2020_3k/native_vdjdb_linkage/native_chain_vdjdb_summary.tsv.gz` | `f08e54e02a738a37d51a8f07119a0d374bc6734d59fabf7c4eeea01f9f53f54f` | AIRR chain | Complete; annotation evidence only, not antigen specificity |
+| Public deeper-longitudinal QC | `GSE345124/qc/sample_qc.tsv` | `acdc40b9c9385498d8a0c6ec0cce6008769f8afb0ae242e88933b3bae7dcf864` | public processed repertoire file | Acquisition/QC complete; RFU execution deferred by bounded gate |
+
+Manifest hashes and public accessions are recorded in
+`docs/evidence_index.json`. No H5AD/H5MU, RFU asset, VDJdb database, or public
+cohort receptor table is copied into Git.
+
 Inventory freeze: 2026-08-24. Existing runtime files are relative to
 `SCRFU_MONTH2_OUTDIR`; this environment variable must point to the external
 Month 2 output root. They are not copied into Git. `Pending` means that no

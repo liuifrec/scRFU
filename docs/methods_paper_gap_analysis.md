@@ -1,113 +1,37 @@
 # Methods-paper gap analysis
 
-## 2026-08-31 scverse-native update
+Audit date: 2026-09-01. This document evaluates evidence; it is not manuscript
+prose. “Demonstrated” means a completed analysis with an externally hashed
+source table, not merely an implemented function.
 
-This update supersedes the historical Month 1 statuses retained below. It is a
-gap analysis, not manuscript prose.
-
-| Central-claim component | Status | Evidence | Smallest remaining experiment |
+| Potential method claim | Status | Exact evidence | Analysis unit and caveat |
 |---|---|---|---|
-| Scalable RFU assignment | Demonstrated | Exact official parity, full Wells run, restart/parallel evidence | None for core claim |
-| scverse-native receptor state | Demonstrated technically | Current Scirpy AIRR, AnnData/MuData chain alignment, H5AD/H5MU, slicing, concat guard, public Scirpy 3k official-backend smoke | Remote optional-stack CI only |
-| Transferable representation | Demonstrated | GSE190905 independent and preregistered GSE157007 held-out frozen-reference results | No retuning; optional additional cohort is not required |
-| Single-cell phenotype linkage | Demonstrated descriptively | Wells phenotype-coupling outputs | No cell-level inferential claim |
-| Longitudinal utility | Demonstrated in public repeated donors | GSE190905 within/between and donor-retrieval evidence | Temporal depth limits dynamics claims |
-| Antigen evidence | Demonstrated as annotation coherence only | Pinned VDJdb external validation/nulls | Do not upgrade to antigen specificity |
+| 1. Exact fidelity to canonical RFU assignment | DEMONSTRATED | Official-RFU parity manifest indexed in `evidence_index.json`; 10/10 eligible rows, zero ID/label/threshold/order mismatches and maximum score difference 0 | Adversarial receptor row; tested official reference/artifacts only |
+| 2. Scalable execution on large single-cell repertoires | DEMONSTRATED | Full Wells: 610,429 source cells, 192,675 unique queries, 418 s backend work, 3.42 GB peak RSS, 1.33 s backend resume; native 25k/100k/250k source tables | Technical runtime on the Linux development host; not a hardware-independent speed claim |
+| 3. Native AnnData/MuData/AIRR interoperability | DEMONSTRATED | Native schema tests plus public Scirpy `wu2020_3k` manifest: 7,544 chains, 2,931 eligible TRBs, zero table/native mismatches | AIRR chain / observation; official RFU execution validated on Linux |
+| 4. Stable serialization, subsetting and guarded concatenation | DEMONSTRATED | H5AD/H5MU round-trip, slicing, compatible concat, incompatible reference/schema rejection tests; bounded native reload mismatch count 0 | Technical object behavior; Awkward-in-AnnData support remains upstream experimental |
+| 5. Compression relative to exact receptor identity | DEMONSTRATED | `representation_compression.tsv`: Wells 192,675 CDR3s to 4,996 RFUs; GSE190905 16,391 to 4,465; GSE157007 43,082 to 4,898; wu2020_3k 2,295 to 1,759 | Dataset-level representation property; compression is not biological superiority |
+| 6. Frozen-reference transfer across independent datasets | DEMONSTRATED | GSE190905 independent transfer, preregistered GSE157007 held-out transfer, and `cross_dataset_feature_sharing.tsv` | Cohort/sample; no RFU refit or held-out tuning; differing cohort purposes limit biological pooling |
+| 7. Improved or complementary longitudinal donor representation | PARTIAL | GSE190905 genuine comparator: RFU top-1/top-3/MRR 0.667/0.833/0.764; within/between cosine 0.491/0.063 | Twelve samples from six donors and two visits; supports complementarity but not deep trajectory dynamics or universal improvement |
+| 8. Single-cell phenotype integration | DEMONSTRATED descriptively | Full/bounded Wells phenotype-coupling and pseudobulk source tables; native synthetic MuData tutorial | Cell phenotype and library/donor summaries; no cell-level inferential p-values or causal claim |
+| 9. External antigen-annotation coherence | DEMONSTRATED narrowly | Pinned VDJdb 2026-06-03 24-combination analysis and nulls; Wells nearest/fractional CDR3 observed 0.1128 versus null 0.0646, empirical p 0.000999 | Distinct matched sequence annotation; external coherence only, never antigen specificity |
+| 10. Complementarity to Scirpy clonotype analysis | DEMONSTRATED | Genuine GSE190905 Scirpy clonotypes and identical candidate/downsampling sets in `scverse_method_benchmark.md` | Sample representation; RFU does not win every endpoint |
 
-Novelty boundaries remain explicit. Original RFU supplies the scientific
-reference/assignment concept. Scirpy supplies the general AIRR/scverse
-ecosystem and clonotype analysis. scRFU's contribution is deterministic,
-restartable, frozen-reference execution; chain-aligned scverse storage; portable
-coverage/provenance; and RFU-specific transferable downstream analyses. Exact
-clonotypes and conventional summaries remain required comparators rather than
-straw baselines.
+## Unsupported claims excluded
 
-The smallest unresolved engineering evidence is remote optional-stack CI. The
-coherent minimum and current dependency stacks both pass locally. The smallest unresolved scientific-method
-issue is the limited depth of the public repeated-measures cohort; it constrains
-longitudinal dynamics claims but does not block the core transferability claim.
+- RFU universally outperforms exact CDR3, Scirpy clonotypes, or V/J summaries.
+- Individual RFUs are antigen-specific.
+- Two-timepoint GSE190905 establishes deep temporal RFU dynamics.
+- Cross-cohort feature reuse proves biological equivalence between cohorts.
+- Official RFU/R execution is supported on macOS or Windows; only Python-only
+  functionality is CI-tested there.
 
+## Smallest remaining scientific experiment
 
-Status reflects repository evidence on 2026-08-17. “Synthetic” is not real-data
-validation. “Bounded public” refers only to previously validated bounded Wells
-workflows, not biological inference. Priorities are P0 (submission-critical), P1
-(important), P2 (gated/deferred). Acceptance always includes offline synthetic
-tests and documented provenance.
-
-## Core interfaces
-
-| Capability | Status | Public API / implementation / tests / docs | Scientific validation, data requirement, risk, priority, acceptance |
-|---|---|---|---|
-| Python-native workflow | Implemented | `scrfu.pp/adapters/io/tl/pl`; package tests; API docs | Bounded public receptor workflow; low risk; P0; clean-wheel workflow passes. |
-| CLI | Implemented | `scrfu` / `cli.py`; CLI tests; README | Synthetic only for new methods; medium; P0; CLI parity for stable workflows. |
-| AIRR input | Implemented | `prepare_receptors`; `adapters.py`; adapter tests/docs | Synthetic; public AIRR cohort needed; low; P0; field/chain parity. |
-| AnnData | Implemented | adapter plus `call_rfu`; generic tests; API contract | Bounded public; medium; P0; no expression materialization where selective. |
-| MuData | Partially implemented | explicit `modality` routing in `prepare_receptors`; methods tests | Synthetic duck-typed; installed-MuData test needed; medium; P1; modality/alignment fixture passes. |
-| scirpy | Implemented | `scirpy_airr`; adapter tests/docs | Synthetic; public object needed; low; P0; supported DataFrame AIRR contract. |
-| Bulk receptor tables | Implemented | generic AIRR/DataFrame adapters and table RFU API | Synthetic; public bulk cohort needed; low; P0; sample metadata remains separate. |
-| Single-cell receptor tables | Implemented | Cell Ranger, AIRR, Wells; adapter tests | Bounded public; low; P0; stable cell reconstruction. |
-| Cell Ranger VDJ | Implemented | `cellranger_vdj`; focused tests/docs | Synthetic; low; P0; CSV/DataFrame/selection parity. |
-| Multiple receptor chains | Partially implemented | schema/adapters retain chains | RFU model is reference-specific/TRB; high; P0; reject incompatible model/chain combinations. |
-| Sample/donor/tissue/state/compartment/timepoint aggregation | Partially implemented | pseudobulk, phenotype, longitudinal APIs | Synthetic except bounded sample/phenotype paths; medium; P0; explicit keys and no pseudo-samples. |
-
-## Assignment engine
-
-| Capability | Status | Public API / implementation / tests / docs | Scientific validation, data requirement, risk, priority, acceptance |
-|---|---|---|---|
-| Original-RFU parity | Partially implemented | integration tests and RFU table engine | Exact 1k bounded parity reported; full frozen comparison table pending; high; P0. |
-| Exact score/threshold parity | Tested on bounded public data | integration/parity assertions | Extend across edge cases and versions; high; P0; zero unexplained mismatches. |
-| Deterministic deduplication/chunking/order invariance | Implemented | `tl_rfu_repo.py`, chunk engine, chunk tests | Synthetic and bounded; medium; P0; byte/row-equivalent outputs. |
-| Serial restartability | Implemented | chunk manifests/cache validation | Synthetic and bounded; low; P0; invalid cache never reused. |
-| Parallel execution | Tested only synthetically | `max_workers`, process/thread executor; fake-runner tests | Real scaling not run; medium; P1; serial/two-worker/chunk-size equality. |
-| Memory efficiency | Tested on bounded public data | selective H5AD/cache readers | Larger bounded scaling pending; high; P0; no `X`/`raw/X` materialization. |
-| Multiple-chain behavior | Partially implemented | chain filters and schema | Reference compatibility enforcement incomplete; high; P0. |
-| Assignment confidence | Partially implemented | score, threshold, status aliases | Score is similarity, not calibrated probability; high; P0; terminology frozen. |
-| Reference coverage / low similarity | Tested only synthetically | `reference_coverage`; diagnostics tests | Real distributions pending; medium; P0; group counts and quantiles reconcile. |
-| OOD terminology | Implemented documentation constraint | API freeze and diagnostics docs | No OOD model; high; P0; use “below threshold/low reference similarity.” |
-| Frozen-reference provenance | Tested only synthetically | `FrozenRFUReference`; transfer tests | Actual artifact manifest pending; high; P0; hashes and identifier verify. |
-| Cell-level reconstruction | Implemented | table engine/backend tests | Bounded public; high; P0; row count/IDs invariant. |
-
-## Analysis
-
-| Capability | Status | Public API / implementation / tests / docs | Scientific validation, data requirement, risk, priority, acceptance |
-|---|---|---|---|
-| Conventional repertoire metrics | Implemented | `repertoire_metrics`; hand tests/docs | Synthetic; public comparisons pending; low; P0. |
-| RFU metrics, pseudobulk, overlap, phenotype coupling | Implemented | `scrfu.tl`; downstream tests/docs | Bounded workflow plus synthetic formulas; medium; P0. |
-| Antigen evidence | Implemented | offline VDJdb APIs/tests/docs | Synthetic; pinned local real reference smoke pending; medium; P1. |
-| Longitudinal analysis | Tested only synthetically | longitudinal module/tests | No cohort run; high; P0; prespecified deep and public validation. |
-| Donor retrieval | Tested only synthetically | `donor_retrieval` | No optimization/evaluation cohort; high; P0; leave-timepoint-out public result. |
-| Persistence/dynamics | Tested only synthetically | explicit trajectory classifier | Defaults not biologically frozen; high; P0; sensitivity and source trajectories. |
-| Cross-cohort transfer | Tested only synthetically | frozen reference and `transfer_cohort` | No cohort transfer yet; high; P0; development/heldout separation. |
-| Held-out validation | Partially implemented | held-out manifest contract | Cohort unregistered; high; P0; manifest predates analysis. |
-| Source-table export | Implemented | result tables/cache/workflows | Synthetic/bounded; low; P0; each figure panel traces to table. |
-
-## Receptor modes
-
-| Capability | Status | Public API / implementation / tests / docs | Scientific validation, data requirement, risk, priority, acceptance |
-|---|---|---|---|
-| TCR mode / TRB | Implemented | adapters and original RFU backend | Bounded public; P0; parity/reference coverage complete. |
-| TRA | Partially implemented | schema/adapters only | No TRA RFU reference validation; high; P1; receptor-specific reference required. |
-| Paired chain | Blocked | records can coexist; no joint assignment | No method/reference; high; P2; define and validate joint model. |
-| BCR data model | Implemented | IG chain normalization/canonical rows | Not a functional model; medium; P2; schema tests only. |
-| BCR functional reference, heavy/light, isotype, SHM, family support | Blocked | design gate only | Dedicated reference/public/heldout data required; high; P2; all BCR gates pass. |
-
-## Software and release
-
-| Capability | Status | Public API / implementation / tests / docs | Scientific validation, data requirement, risk, priority, acceptance |
-|---|---|---|---|
-| Package metadata | Implemented this phase | `pyproject.toml`; metadata tests | Version remains 0.1.0 pending policy; medium; P0; no placeholders, artifact parity. |
-| API reference/tutorials | Partially implemented | API freeze and focused docs/examples | Longitudinal/transfer tutorial pending; medium; P0; clean-user walkthrough. |
-| CI / Python 3.10–3.12 | Implemented | GitHub workflow | Remote execution must pass; medium; P0. |
-| Small public test data | Partially implemented | synthetic fixtures/examples | Redistributable real fixture undecided; low; P1. |
-| Versioning | Blocked | changelog/history docs | Existing tag/package inconsistency requires maintainer decision; high; P0. |
-| Open-source license | Implemented | MIT `LICENSE` | Low; P0; included in wheel/sdist. |
-| DOI archive readiness | Blocked | submission gate | Needs approved versioned release; medium; P1. |
-| Reproducibility bundle | Partially implemented | manifests/workflows/plans | Real public manifests/source tables absent; high; P0. |
-
-## Month 1 conclusion
-
-The software foundation now extends beyond orchestration, but the central
-transferability claim remains unvalidated on independent real cohorts. The
-highest-risk gaps are original-reference compatibility across chain modes,
-prespecified longitudinal validation, two independent TCR cohorts including one
-held out, and complete bounded scaling/parity tables. BCR remains out of scope.
+The only material evidence gap for a stronger longitudinal claim is a complete,
+prespecified run on a public cohort with at least three visits. GSE345124 is now
+verified as the strongest candidate (18 donors, 13 with three visits), but its
+2,258,994 unique eligible CDR3 queries place it outside this bounded sprint.
+This does not block the narrower transferability and two-visit repeated-donor
+claims. It does block any claim about persistent/expanding/contracting RFU
+trajectories across three or more visits.

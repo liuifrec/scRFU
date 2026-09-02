@@ -2,44 +2,49 @@
 
 ## Original RFU contribution
 
-The original RFU work defines the trimer representation, the RFU reference,
-centroids or associated reference artifacts, and the original assignment
-method. Exact parity with that implementation is a technical requirement for
-scRFU, not a claim that scRFU invented RFUs. Users must cite the original RFU
-method when using its assignments.
+The original RFU project defines the RFU representation/model, trimer
+transformation, canonical assignment method, centroids/reference artifacts,
+threshold semantics, and their biological motivation. scRFU reproduces this
+assignment exactly; it does not claim to have invented RFUs or redistribute the
+upstream assets. Users must cite and obtain the original RFU implementation
+separately.
+
+## Scirpy contribution
+
+Scirpy supplies the AIRR/scverse receptor data model, chain indexing and QC,
+general clonotype definitions, distance calculations, and broad immune-
+repertoire ecosystem. scRFU uses those public conventions and compares against
+genuine Scirpy clonotypes. It does not relabel Scirpy functionality as its own.
 
 ## scRFU contribution
 
-scRFU contributes the transferable analysis and execution layer around a frozen
-RFU reference:
+scRFU contributes a reproducible method/execution layer for applying a frozen
+RFU reference to single-cell and cohort receptor data:
 
-- standardized AIRR, scirpy, AnnData, selective-H5AD, Cell Ranger, Wells, and
-  bulk receptor-table inputs;
-- canonical receptor rows with metadata kept in a separate, validated table;
-- exact-sequence deduplication followed by stable cell/receptor-row
-  reconstruction;
-- restartable chunk manifests and deterministic optional chunk parallelism;
-- hashes, thresholds, eligibility rules, assignment modes, and source-table
-  provenance;
-- explicit nearest versus threshold-qualified assignments and descriptive
-  low-reference-similarity coverage diagnostics;
-- sample-level RFU representations, repertoire baselines, phenotype linkage,
-  and offline version-pinned VDJdb evidence analysis;
-- repeated-measures design validation, longitudinal similarity, donor
-  retrieval, explicit RFU trajectory classification, and donor-block
-  resampling;
-- frozen-reference transfer summaries and explicit metadata harmonization;
-- deterministic robustness utilities and shared sample-representation
-  comparator interfaces.
+- canonical receptor adapters and exact-CDR3 query deduplication with stable
+  receptor-row reconstruction;
+- deterministic restartable chunking, process parallelism, cache validation,
+  artifact hashing, and explicit reference-coverage diagnostics;
+- frozen-reference transfer without cohort-specific refitting;
+- chain-aligned AnnData/MuData AIRR annotations that preserve every source
+  chain, plus ambiguity-aware opt-in cell summaries;
+- portable storage provenance, serialization/subsetting behavior, and guarded
+  concatenation across compatible references;
+- RFU-specific pseudobulk, convergence, overlap, phenotype coupling,
+  longitudinal representation, robustness, and comparator analyses;
+- version-pinned external VDJdb annotation/coherence analysis that keeps RFU
+  CDR3 identity separate from strict chain+CDR3+V evidence-query identity.
 
-These are methods claims only after synthetic correctness, original-RFU parity,
-bounded public validation, independent-cohort validation, and held-out testing
-have each been demonstrated at the level stated in the manuscript.
+## Method-level assessment
 
-## Future or gated contribution
+The remaining novelty is more than packaging: exact reconstruction,
+large-repertoire execution/recovery, frozen cross-cohort feature mapping, and a
+chain-aligned scverse receptor-state schema together define a transferable
+analysis method that neither original RFU nor Scirpy alone provides. The
+contribution is nonetheless conditional on the original RFU reference and
+complementary to Scirpy. It should be presented as a scalable interoperable RFU
+method, not as a new receptor similarity model or a replacement for clonotype
+analysis.
 
-Receptor-specific BCR functional units, inferential longitudinal models, and a
-cross-receptor synthesis are not current capabilities. BCR remains gated on a
-separate reference, technical fidelity, public-cohort analysis, interpretable
-maturation/isotype behavior, and held-out validation. The canonical schema's
-ability to store immunoglobulin chains is data-model support only.
+BCR functional units, antigen specificity, deep longitudinal inference, and
+supervised outcome prediction are outside this contribution.

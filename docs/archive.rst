@@ -29,6 +29,7 @@ not part of the public API contract.
    month2_execution_report
    parallel_execution
    public_dataset_candidates
+   public_longitudinal_candidates_scverse
    receptor_*
    reference_coverage
    release_*
