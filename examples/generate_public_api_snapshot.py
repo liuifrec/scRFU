@@ -9,6 +9,13 @@ import json
 from pathlib import Path
 
 EXPERIMENTAL_TL = {
+    "RegulatoryEvidenceSchema",
+    "RegulatoryTriangulationResult",
+    "credible_set_overlap",
+    "join_regulatory_summary",
+    "normalize_regulatory_variants",
+    "regulatory_evidence_schema",
+    "regulatory_triangulation",
     "CohortHarmonizationResult",
     "ComparatorRepresentation",
     "FrozenRFUReference",
@@ -94,6 +101,8 @@ def main() -> None:
                 stability = "experimental"
             elif namespace == "scrfu.tl" and name in COMPATIBILITY_TL:
                 stability = "compatibility"
+            elif namespace == "scrfu.pl" and name.startswith("regulatory_evidence_"):
+                stability = "experimental"
             entries.append(_entry(namespace, name, stability))
     bcr = importlib.import_module("scrfu.bcr")
     for name in sorted(bcr.__all__):

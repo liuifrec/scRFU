@@ -47,6 +47,11 @@ symbols in Month 1. CLI commands must express the same defaults and validation
 as their Python counterparts; new longitudinal/transfer workflows are examples,
 not yet core CLI subcommands.
 
+The regulatory-triangulation APIs and result/schema dataclasses in `scrfu.tl`,
+and the two regulatory evidence plots in `scrfu.pl`, are experimental additions.
+Their synthetic tests establish table behavior, not real-cohort biological
+validation. See [regulatory triangulation](regulatory_triangulation.md).
+
 ## Compatibility aliases
 
 `rfu_summary`, `aggregate_rfu`, adapter aliases (`wells`, `cellranger`,

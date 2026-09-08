@@ -3,6 +3,15 @@
 The intended stable public API is documented in
 [api_contract.md](api_contract.md).
 
+Experimental regulatory evidence APIs are exposed through `scrfu.tl`:
+`RegulatoryEvidenceSchema`, `regulatory_evidence_schema`,
+`normalize_regulatory_variants`, `RegulatoryTriangulationResult`,
+`regulatory_triangulation`, `credible_set_overlap`, and
+`join_regulatory_summary`. `scrfu.pl.regulatory_evidence_heatmap` and
+`regulatory_evidence_bar` plot descriptive evidence coverage. See
+[schemas, contracts, and examples](regulatory_triangulation.md); overlap is not
+formal statistical colocalization or causal inference.
+
 Current public modules:
 
 - `scrfu.pp`: canonical receptor schema and validation.

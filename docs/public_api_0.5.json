@@ -372,6 +372,24 @@
     {
       "has_docstring": true,
       "module": "scrfu.pl",
+      "name": "regulatory_evidence_bar",
+      "namespace": "scrfu.pl",
+      "result_type": "Axes",
+      "signature": "(result: 'RegulatoryTriangulationResult', *, ax: 'Axes | None' = None) -> 'Axes'",
+      "stability": "experimental"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.pl",
+      "name": "regulatory_evidence_heatmap",
+      "namespace": "scrfu.pl",
+      "result_type": "Axes",
+      "signature": "(result: 'RegulatoryTriangulationResult', *, ax: 'Axes | None' = None) -> 'Axes'",
+      "stability": "experimental"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.pl",
       "name": "repertoire_metric_comparison",
       "namespace": "scrfu.pl",
       "result_type": "Axes",
@@ -641,6 +659,24 @@
     },
     {
       "has_docstring": true,
+      "module": "scrfu.regulatory",
+      "name": "RegulatoryEvidenceSchema",
+      "namespace": "scrfu.tl",
+      "result_type": "None",
+      "signature": "(layer: 'str', required: 'tuple[str, ...]', optional: 'tuple[str, ...]') -> None",
+      "stability": "experimental"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.regulatory",
+      "name": "RegulatoryTriangulationResult",
+      "namespace": "scrfu.tl",
+      "result_type": "None",
+      "signature": "(harmonized_rfu_qtl: 'pd.DataFrame', matched_evidence: 'pd.DataFrame', unmatched_variants: 'pd.DataFrame', rfu_summary: 'pd.DataFrame', variant_summary: 'pd.DataFrame', credible_set_overlaps: 'pd.DataFrame', provenance: 'dict[str, Any]') -> None",
+      "stability": "experimental"
+    },
+    {
+      "has_docstring": true,
       "module": "scrfu.scverse",
       "name": "ScverseRFUResult",
       "namespace": "scrfu.tl",
@@ -785,6 +821,15 @@
     },
     {
       "has_docstring": true,
+      "module": "scrfu.regulatory",
+      "name": "credible_set_overlap",
+      "namespace": "scrfu.tl",
+      "result_type": "pd.DataFrame",
+      "signature": "(left: 'pd.DataFrame', right: 'pd.DataFrame', *, left_layer: 'str' = 'rfu_qtl', right_layer: 'str' = 'eqtl', pip_threshold: 'float' = 0.95) -> 'pd.DataFrame'",
+      "stability": "experimental"
+    },
+    {
+      "has_docstring": true,
       "module": "scrfu.benchmark",
       "name": "deterministic_subsample",
       "namespace": "scrfu.tl",
@@ -826,6 +871,15 @@
       "namespace": "scrfu.tl",
       "result_type": "CohortHarmonizationResult",
       "signature": "(metadata: 'pd.DataFrame', *, cohort_label: 'str', field_mapping: 'Mapping[str, str]', value_mappings: 'Mapping[str, Mapping[Any, Any]] | None' = None, strict: 'bool' = True) -> 'CohortHarmonizationResult'",
+      "stability": "experimental"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.regulatory",
+      "name": "join_regulatory_summary",
+      "namespace": "scrfu.tl",
+      "result_type": "pd.DataFrame",
+      "signature": "(summary: 'pd.DataFrame', result: 'RegulatoryTriangulationResult') -> 'pd.DataFrame'",
       "stability": "experimental"
     },
     {
@@ -875,6 +929,15 @@
     },
     {
       "has_docstring": true,
+      "module": "scrfu.regulatory",
+      "name": "normalize_regulatory_variants",
+      "namespace": "scrfu.tl",
+      "result_type": "pd.DataFrame",
+      "signature": "(table: 'pd.DataFrame', *, layer: 'str', genome_build: 'str | None' = None, source: 'str | None' = None, release: 'str | None' = None) -> 'pd.DataFrame'",
+      "stability": "experimental"
+    },
+    {
+      "has_docstring": true,
       "module": "scrfu.vdjdb",
       "name": "normalize_vdjdb_cdr3",
       "namespace": "scrfu.tl",
@@ -916,6 +979,24 @@
       "namespace": "scrfu.tl",
       "result_type": "None",
       "signature": "(name: 'str', comparator: 'Comparator', *, replace: 'bool' = False) -> 'None'",
+      "stability": "experimental"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.regulatory",
+      "name": "regulatory_evidence_schema",
+      "namespace": "scrfu.tl",
+      "result_type": "RegulatoryEvidenceSchema",
+      "signature": "(layer: 'str') -> 'RegulatoryEvidenceSchema'",
+      "stability": "experimental"
+    },
+    {
+      "has_docstring": true,
+      "module": "scrfu.regulatory",
+      "name": "regulatory_triangulation",
+      "namespace": "scrfu.tl",
+      "result_type": "RegulatoryTriangulationResult",
+      "signature": "(rfu_qtl: 'pd.DataFrame', *, eqtl: 'pd.DataFrame | None' = None, caqtl: 'pd.DataFrame | None' = None, gwas: 'pd.DataFrame | None' = None, pip_threshold: 'float' = 0.95, allow_allele_reversal: 'bool' = True, input_metadata: 'Mapping[str, Mapping[str, Any]] | None' = None) -> 'RegulatoryTriangulationResult'",
       "stability": "experimental"
     },
     {

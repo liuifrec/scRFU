@@ -46,6 +46,15 @@ from .longitudinal import (
     summarize_longitudinal_similarity,
     validate_longitudinal_design,
 )
+from .regulatory import (
+    RegulatoryEvidenceSchema,
+    RegulatoryTriangulationResult,
+    credible_set_overlap,
+    join_regulatory_summary,
+    normalize_regulatory_variants,
+    regulatory_evidence_schema,
+    regulatory_triangulation,
+)
 from .repertoire import repertoire_metrics
 from .scverse import (
     ScverseRFUResult,
@@ -266,6 +275,13 @@ def call_rfu(
 
 
 __all__ = [
+    "RegulatoryEvidenceSchema",
+    "RegulatoryTriangulationResult",
+    "credible_set_overlap",
+    "join_regulatory_summary",
+    "normalize_regulatory_variants",
+    "regulatory_evidence_schema",
+    "regulatory_triangulation",
     "AntigenContextResult",
     "AntigenPermutationResult",
     "CohortHarmonizationResult",

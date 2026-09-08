@@ -18,5 +18,7 @@ fields are tracked in the public API snapshot.
    scrfu.tl.RFULongitudinalResult
    scrfu.tl.LongitudinalCompartmentResult
    scrfu.tl.TransferCohortResult
+   scrfu.tl.RegulatoryEvidenceSchema
+   scrfu.tl.RegulatoryTriangulationResult
    scrfu.adapters.AdapterResult
    scrfu.io.ReceptorCacheData

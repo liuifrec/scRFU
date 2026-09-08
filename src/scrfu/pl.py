@@ -6,6 +6,7 @@ import numpy as np
 import pandas as pd
 
 from .downstream import RFUOverlapResult, RFUPseudobulkResult
+from .regulatory import RegulatoryTriangulationResult
 from .summary import aggregate_rfu
 from .vdjdb import AntigenPermutationResult
 
@@ -514,6 +515,8 @@ def rfu_antigen_bubble(
 
 
 __all__ = [
+    "regulatory_evidence_heatmap",
+    "regulatory_evidence_bar",
     "antigen_permutation_distribution",
     "repertoire_metric_comparison",
     "rfu_antigen_bubble",
@@ -527,3 +530,53 @@ __all__ = [
     "rfu_phenotype_heatmap",
     "rfu_score_hist",
 ]
+
+
+def _regulatory_matrix(result: RegulatoryTriangulationResult) -> pd.DataFrame:
+    columns = {
+        "has_rfu_qtl": "rfuQTL",
+        "has_caqtl": "caQTL",
+        "has_eqtl": "eQTL",
+        "has_gwas": "GWAS",
+    }
+    matrix = result.rfu_summary.set_index("rfu_label")[list(columns)].rename(columns=columns)
+    matrix["High PIP (eQTL/caQTL)"] = (
+        result.rfu_summary.set_index("rfu_label")["eqtl_finemapped"]
+        | result.rfu_summary.set_index("rfu_label")["caqtl_finemapped"]
+    )
+    return matrix.astype(int)
+
+
+def regulatory_evidence_heatmap(
+    result: RegulatoryTriangulationResult,
+    *,
+    ax: Axes | None = None,
+) -> Axes:
+    """Plot RFUs × observed evidence types; RFU-level unions may span variants."""
+    ax = _get_ax(ax)
+    matrix = _regulatory_matrix(result)
+    if matrix.empty:
+        return _draw_empty(ax, "Regulatory evidence", "RFU")
+    return _heatmap(
+        matrix,
+        ax=ax,
+        title="Observed regulatory evidence (RFU unions)",
+        xlabel="Evidence type",
+        ylabel="RFU",
+        colorbar_label="Observed (0/1)",
+    )
+
+
+def regulatory_evidence_bar(
+    result: RegulatoryTriangulationResult,
+    *,
+    ax: Axes | None = None,
+) -> Axes:
+    """Count RFUs with each supplied evidence type; categories can overlap."""
+    ax = _get_ax(ax)
+    counts = _regulatory_matrix(result).sum(axis=0)
+    ax.bar(counts.index, counts.to_numpy())
+    ax.set_ylabel("RFUs with observed evidence")
+    ax.set_title("Regulatory evidence coverage")
+    ax.tick_params(axis="x", rotation=45)
+    return ax

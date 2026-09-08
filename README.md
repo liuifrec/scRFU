@@ -25,6 +25,11 @@ adapter and bounded public benchmark, not the data model.
   manuscript-oriented plots.
 - Provides CI-safe synthetic examples plus real-data workflow scaffolds for
   user-provided datasets.
+- Triangulates user-supplied RFU-QTL, eQTL, caQTL, and GWAS tables with build-aware
+  variant matching, descriptive credible-set overlap, and explicit provenance.
+  See [regulatory triangulation](docs/regulatory_triangulation.md) for the
+  experimental API and local-file Matos CD4 example. Overlap does not establish
+  statistical colocalization, causality, or antigen specificity.
 - Matches RFU sequences to user-supplied, version-labelled local VDJdb tables
   and benchmarks descriptive antigen-label coherence against explicit nulls.
 - Validates repeated-measures designs and constructs longitudinal RFU matrices,

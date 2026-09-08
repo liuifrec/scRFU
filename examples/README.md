@@ -162,3 +162,12 @@ RFU_DIR=/path/to/RFU python examples/wells_atlas_workflow.py \
   --chunk-size 20000 \
   --primary-chain
 ```
+
+## Local regulatory evidence
+
+`matos_regulatory_triangulation.py --manifest MANIFEST.json --outdir RESULTS`
+integrates user-supplied RFU-QTL and molecular-QTL/GWAS files. It performs no
+downloads. The [worked example](../docs/regulatory_triangulation.md#matos-et-al-local-file-example)
+defines canonical/tensorQTL/SuSiE columns, explicit allele-order choices, releases,
+builds, checksums, and output tables. Association and credible-set overlaps are
+descriptive, not formal colocalization or causal inference.

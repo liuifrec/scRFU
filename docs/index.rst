@@ -14,6 +14,7 @@ assets are external dependencies and are not redistributed by this package.
    scirpy_interoperability_scope
    scverse_storage_schema
    configuration
+   regulatory_triangulation
    api/index
    release_licensing_boundary
 
