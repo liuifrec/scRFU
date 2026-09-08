@@ -165,6 +165,12 @@ RFU_DIR=/path/to/RFU python examples/wells_atlas_workflow.py \
 
 ## Local regulatory evidence
 
+`rfuwas_regulatory_prepare.py --input DATA1 --format xlsx|tsv|csv --release RELEASE
+--outdir RESULTS` prepares published RfuWAS Supplementary Data 1 as GRCh38 RFU-QTL
+evidence, leaving effect alleles unresolved. XLSX requires optional `openpyxl`;
+TSV/CSV exports use pandas only. See the
+[preparation instructions](../docs/regulatory_triangulation.md#preparing-the-published-rfuwas-rfu-qtl-input).
+
 `matos_regulatory_triangulation.py --manifest MANIFEST.json --outdir RESULTS`
 integrates user-supplied RFU-QTL and molecular-QTL/GWAS files. It performs no
 downloads. The [worked example](../docs/regulatory_triangulation.md#matos-et-al-local-file-example)

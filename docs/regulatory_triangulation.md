@@ -193,6 +193,48 @@ set membership or a PIP does not establish a shared causal signal.
 
 ## Matos et al. local-file example
 
+### Preparing the published RfuWAS RFU-QTL input
+
+`examples/rfuwas_regulatory_prepare.py` converts the verified **Supplementary
+Data 1** schema (`SNP`, `RFU`, `beta`, `t.stat`, `p.value`) into canonical
+GRCh38 RFU-QTL evidence. It parses `CHR_POS_REF_ALT`, retains original columns,
+preserves published one-based RFU identities as integer strings without an offset,
+and records unresolved effect-allele orientation. It neither flips beta nor
+reconstructs SE. Data 1 is not interchangeable with the **GRCh37 lasso prediction
+weights**; **Data 4** contains RFU–phenotype associations to join by RFU rather
+than variant. See the [verified resource audit](regulatory_reconnaissance.md).
+
+```bash
+python examples/rfuwas_regulatory_prepare.py \
+  --input /path/to/42003_2024_7010_MOESM4_ESM.xlsx --format xlsx \
+  --release s42003-024-07010-x --outdir /path/to/new/rfuwas_prepared
+```
+
+XLSX input explicitly selects `Data 1` and the headers on worksheet row 2. It
+requires `openpyxl` in the analysis environment, not as a scRFU core dependency.
+Alternatively, export **Data 1 only**, with its column header first, and use
+`--format tsv` or `--format csv`; these need only pandas. Add `--nrows 25` for a
+bounded smoke test. No files are downloaded or existing outputs overwritten.
+
+Outputs are `rfu_qtl.tsv` and `provenance.json`, recording the source/release,
+GRCh38 build, input SHA256, selected worksheet/export, row limit/counts, and
+unresolved orientation. The complete prepared TSV can be used directly:
+
+```python
+rfu_qtl = pd.read_csv('/path/to/rfuwas_prepared/rfu_qtl.tsv', sep='\t',
+                      dtype={'rfu_label': str})
+result = scrfu.tl.regulatory_triangulation(
+    rfu_qtl, eqtl=eqtl, caqtl=caqtl, allow_allele_reversal=False,
+)
+```
+
+Remove `--nrows` when preparing the full Data 1 table for the post-reset run.
+Direction comparisons remain missing until independently verified allele coding
+is supplied. The callable example helpers are `prepare_rfuwas_data1` (DataFrame
+conversion), `read_data1` (local reading), and `run` (reading plus export).
+
+### Adapting Matos molecular-QTL files
+
 The motivating [Matos et al. preprint](https://doi.org/10.64898/2026.01.27.26344979)
 and its [public analysis repository](https://github.com/marlmatos/cd4t-qtl-map)
 provide CD4 molecular-QTL mapping and fine-mapping workflows. A versioned
