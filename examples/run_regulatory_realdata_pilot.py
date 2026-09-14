@@ -50,9 +50,9 @@ def evidence_sets(raw: pd.DataFrame, independent: pd.DataFrame, threshold: float
     }
 
 
-def run(root: Path, *, partial_caqtl: bool = False) -> None:
+def run(root: Path, *, partial_caqtl: bool = False, output_dir: Path | None = None) -> None:
     prepared, baseline = root / "prepared", root / "results"
-    out = baseline / "partial_caqtl_checkpoint" if partial_caqtl else baseline
+    out = output_dir or (baseline / "partial_caqtl_checkpoint" if partial_caqtl else baseline)
     out.mkdir(parents=True, exist_ok=True)
     rfu = read(prepared / "rfuwas_data1_rfuqtl_grch38.tsv")
     raw = {
@@ -107,8 +107,28 @@ def run(root: Path, *, partial_caqtl: bool = False) -> None:
                 "Duplicate variant–target tests; establish test family before correction"
             )
         frame["lookup_bonferroni"] = frame.pvalue < threshold
+        frame["represented_in_available_summary"] = True
+        frame["query_set_bonferroni_pass"] = frame["lookup_bonferroni"]
+        # Legacy source_significant also marked conditional selections. It cannot
+        # reconstruct marginal FDR discovery when permutation thresholds are absent.
+        frame["source_marginal_significant"] = pd.NA
+        frame["source_finemapping_support"] = pd.NA
+        frame["source_molecular_colocalization"] = pd.NA
         frame["lookup_bonferroni_threshold"] = threshold
         indep = independent[layer]
+        indep["source_signal_id"] = [
+            json.dumps(
+                [
+                    layer,
+                    str(row.release),
+                    str(getattr(row, "context", "unknown")),
+                    str(row.source_file),
+                    str(getattr(row, target)),
+                    int(row.rank),
+                ]
+            )
+            for row in indep.itertuples()
+        ]
         conditional_cols = ["variant_key", target, "pvalue", "beta", "se", "rank", "source_file"]
         frame = frame.merge(
             indep[conditional_cols].rename(
@@ -118,6 +138,7 @@ def run(root: Path, *, partial_caqtl: bool = False) -> None:
             how="left",
             validate="one_to_one",
         )
+        frame["source_conditional_signal_member"] = frame.conditional_rank.notna()
         selected = frame.loc[
             frame.lookup_bonferroni | frame.independent.astype("boolean").fillna(False)
         ].copy()
@@ -137,6 +158,8 @@ def run(root: Path, *, partial_caqtl: bool = False) -> None:
             "tested_variant_target_pairs": len(frame),
             "independent_variant_target_pairs": len(indep),
             "source_significant_total": None,
+            "within_target_conditional_signals": indep.source_signal_id.nunique(),
+            "independent_targets": indep[target].nunique(),
         }
         for category, variants in sets[layer].items():
             subset = rfu.loc[rfu.variant_key.isin(variants)]
@@ -155,6 +178,14 @@ def run(root: Path, *, partial_caqtl: bool = False) -> None:
         "variants": len(both_independent),
         "rfus": rfu.loc[rfu.variant_key.isin(both_independent), "rfu_label"].nunique(),
     }
+    for category in ("evidence", "independent"):
+        layer_rfus = [
+            set(rfu.loc[rfu.variant_key.isin(sets[layer][category]), "rfu_label"])
+            for layer in ("eqtl", "caqtl")
+        ]
+        counts[f"both_{category}_rfu_level_allowing_different_variants"] = len(
+            layer_rfus[0] & layer_rfus[1]
+        )
     if partial_caqtl:
         counts["caqtl"]["independent_chr6_observed"] = counts["caqtl"]["independent"]
         counts["caqtl"]["independent_variant_target_pairs_chr6_observed"] = counts["caqtl"][
@@ -167,6 +198,9 @@ def run(root: Path, *, partial_caqtl: bool = False) -> None:
             "rfu_qtl_associations": None,
         }
         counts["both_independent"] = {"variants": None, "rfus": None}
+        counts["both_independent_rfu_level_allowing_different_variants"] = None
+        counts["caqtl"]["within_target_conditional_signals"] = None
+        counts["caqtl"]["independent_targets"] = None
     metadata = {
         "analysis": "GRCh38 exact overlap; allele reversal disabled; effects unresolved",
         "evidence_filter": "lookup p < 0.05 / all retrieved eQTL+caQTL tests OR released independent QTL",
@@ -345,9 +379,12 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", required=True, type=Path)
     parser.add_argument(
+        "--output-dir", type=Path, help="Versioned result directory; preserves checkpoints"
+    )
+    parser.add_argument(
         "--partial-caqtl",
         action="store_true",
         help="Use recovered chr7 nominal / chr6 independent caQTL files; provisional outputs only",
     )
     args = parser.parse_args()
-    run(args.root, partial_caqtl=args.partial_caqtl)
+    run(args.root, partial_caqtl=args.partial_caqtl, output_dir=args.output_dir)

@@ -45,6 +45,16 @@ def source_variant_ids(keys: set[str]) -> set[str]:
     return result
 
 
+def validate_coverage(filenames: list[str], chromosomes: set[str]) -> None:
+    """Missing export coverage is unknown, never a zero-overlap result."""
+    for chromosome in sorted(chromosomes):
+        local = [name for name in filenames if f".chr{chromosome}." in name]
+        if not any(name.endswith(".parquet") for name in local) or not any(
+            "independent" in name for name in local
+        ):
+            raise ValueError(f"Incomplete nominal/conditional source coverage for chr{chromosome}")
+
+
 def significance_flags(nominal: pd.DataFrame, top: pd.DataFrame | None) -> pd.DataFrame:
     """Apply TensorQTL's phenotype FDR and phenotype-specific nominal threshold.
 
@@ -137,6 +147,7 @@ def lookup(root: Path, layer: str) -> None:
                 print(f"Extracted {path.name}", flush=True)
         checkpoint.write_text(json.dumps(manifest, indent=2) + "\n")
     files = [extracted / entry["filename"] for entry in manifest["selected"]]
+    validate_coverage([path.name for path in files], chroms)
     nominal, independent, top = [], [], []
     scan_counts = []
     for path in files:

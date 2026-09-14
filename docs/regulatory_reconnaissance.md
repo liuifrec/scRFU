@@ -272,12 +272,12 @@ In a separate analysis environment with openpyxl available (or using the existin
 standard-library workbook extraction), prepare Data 1 as follows:
 
 ```python
-rfu = pd.read_excel('/tmp/scrfu-first-real/rfuwas.xlsx', sheet_name='Data 1', header=1)
-rfu = rfu.rename(columns={'RFU': 'rfu_label', 'p.value': 'pvalue'})
-rfu['variant_id'] = rfu['SNP'].str.replace('_', ':', regex=False)
-rfu['genome_build'] = 'GRCh38'
-rfu['source'] = 'RfuWAS Supplementary Data 1'
-rfu['release'] = 's42003-024-07010-x'
+rfu = pd.read_excel("/tmp/scrfu-first-real/rfuwas.xlsx", sheet_name="Data 1", header=1)
+rfu = rfu.rename(columns={"RFU": "rfu_label", "p.value": "pvalue"})
+rfu["variant_id"] = rfu["SNP"].str.replace("_", ":", regex=False)
+rfu["genome_build"] = "GRCh38"
+rfu["source"] = "RfuWAS Supplementary Data 1"
+rfu["release"] = "s42003-024-07010-x"
 # Leave effect_allele missing until verified. Published RFU labels are already one-based.
 ```
 
@@ -288,7 +288,10 @@ label the input analysis as conditional-independent. Then call the core directly
 
 ```python
 result = scrfu.tl.regulatory_triangulation(
-    rfu, eqtl=eqtl, caqtl=caqtl, allow_allele_reversal=False,
+    rfu,
+    eqtl=eqtl,
+    caqtl=caqtl,
+    allow_allele_reversal=False,
     input_metadata=metadata_with_checksums_contexts_and_filters,
 )
 ```

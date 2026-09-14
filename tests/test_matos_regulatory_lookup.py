@@ -1,7 +1,18 @@
 import pandas as pd
 import pytest
 
-from examples.matos_regulatory_lookup import significance_flags, source_variant_ids
+from examples.matos_regulatory_lookup import (
+    significance_flags,
+    source_variant_ids,
+    validate_coverage,
+)
+
+
+def test_missing_chromosome_is_unknown_not_zero():
+    names = ["x.chr7.parquet", "x.independent.chr7.csv"]
+    validate_coverage(names, {"7"})
+    with pytest.raises(ValueError, match="Incomplete.*chr6"):
+        validate_coverage(names, {"6", "7"})
 
 
 def test_source_identity_keeps_alleles_and_indels():

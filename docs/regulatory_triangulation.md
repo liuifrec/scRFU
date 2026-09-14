@@ -62,17 +62,30 @@ Normalize directly, or provide per-layer defaults through `input_metadata`:
 import pandas as pd
 import scrfu
 
-rfu_qtl = pd.DataFrame({
-    "variant_id": ["chr1:12345:a:g"], "genome_build": ["hg38"],
-    "rfu_label": ["RFU1"], "beta": [0.3], "effect_allele": ["G"],
-    "source": ["my-rfuQTL"], "release": ["analysis-v1"],
-})
-eqtl = pd.DataFrame({
-    "variant_id": ["1:12345:A:G"], "genome_build": ["GRCh38"],
-    "gene": ["GENE1"], "beta": [0.2], "effect_allele": ["G"],
-    "pip": [0.98], "context": ["CD4"],
-    "source": ["local-eQTL"], "release": ["release-v1"],
-})
+rfu_qtl = pd.DataFrame(
+    {
+        "variant_id": ["chr1:12345:a:g"],
+        "genome_build": ["hg38"],
+        "rfu_label": ["RFU1"],
+        "beta": [0.3],
+        "effect_allele": ["G"],
+        "source": ["my-rfuQTL"],
+        "release": ["analysis-v1"],
+    }
+)
+eqtl = pd.DataFrame(
+    {
+        "variant_id": ["1:12345:A:G"],
+        "genome_build": ["GRCh38"],
+        "gene": ["GENE1"],
+        "beta": [0.2],
+        "effect_allele": ["G"],
+        "pip": [0.98],
+        "context": ["CD4"],
+        "source": ["local-eQTL"],
+        "release": ["release-v1"],
+    }
+)
 result = scrfu.tl.regulatory_triangulation(rfu_qtl, eqtl=eqtl)
 print(result.rfu_summary)
 ```
@@ -170,8 +183,11 @@ tiers are not strength-of-association scores.
 
 ```python
 overlap = scrfu.tl.credible_set_overlap(
-    rfu_qtl_members, eqtl_members,
-    left_layer="rfu_qtl", right_layer="eqtl", pip_threshold=0.95,
+    rfu_qtl_members,
+    eqtl_members,
+    left_layer="rfu_qtl",
+    right_layer="eqtl",
+    pip_threshold=0.95,
 )
 ```
 
@@ -221,10 +237,12 @@ GRCh38 build, input SHA256, selected worksheet/export, row limit/counts, and
 unresolved orientation. The complete prepared TSV can be used directly:
 
 ```python
-rfu_qtl = pd.read_csv('/path/to/rfuwas_prepared/rfu_qtl.tsv', sep='\t',
-                      dtype={'rfu_label': str})
+rfu_qtl = pd.read_csv("/path/to/rfuwas_prepared/rfu_qtl.tsv", sep="\t", dtype={"rfu_label": str})
 result = scrfu.tl.regulatory_triangulation(
-    rfu_qtl, eqtl=eqtl, caqtl=caqtl, allow_allele_reversal=False,
+    rfu_qtl,
+    eqtl=eqtl,
+    caqtl=caqtl,
+    allow_allele_reversal=False,
 )
 ```
 
@@ -341,7 +359,7 @@ Optional Matplotlib plots use the existing plotting extra:
 
 ```python
 scrfu.pl.regulatory_evidence_heatmap(result)  # RFUs × observed evidence types
-scrfu.pl.regulatory_evidence_bar(result)      # RFU counts per evidence type
+scrfu.pl.regulatory_evidence_bar(result)  # RFU counts per evidence type
 ```
 
 The heatmap includes RFU-QTL, caQTL, eQTL, GWAS, and high regulatory PIP support.
