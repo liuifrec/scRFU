@@ -1,5 +1,105 @@
 # Radiation-methods execution checkpoint — 2026-09-16
 
+## Current finishing checkpoint
+
+The external application and bounded repair supplement are **complete**. Start
+from this section; pending GSE280982 descriptions in the historical checkpoints
+below record the earlier state. No RP1-14 endpoint, GSE190905/Wells analysis,
+prediction model or QTL discovery was rerun. The generic package is unchanged.
+
+- GSE280982: 13,077 GEX-matched primary-TRB cells; 9,827 qualify at 0.6,
+  representing 2,879 RFUs. All 11 released visits meet the unchanged 100-cell
+  rule. Seven tumor pairs in three donors and one blood pair are measured;
+  ten registered interval combinations lack a required visit. Missing remains
+  unavailable, not zero. Radiation-day qualified depths are 113, 143 and 157.
+- Tumor RFU TV: pre → radiation-day 0.8897/0.9175/0.8875;
+  radiation-day → six weeks 0.9307/0.9194; pre → six weeks 0.7159/0.7308.
+  Blood pre → six weeks: 0.6803. All 96 repeated measurement rows contract.
+  The exact receptor TV/cancellation values and denominators are in the
+  manuscript and `external_donor_results.tsv`; pairs are not independent people.
+- At one-cell detection, 67.1%/54.9% of persistent RFUs in the longer tumor
+  comparisons lack a shared observed receptor. At five-cell detection, four
+  of five radiation-day intervals have no persistent RFUs; the fraction with
+  no shared receptor is then undefined. Depth/weighting materially changes
+  distances, and matched controls give similar cancellation. No functional
+  stability, antigen persistence, absolute depletion or causal effect claimed.
+- RP1-14 repair supplement: all 359,530 RFU/score-vector entries unchanged;
+  330,433 changed and 29,097 unchanged AA labels. RFU/score-conflicting AA
+  groups fall from 41,572/41,581 to zero. Stratified parity agrees for
+  **1,600/1,600** RFU labels and threshold decisions, including 485 scores in
+  [0.59, 0.61); maximum score error 1.055e-15. This supports the repair, not
+  proof of an unavailable historical invocation manifest.
+- Bounded author metadata check found no directly reusable external
+  barcode-to-state table. The 25-sheet source workbook and published R code
+  supply summaries/selected receptors/cluster annotation logic, not the missing
+  complete barcode mapping. No RNA atlas was rebuilt.
+- Main figures are now framework, frozen RP1-14, existing GSE190905 and external
+  GSE280982. Depth controls and repair QC are supplementary. Wells/QTL/negative
+  prediction remain supporting evidence, without a forced composite Figure 5.
+
+Active external directories under `$SCRFU_METHODS_DIR`:
+
+| Stage | Status / output hashes | Completion SHA256 |
+| --- | --- | --- |
+| `prepared/gse280982_rfu_v1` | Complete; 7 top-level outputs plus validated 15 backend chunks | `1c0fbc4d0fdc525719cddfcec0fa209114668de28a0e46a82e47e724488b8a1f` |
+| `results/gse280982_v1` | Complete; 15 output hashes | `f285da99bc0ee955d2ca357d75c4c46fd59fcff27f485bfebf7c67cb1c75a75d` |
+| `results/rp1_14_repair_qc_v1` | Complete; 16 output hashes, including parity assay tables | `1841c4e6b72d8a870da5e65c0bd034ef2ded17b1a12808dab4b8163b2a72403b` |
+| `results/manuscript_finish_v1_1` | Complete; 15 output hashes; final figures and cross-application table | `b0b0e8597b0c7b877c8bcfc25a6f3901ba69d1502dfb5d55a9ddb4243ca1130c` |
+
+Every parent completion/output hash verifies. All four repeat invocations return
+without recomputation. Final figures were visually inspected. The first
+`manuscript_finish_v1` export is preserved; `v1_1` only repairs diagram readability
+and assembles from the same measured source rows. RP1-14, development and
+regulatory checkpoint hashes are unchanged. Inputs, config, function/core-code
+hashes, executable paths, imported `scrfu` path and package/R versions are in each
+provenance file. Analysis ran from parent `d51586f` plus the explicitly hashed
+working-tree scripts committed with this finishing checkpoint.
+
+Only two additional public resources were downloaded for the metadata check:
+`41467_2025_60827_MOESM4_ESM.xlsx` (68,546,497 bytes; locally computed MD5
+`ce08a1c4b1d2978a3f4f80f4f51c147b`) and `author_analysis.R` (85,279 bytes;
+published MD5 **verified** `d3f76420491638247349bf0ef13e956d`). Their SHA256s,
+source URLs, workbook inventory and availability conclusion are in
+`manuscript_finish_v1_1/metadata_availability.json` and provenance. The 22
+previously downloaded processed inputs were reused. No QTL, reference or
+expression-matrix download was repeated.
+
+### Exact verification / continuation commands
+
+```bash
+SCRFU_METHODS_DIR="$HOME/data/scRFU_radiation_methods_20260916"
+SCRFU_PY="$HOME/data/scRFU_regulatory_20260909/environment/bin/python"
+export MPLCONFIGDIR=/tmp/scrfu-radiation-mpl
+export NUMBA_CACHE_DIR=/tmp/scrfu-radiation-numba-cache
+"$SCRFU_PY" -m manuscript.scripts.gse280982_analysis assign --workspace "$SCRFU_METHODS_DIR"
+"$SCRFU_PY" -m manuscript.scripts.gse280982_analysis measure --workspace "$SCRFU_METHODS_DIR"
+"$SCRFU_PY" -m manuscript.scripts.rp1_14_repair_qc --workspace "$SCRFU_METHODS_DIR"
+"$SCRFU_PY" -m manuscript.scripts.radiation_methods_finish --workspace "$SCRFU_METHODS_DIR"
+```
+
+These commands verify complete runs. Changed scientific inputs/settings/code
+fail closed rather than silently reuse or overwrite. Interrupted incomplete
+assignments can resume validated backend chunks. No completed stage needs a
+new biological run. Current output/source-table indices and manuscript claims
+agree; `manuscript/radiation_methods_claims.tsv` distinguishes verified,
+descriptive, bounded and unsupported claims.
+
+Validation: **25 focused tests passed** (external preparation/analysis, repair
+QC and multiscale); full suite **517 passed, 4 skipped, 32 warnings in 22.15 s**.
+`ruff check .` passes; `ruff format --check .`: **238 files already formatted**;
+`git diff --check` passes. Log: `logs/finishing_full_pytest.log`. The unchanged
+optional skips/dependency warnings are recorded, not suppressed.
+
+Remaining submission work: author/scientific review; authorship, funding and
+ethics/access wording; RP1-14 permission/access confirmation and approved
+source-table distribution; journal reference/format requirements; a persistent
+authorized artifact archive. No new module, positive prediction result, QTL
+mediation claim or missing external state analysis is needed to finish this
+bounded manuscript. The next informative biological study would add deeper
+repeated sampling with actual cell/template counts. Do not retune these results.
+
+## Historical development and recovery checkpoints
+
 Branch: `manuscript/radiation-methods`, created from completed, pushed
 regulatory checkpoint `d62f1c1da3891f0553e08e405769c2c8b38b3316`.
 The historical `manuscript/scverse-method-figures` branch and its figures are

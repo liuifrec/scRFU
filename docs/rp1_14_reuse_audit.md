@@ -115,3 +115,47 @@ NUMBA_CACHE_DIR=/tmp/scrfu-radiation-numba-cache MPLBACKEND=Agg "$SCRFU_PY" \
 Completed output reuse checks scientific input/configuration/code identity and
 output hashes. See the active execution state and manuscript for endpoint
 results. Legacy eRFU/log10sum scores and mixed-cohort embeddings are not inputs.
+
+## Expanded repair supplement, without biological endpoint changes
+
+The recovered `AssignRFUs_with_map` calls `EncodeRepertoire(ff)`, which removes
+non-C-starting sequences, but constructs exported metadata from the unfiltered
+`cdr3[1:n_map]` and `trbv[1:n_map]` prefixes. The source-prefix/filtered-length
+reconciliation in the completed preparation identifies this error. The expanded
+audit does not perform a new historical assignment or alter that reconciliation.
+
+All 36 original exports were compared, in order, against their repaired
+RFU/score vectors using canonical numeric-vector SHA256s with missing values
+preserved. All match. Of 359,530 rows, 330,433 amino-acid labels changed and
+29,097 remained unchanged. “Unchanged” refers to the exported AA label, not a
+claim that every preceding source-row position was unaffected. Five original
+missing RFU entries remain missing. Repeated-AA conflict-group counts are
+41,572 → 0 for RFU labels and 41,581 → 0 for scores.
+
+The new assay samples 1,600 globally unique canonical productive amino acids
+from 279,790 eligible historical sequences. Sampling is deterministic, before
+assay, across donor/visit/CD4-CD8, changed/unchanged AA label, six score bins
+(including [0.59,0.60) and [0.60,0.61)) and RFU frequency quartile categories.
+It covers all 36 samples; 864 selections are repaired and 736 unchanged,
+822 CD4 and 778 CD8, with 485 scores within 0.01 of threshold. RFUs in the
+lower/upper frequency quartiles have at most 31 / more than 70 eligible
+historical unique amino acids. The saved stratum table gives all occupied
+denominators; 1,201/1,211 strata receive a unique-receptor attribution.
+
+Results: **1,600/1,600 labels and threshold decisions agree**. Maximum score
+difference is `1.0547118733938987e-15`, below the prespecified `1e-12` tolerance.
+No mismatching receptor was removed or replaced. This is bounded computational
+parity, not proof of the missing contemporaneous execution/reference manifest.
+The original 216-receptor assay and `results/rp1_14_v1` are preserved unchanged.
+
+External source tables live in `results/rp1_14_repair_qc_v1/`:
+`alignment_vector_audit.tsv`, `repeated_receptor_conflicts.tsv`,
+`parity_sampling_strata.tsv`, `stratified_reference_parity.tsv`,
+`parity_summary.tsv`, provenance and completion manifests. The supplementary
+table PDF/PNG is in `results/manuscript_finish_v1_1/`. Detailed sequences and
+sample records remain outside Git. Verify/reuse with:
+
+```bash
+MPLCONFIGDIR=/tmp/scrfu-radiation-mpl "$SCRFU_PY" \
+  -m manuscript.scripts.rp1_14_repair_qc --workspace "$SCRFU_METHODS_DIR"
+```

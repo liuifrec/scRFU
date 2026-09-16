@@ -1,33 +1,34 @@
 # scRFU: reference-anchored analysis of longitudinal T-cell repertoire remodeling with applications to radiotherapy
 
-Manuscript v1, 2026-09-16. This is a results-bearing draft, not a submission-ready
-manuscript. RP1-14 reconstruction and its six-panel longitudinal figure are
-complete; the external GSE280982 endpoint application remains unfinished. The paused unpublished survivor cohort contributes
-no observations, outcome-selected features, transformations or thresholds.
+Manuscript v2, 2026-09-16. The scoped longitudinal analyses, external application
+and repair-QC supplement are complete. Author review, access statements and
+submission packaging remain outstanding. The paused unpublished survivor cohort
+contributes no observations, selected features, transformations or thresholds.
 
 ## Abstract
 
-Longitudinal immune-repertoire comparisons depend on which receptors are
-observed, how expanded clones are weighted and how sequences are grouped.
-We describe scRFU, a reproducible interface to the published frozen-reference
-Repertoire Functional Unit (RFU) method, with explicit assignment provenance
-and longitudinal measurement at receptor, group and cellular-annotation scales.
-After repairing a demonstrable row-alignment error in historical RP1-14 exports,
-we reused assignments from six donors, three visits and both CD4/CD8 compartments
-over 14.95–24.86 years. Median receptor/RFU total variation was 0.825/0.305 in
-CD4 and 0.718/0.431 in CD8. Fixed matched groupings produced similar aggregation
-effects. Using existing assignments from a public radiotherapy dataset, we also
-recovered six paired donors and 27,655 TCR-bearing cells. On threshold-qualified cells, median
-pre/post total variation was 0.840 for primary-TRB identities and 0.733 for RFUs;
-median within-donor aggregation cancellation was 0.099. Group-size and receptor-
-feature-matched controls produced similar cancellation, while depth and clone
-weighting changed the measured distances. These findings demonstrate the need
-to report aggregation and sampling effects, without attributing group stability
-to preserved antigen-specific function. We also reused 303,088 primary-TRB
-assignments from the Wells atlas for donor- and tissue-resolved cellular context,
-and retained a completed regulatory-evidence example with explicit limits on
-colocalization and causality. The contribution is a validated analysis workflow;
-neither the original RFU method nor total-variation contraction is new here.
+Longitudinal T-cell repertoire measurements depend on sampling, clonal expansion
+and sequence grouping. We present scRFU, a reproducible framework connecting the
+published frozen-reference Repertoire Functional Unit (RFU) method to receptor-
+and group-level change, coverage, cellular annotations and external evidence.
+The workflow separates observed receptor turnover from change hidden by
+aggregation and evaluates depth, clone weighting and matched grouping controls.
+Reused RP1-14 assignments cover six donors, three visits and both CD4/CD8
+compartments over 14.95–24.86 years. Earliest/latest median receptor/RFU total
+variation was 0.825/0.305 in CD4 and 0.718/0.431 in CD8. A stratified
+1,600-receptor assay supported repair of a historical export-alignment error.
+Six public blood-radiotherapy donors had median receptor/RFU variation of
+0.840/0.733. Applying unchanged settings to an external tumor-radiotherapy
+dataset retained seven tumor intervals in three donors and one blood interval.
+External tumor RFU variation was 0.716–0.931 and changed with sampling and
+weighting. Persistent RFUs frequently lacked shared observed receptors, and
+matched groupings produced similar aggregation effects. Public atlas and
+regulatory examples demonstrate evidence tracing; a frozen held-out benchmark
+did not show improved cell-state prediction from RFU labels. scRFU supports
+comparable measurements with explicit evidence boundaries, without establishing
+RFU-specific functional stability, antigen persistence or a causal radiation
+effect. Neither the original RFU method nor mathematical TV contraction is
+introduced here.
 
 ## Introduction
 
@@ -96,6 +97,18 @@ standard-reference check reproduced their historical labels. The recovered
 map-aware function contains this truncation; its original invocation manifest
 is unavailable. The [reuse audit](../docs/rp1_14_reuse_audit.md) preserves the
 checks and remaining provenance limit.
+
+An expanded stratified repair-QC assay retained 1,600 unique receptors:
+864 repaired and 736 unchanged amino-acid labels, 822 CD4 and 778 CD8, covering
+all donor/visit combinations and rare through common RFUs. Of these, 485 had
+historical scores in [0.59, 0.61). All labels and threshold decisions matched
+the current frozen reference; the maximum score difference was 1.06 × 10⁻¹⁵.
+Original and repaired RFU/score vector hashes agreed for every sample. Across
+359,530 exported rows, 330,433 amino-acid labels changed and 29,097 were unchanged.
+Repeated-amino-acid conflict groups fell from 41,572 to zero for RFU labels and
+from 41,581 to zero for scores. These checks support the specific alignment
+repair; they do not reconstruct a missing historical execution manifest or
+establish parity for every unassayed receptor.
 
 A fixed dictionary of historical sequence assignments was applied to each
 visit's full productive counts. Thus a clone falling below the old top-10,000
@@ -253,36 +266,101 @@ still requires reference-identity confirmation. Published RfuWAS disease links
 remain downstream genetic-prediction annotations, not independent experimental
 validation or evidence that molecular QTLs mediate radiation effects.
 
-### Explicitly unfinished applications
+### Frozen external application measures tumor remodeling with sampling limits
 
-**GSE280982:** following the RP1-14 checkpoint, we acquired the 22 inventoried
-processed TCR/GEX-barcode files (3.09 MB), verified gzip integrity and recorded
-local hashes. They yield 13,077 primary-TRB cells that all match their respective
-GEX barcode lists: 11,418 tumor cells across eight visits/three donors and 1,659
-blood cells across three visits/two donors. No selected receptor lacks nucleotide
-CDR3 or V/J annotation. Two tumor donors have three visits, one has two; only
-one blood donor has a longitudinal pair. The first published tumor donor lacks
-released paired TCR entries in the inspected record, and a later visit is absent.
-These missing observations are not zero-cell samples.
+The GSE280982 application used 22 previously prepared processed contig/barcode
+files and settings frozen before receptor endpoint inspection. Standard
+assignment yielded 9,827 threshold-qualified cells from 13,077 GEX-matched
+primary-TRB cells, representing 2,879 RFUs. All 11 released visits passed the
+unchanged 100-qualified-cell rule. Tumor coverage was 66.5–82.2%; blood coverage
+was 52.1–80.5%. The radiation-day tumor samples retained only 113/170, 143/185
+and 157/215 primary-TRB cells. Passing this minimum does not establish adequate
+precision or recovery of the complete repertoire.
 
-The frozen development configuration was saved before inspecting these receptor
-files. Pre-treatment, last-day-of-radiation and six-week post-radiation labels
-are verified against GEO characteristics and the
-[source publication](https://doi.org/10.1038/s41467-025-60827-w). The three
-last-day tumor samples have 170, 185 and 215 primary-TRB cells before RFU
-qualification, so the original minimum-support rule remains consequential.
-Source primary-chain selection uses the existing adapter; multichain counts and
-sample-specific barcode namespaces are retained. RFU assignment and external
-endpoint analysis are **not yet completed**. Author-derived cell-state labels
-are not included in the downloaded files. Blood and tumor analyses will test
-portability, rather than interchangeable replication of one treatment effect.
+Three donors contribute eight tumor visits (3/2/3); two contribute three blood
+visits, with only one longitudinal blood pair. The first published tumor donor
+has no released matched TCR entries in the pinned resources, and another lacks
+the final tumor visit. Seven tumor pairs and one blood pair are analyzable;
+ten additional registered donor/compartment/interval combinations have a missing
+required visit and remain unanalyzed. Visit labels are verified against GEO and
+the [source publication](https://doi.org/10.1038/s41467-025-60827-w). Repeated
+intervals from the same donor are not independent participants.
+
+| Compartment / donor alias | Interval | Receptor TV | RFU TV | Cancellation |
+| --- | --- | ---: | ---: | ---: |
+| Tumor HP02 | Pre → last RT day | 0.9193 | 0.8897 | 0.0296 |
+| Tumor HP03 | Pre → last RT day | 0.9430 | 0.9175 | 0.0256 |
+| Tumor HP04 | Pre → last RT day | 0.9497 | 0.8875 | 0.0621 |
+| Tumor HP02 | Last RT day → ~6 weeks | 0.9575 | 0.9307 | 0.0268 |
+| Tumor HP04 | Last RT day → ~6 weeks | 0.9604 | 0.9194 | 0.0410 |
+| Tumor HP02 | Pre → ~6 weeks | 0.8492 | 0.7159 | 0.1333 |
+| Tumor HP04 | Pre → ~6 weeks | 0.8304 | 0.7308 | 0.0996 |
+| Blood HP02 | Pre → ~6 weeks | 0.7010 | 0.6803 | 0.0208 |
+
+All 96 repeated policy/weighting/grouping measurement rows satisfy contraction.
+Receptor identity is nucleotide CDR3 plus source V/J; cell abundance gives one
+count per selected cell, not its sequencing reads or UMIs. Source tables also
+retain V and V/J distances, cosine similarity and both weighting policies.
+These are observed radiotherapy-associated repertoire changes, not an isolated
+radiation effect separated from sampling, elapsed time, biopsy location or
+other clinical changes.
+
+At one-cell detection, pre-to-six-week tumor RFU persistence was 322/1,731 and
+224/1,201 of the detected unions (18.6% each). Among those persistent RFUs,
+216/322 (67.1%) and 123/224 (54.9%) had no shared observed nucleotide/V/J receptor.
+For intervals involving radiation-day visits, persistence was only 3.9–7.4% of
+the union and was particularly depth-limited. At five-cell detection, four of
+the five such tumor intervals had no RFUs detected at both visits. The fraction
+without a shared receptor is undefined when no RFU persists; it is not zero.
+Pre-to-six-week blood persistence was 37/326 (11.3%), including five persistent
+RFUs without a shared receptor. None of these quantities establishes biological
+absence, antigen persistence or restoration of immune function.
+
+Removing the union of each visit's dominant receptor changed RFU TV by at most
+0.023 in absolute value; observed turnover did not disappear under this specific
+expansion sensitivity. This does not rule out distributed expansion. Unique-
+receptor weighting raised tumor RFU TV to 0.7451/0.7411 for the two
+pre-to-six-week pairs and to 0.9104–0.9534 for radiation-day intervals. Blood
+RFU TV rose from 0.6803 to 0.7946. Matched-depth subsampling changed the longer
+tumor comparisons: medians 0.818/0.804 at 500 cells per visit, versus
+0.7159/0.7308 at full qualified depth. Radiation-day comparisons were restricted
+to 113–157 cells per visit. These are observed-cell subsampling sensitivities,
+not corrections for unobserved repertoire diversity.
+
+Thirty fixed V/J/length-stratified matched maps changed approximately 80.9–82.5%
+of pair-level receptor labels and often produced similar cancellation. For the
+longer tumor comparisons, matched-map medians were 0.1350/0.0892 versus observed
+0.1333/0.0996. No calibrated null p-value or RFU-specific stability claim follows.
+The external result establishes transportability of the same measurements and
+their limitations, not biological replication of GSE190905.
+
+The bounded public metadata audit covered the GEO inventory, the paper's
+25-sheet source workbook, two linked Zenodo file inventories and published
+R code. The workbook contains cluster summaries and selected receptor lists;
+the code applies state labels after RNA clustering. No directly reusable
+barcode/sample-to-state table was found. External cell-state analysis is
+unavailable here; no new atlas was clustered or receptors relabeled.
+
+### Cross-application comparison preserves experimental denominators
+
+The versioned `cross_application_summary.tsv` retains separate rows for RP1-14
+CD4/CD8, GSE190905 blood and each GSE280982 tissue/interval. It records donor
+counts, visits, source depth, assignment coverage, distances, persistence and
+depth sensitivity. The RP1-14 compartments contain the same six people; external
+intervals also reuse donors. No effects are pooled. RP1-14 uses sequencing
+reads, the single-cell studies use primary-TRB cells, and their persistence
+thresholds are explicitly different (five reads versus one cell in this summary).
+Coverage is incomplete and differs across studies. Comparable definitions can
+be transported without equating sampling units, treatment effects or changes
+in individual RFUs.
 
 ## Methods
 
 ### Frozen assignment and analysis boundary
 
-We validated cached assignment tables and manifests rather than recomputing
-RFUs. The common `km5000noMax.Rdata` SHA256 is
+We validated cached RP1-14, GSE190905 and Wells assignments. Only the external
+GSE280982 application and bounded repair-QC assay required new assignments.
+The common `km5000noMax.Rdata` SHA256 is
 `64783074360edeca84b3f49ab9d682263e954752fc09bb208edaabde0fd82553`.
 The backend, RFU code, trimer reference, threshold and source-output hashes are
 recorded in the configuration and external provenance. Completed-run validation
@@ -315,6 +393,42 @@ assignments is applied unchanged to the full productive counts at all visits,
 with coverage against both productive and all-source read denominators. Unmapped
 mass is never combined into a fictitiously stable RFU.
 
+The additional 1,600-receptor QC assay uses seed 20260916 and round-robin
+sampling over occupied donor × visit × compartment × changed/unchanged AA-label
+× score-bin × RFU-frequency strata. Score cutpoints are 0.55, 0.59, 0.60, 0.61
+and 0.65; RFU frequency is the number of unique eligible historical amino-acid
+sequences, classified by lower/upper quartiles (31/70). Sampling covers 1,201
+of 1,211 occupied strata with one source-occurrence attribution per globally
+unique amino acid; the full inclusion/support table is saved. Current-reference
+assay results do not influence selection. All sampled receptors remain in the
+denominator, and label, threshold and score comparisons use the original
+historical vectors (absolute score tolerance 10⁻¹²). Ordered numeric-vector
+hashes preserve missing entries as well as observed values. Original exports,
+repaired membership and completed biological endpoints are unchanged.
+
+### External application and frozen support
+
+The GSE280982 preparation snapshot records the full development configuration
+before external endpoint inspection (SHA256
+`cb51b5933bb1494401934f016f8f964ef4327e62f842d3d931d575587fa89e8b`).
+The external runner requires exact configuration equality, the pinned reference,
+standard backend and threshold 0.6. Source barcode namespaces retain samples;
+primary TRB selection follows the existing productive/high-confidence,
+highest-UMI/read/source-order adapter policy. GEX matching uses exact sample
+barcode lists; it does not imply inclusion in the authors' later RNA-QC subset.
+No molecular read/UMI count is used as a cell abundance.
+
+Every required visit must contain at least 100 threshold-qualified primary-TRB
+cells. This eligibility decision also gates nearest-label sensitivity; that
+policy cannot rescue an unsupported primary comparison. Missing source files
+or visits remain unavailable. Tumor and blood pairs are generated separately
+for pre → radiation-day, radiation-day → six-week and pre → six-week intervals.
+Missing visits are not inferred from shared receptors. All intervals use the
+same receptor mapping. Grouping controls preserve pooled qualified-receptor
+group sizes within V/J/length bins, including eligible receptors from unpaired
+visits; the maps are fixed across pairs. The same 30 maps, 50 empirical cell
+subsamples and 500-cell cap apply without external outcome-based tuning.
+
 Primary comparisons use threshold 0.6, earliest/latest visits and source read
 weights. All observed visit pairs, nearest labels and unique-receptor weights
 are sensitivities. The frozen development control settings are retained: 30
@@ -340,6 +454,9 @@ condition on threshold-qualified cells and report excluded mass; nearest-policy
 comparisons are separate sensitivities. Zero-mass samples have undefined
 distances. Missing visits are never silently imputed.
 
+For consistently normalized nonnegative frequencies, we calculate
+`D_receptor = 0.5 Σc |p_c(t2) − p_c(t1)|` and
+`D_group = 0.5 Σg |Σ(c∈g) p_c(t2) − Σ(c∈g) p_c(t1)|`.
 We calculate total variation before and after grouping and report their
 nonnegative difference as aggregation cancellation. This is the standard
 contraction of total variation under a deterministic map. We make no claim of
@@ -364,8 +481,10 @@ paths, input/configuration/code hashes and the command. A completion manifest is
 written only after all scoped outputs exist. Reuse verifies both the scientific
 fingerprint and every listed output hash. Preparation, measurement and export completion are recorded separately so an
 interrupted figure/summary cannot masquerade as a finished analysis. Completed
-RP1-14 measurements are reused when only exports require repair. Unexecuted
-GSE280982 endpoints remain distinct from completed development results.
+RP1-14 measurements are reused when only exports require repair. GSE280982
+assignment, endpoint and reporting completion are separately verified. The
+first reporting export is preserved; a second export corrects overlapping
+diagram text without recalculating biological endpoints.
 The original failed library-number assumption was corrected by source membership
 reconciliation. A coverage-denominator test preserves Wells donors without
 eligible TRB; corrected version `development_v1_1` leaves all GSE190905 source
@@ -382,12 +501,35 @@ assignment coverage and dominant-clone weighting can also alter longitudinal
 summaries.
 
 The radiotherapy results are observational relative-composition measurements
-from six donors. Prior systemic therapy, sample depth, clonal expansion and
-source-release differences preclude isolating a causal radiation effect. They
-do not measure absolute lymphocyte depletion. The development dataset was
-previously examined, and no external endpoint replication is claimed. Wells is
+from six development donors and three external tumor donors, with one paired
+external blood trajectory from the same people. Prior systemic therapy in the
+development cohort, depth, expansion, biopsy sampling and release differences
+preclude isolating a causal radiation effect. They do not measure absolute
+lymphocyte depletion. The development data were previously examined; external
+metadata and the publication were also inspected before endpoints. This is
+transportability under frozen settings, not an untouched clinical validation
+or a claim of identical biological effects across studies. Wells is
 cross-sectional and contains heterogeneous tissue and donor support, not a
 longitudinal treatment replication.
+
+Reference anchoring makes the grouping reproducible, while aggregation
+necessarily reduces some apparent change. The similar matched-map cancellation
+is an essential control result, not evidence to discard. Persistent groups can
+contain different observed receptors, and depth and expansion alter both scales.
+These limitations recur across bulk long-term and single-cell radiotherapy
+designs. The external comparisons remained interpretable with only 113–157
+qualified radiation-day cells, but their high distances and low persistence
+remain sampling-limited. Removing dominant clones did not eliminate remodeling;
+this cannot distinguish biological turnover from sparse observation. The most
+informative follow-up is deeper repeated sampling with explicit template/cell
+counts, not selection of attractive individual RFU changes in three donors.
+
+External evidence is useful because its support and limits can be traced.
+The regulatory example does not demonstrate radiation mediation or formal RFU
+colocalization, and the frozen prediction benchmark did not show an RFU-added
+cell-state prediction benefit. The contribution therefore rests on reproducible
+measurement and evidence boundaries rather than antigen equivalence, predictive
+superiority or RFU-specific functional stability.
 
 RP1-14 is a six-person longitudinal benchmark, not radiation biology or a
 population aging model. Its recoverable assignment coverage is incomplete,
@@ -416,20 +558,25 @@ from publication alone. The regulatory resources and limitations remain in the
 
 ## Figure legends and source index
 
-**Radiotherapy longitudinal figure** (`gse190905_longitudinal.pdf`). A, donor-
+**Figure 1. Measurement and evidence framework** (`framework.pdf`). Source
+design and count units, fixed-reference assignment and coverage, separate
+receptor/group measurements, and interpretation checks. This is a workflow
+schema, not a causal graph or a new mathematical decomposition.
+
+**Figure 3. Radiotherapy longitudinal application** (`gse190905_longitudinal.pdf`). A, donor-
 paired primary-TRB and group total variation on identical threshold-qualified
 cells. Lines connect the same donor across groupings; the groupings are not a
 nested biological hierarchy. B, threshold coverage among TCR cells before and
 after treatment. C, one within-person cosine value and one mean between-person
 value per donor. Points do not represent independent cell or sample-pair tests.
 
-**Multiscale sensitivity figure** (`gse190905_multiscale_sensitivity.pdf`). A,
+**Supplementary Figure S1. Multiscale sensitivity** (`gse190905_multiscale_sensitivity.pdf`). A,
 observed RFU distance (blue) and median/2.5th–97.5th percentiles of 50 empirical
 equal-depth subsamples (gray). B, observed cancellation and the corresponding
 range across 30 fixed size/feature-matched random groupings. These ranges are
 not donor confidence intervals or calibrated null tests.
 
-**RP1-14 longitudinal figure** (`rp1_14_longitudinal.pdf`). A, six donors with
+**Figure 2. RP1-14 longitudinal benchmark** (`rp1_14_longitudinal.pdf`). A, six donors with
 three CD4/CD8 visits; marker area indicates threshold-reuse coverage among
 productive reads. B, donor-level means of within- and between-person RFU cosine
 similarity. C, receptor versus RFU TV on identical mapped productive reads.
@@ -440,9 +587,41 @@ controls. Neither control ranges nor repeated sample pairs are independent
 participants. Persistence is an observed grouping property, not antigen-function
 preservation.
 
-Separate external `figure_source_index.tsv` files map all five development panels
-and six RP1-14 panels to source hashes, exact commands, denominators and limits.
-Framework and external endpoint panels remain unassembled. The
+**Figure 4. External radiotherapy transportability**
+(`gse280982_external_final.pdf`). A, qualified primary-TRB counts by visit;
+the dotted line is the frozen 100-cell rule. The donor lacking all matched TCR
+visits is absent from the curves and retained as unavailable in the registry.
+Gaps are missing visits, not zero counts or inferred depletion. B, receptor and
+RFU TV for each supported donor/tissue/interval. C, distinct fractions:
+RFUs detected in both visits over the detected union, and persistent RFUs
+without a shared observed receptor over persistent RFUs (one-cell detection).
+D, observed cancellation and medians of 30 fixed matched maps. The same donor
+contributes multiple intervals; these points are not independent human
+replicates. Depth, unique-receptor and clone-removal results remain in the source
+table, including unstable and zero-persistence cases.
+
+**Supplementary Table S1. RP1-14 export-repair QC**
+(`rp1_14_repair_qc_table.pdf`; TSV source `parity_summary.tsv`). A total of 1,600
+unique amino-acid receptors, stratified before assay, show zero RFU-label or
+threshold disagreements. Rows partition the same assay in different ways and
+must not be summed across factors. Score differences are evaluated at 10⁻¹².
+The source-vector audit, conflict counts and full sampling-stratum denominator
+table accompany it externally. The original 216-receptor check remains saved.
+
+**Supporting source tables.** `cross_application_summary.tsv` retains separate
+dataset/tissue/interval rows, units and support limitations. Wells donor/tissue
+context and the frozen regulatory/prediction results are supporting tables and
+existing supplementary evidence, not a forced combined Figure 5. No new state
+classifier, QTL discovery or radiation–QTL intersection was performed.
+
+Separate external `figure_source_index.tsv` files map the five development panels,
+six RP1-14 panels and finishing figures/table to hashes, commands, denominators
+and limits. The final reporting directory is `results/manuscript_finish_v1_1/`;
+its parent manifests trace the unchanged endpoints. The
 [execution state](../docs/radiation_methods_execution_state.md) and
 [claim-to-evidence table](radiation_methods_claims.tsv) identify the active
-checkpoint and unfinished work.
+checkpoint. Remaining submission tasks are author review and authorship/funding
+declarations, confirmation of RP1-14 access and permissible source-table sharing,
+reference/journal formatting, and a persistent authorized archive of the
+source-table/manifest package. Neither formal RFU colocalization nor unavailable
+external cell-state labels are prerequisites for this bounded manuscript.

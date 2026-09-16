@@ -7,7 +7,9 @@ This specification and `config/radiation_methods_v1.json` were written before
 computing the new longitudinal endpoints. GSE190905 and Wells have already
 been used in package development; neither is an untouched validation cohort.
 GSE280982 metadata and its publication were inspected before external endpoints.
-No external endpoint results are included in this checkpoint.
+No external endpoint results were available at the original specification
+checkpoint. The finishing application below records execution of these settings;
+the configuration itself remains byte-for-byte unchanged.
 
 ## Authorized inputs and reuse
 
@@ -91,11 +93,11 @@ integer counts are inferred from proportions or transformed matrices.
 
 | Planned figure | Evidence and status |
 | --- | --- |
-| 1. Framework / assignment fidelity / computational behavior | Reuse public technical evidence only after source-hash reconciliation. Old figure branch is preserved; only its general plotting helper is reused here. |
-| 2. Multiscale change and controls | Synthetic regression scenarios plus real GSE190905 source tables and depth/grouping controls. No mathematical novelty claim. |
-| 3. Published RP1-14 trajectories | Complete from restored authorized source counts and repaired historical assignments; six-panel figure and separate source index. No unpublished cohort substitution. |
-| 4. Radiotherapy trajectories | GSE190905 paired donor figure; GSE280982 pending processed-input execution. Different compartments are portability examples, not equivalent treatment replications. |
-| 5. Public cellular / external regulatory context | Broad Wells tables and frozen regulatory evidence. Do not require a positive treatment–QTL shortlist intersection. |
+| 1. Framework | Measurement/evidence schema, with provenance, coverage and interpretation boundaries. No new computational-performance claim. |
+| 2. Published RP1-14 trajectories | Frozen six-panel benchmark, with matched controls retained. Repair-QC table is supplementary. |
+| 3. GSE190905 radiotherapy trajectories | Existing paired-donor figure; depth/grouping sensitivity figure retained as supplement. |
+| 4. GSE280982 external application | Completed donor/tissue/interval measurements; missing visits and low depth explicit. Cross-application source table does not pool effects. |
+| Supporting cellular / regulatory evidence | Wells tables, frozen QTL and negative prediction evidence remain supporting material rather than an overcrowded combined Figure 5. |
 
 Generated figures are external. Each panel records source hashes, combined
 input/configuration/code fingerprint, command, denominator, biological unit,
@@ -125,3 +127,23 @@ These are observed read/receptor summaries, not absolute cell abundance, templat
 sampling or an aging prediction model. No legacy eRFU score or mixed-cohort
 transformation is reused. Historical row-normalized profiles and read-weighted
 measurements have different denominators and are never silently interchanged.
+
+## Finishing execution, with no endpoint retuning
+
+The prepared GSE280982 configuration SHA256 is
+`cb51b5933bb1494401934f016f8f964ef4327e62f842d3d931d575587fa89e8b`.
+External assignment and endpoint stages require this complete snapshot to match
+the development configuration. Tumor and blood are separate. All three named
+intervals remain separate; required visits must pass the 100-qualified-cell
+rule even for nearest-policy sensitivity. No unavailable visit is inferred.
+The eight supported pairs and all failed availability combinations are recorded.
+Metadata inspection preceded endpoints, so this is not described as untouched
+validation. No new RNA atlas or state classifier was constructed.
+
+The RP1-14 supplement checks existing vectors and a fixed 1,600-receptor
+stratified parity sample; it changes no biological endpoint. The source
+sampling design is documented in `rp1_14_repair_qc.py` and its external
+`parity_design.json`. Reporting-only assembly verifies completed parent
+manifests before summarizing or drawing panels. The initial and final reporting
+exports remain versioned; no model or biological measurement was rerun to fix
+plot labels. Exact command and integrity details are in the execution state.
