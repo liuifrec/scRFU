@@ -27,3 +27,27 @@ population change.
 Bootstrap and permutation utilities resample or relabel entire donor blocks,
 retaining their repeated observations. Percentile intervals and empirical nulls
 do not turn a small cohort into population-level evidence.
+
+## Change hidden by fixed grouping
+
+`scrfu.tl.multiscale_repertoire_change(before, after, grouping)` accepts two
+nonnegative receptor-mass Series and one fixed receptor-to-group Series. It
+returns normalized receptor and group changes, total-variation distances and
+`aggregation_cancellation = d_clone - d_group`. The group distance cannot
+exceed the receptor distance. This standard contraction identity is not a
+measure of preserved antigen recognition or functional recovery.
+
+Unmapped receptors raise by default. With `unmapped="condition"`, both distances
+are conditional on mapped receptors; original and retained masses/coverage
+remain in the summary. Empty mapped samples yield unknown distances, including
+when both are empty. Missing visits must be handled in the design table, not
+passed as observed empty samples. Counts are never reconstructed from normalized
+values. Callers retain responsibility for clone identity and sampling units.
+
+`scrfu.tl.permute_fixed_groups(grouping, strata=features, random_state=...)`
+returns a fixed shuffled map preserving group-by-stratum counts over the
+supplied receptor universe. Reuse the map at every visit. Report strata that
+cannot exchange labels and do not call this a calibrated biological null.
+The [radiotherapy application specification](../manuscript/radiation_methods_specification.md)
+defines one use with explicit donor-level reporting and empirical cell
+subsampling, without changing assignment.

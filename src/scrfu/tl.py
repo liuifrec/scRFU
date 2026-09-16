@@ -46,6 +46,11 @@ from .longitudinal import (
     summarize_longitudinal_similarity,
     validate_longitudinal_design,
 )
+from .multiscale import (
+    MultiscaleChangeResult,
+    multiscale_repertoire_change,
+    permute_fixed_groups,
+)
 from .regulatory import (
     RegulatoryEvidenceSchema,
     RegulatoryTriangulationResult,
@@ -275,6 +280,9 @@ def call_rfu(
 
 
 __all__ = [
+    "MultiscaleChangeResult",
+    "multiscale_repertoire_change",
+    "permute_fixed_groups",
     "RegulatoryEvidenceSchema",
     "RegulatoryTriangulationResult",
     "credible_set_overlap",

@@ -12,6 +12,13 @@ Experimental regulatory evidence APIs are exposed through `scrfu.tl`:
 [schemas, contracts, and examples](regulatory_triangulation.md); overlap is not
 formal statistical colocalization or causal inference.
 
+Experimental multiscale longitudinal APIs are also exposed through `scrfu.tl`:
+`MultiscaleChangeResult`, `multiscale_repertoire_change` and
+`permute_fixed_groups`. They quantify change retained or hidden by a fixed
+grouping, retain assignment coverage and provide descriptive constrained
+grouping controls. See [longitudinal contracts](longitudinal.md) and the
+[public radiotherapy application](radiation_methods_execution_state.md).
+
 Current public modules:
 
 - `scrfu.pp`: canonical receptor schema and validation.
