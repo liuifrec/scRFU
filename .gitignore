@@ -27,6 +27,7 @@ pip-wheel-metadata/
 *.tsv.gz
 *.log
 !benchmarks/synthetic_python_baseline.tsv
+!manuscript/radiation_methods_claims.tsv
 !src/scrfu/data/tutorial_bcr.tsv
 !src/scrfu/data/tutorial_receptors.tsv
 !src/scrfu/data/tutorial_vdjdb.tsv

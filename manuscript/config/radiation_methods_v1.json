@@ -1,0 +1,37 @@
+{
+  "analysis_id": "radiation_methods_development_v1",
+  "frozen_before_new_longitudinal_endpoints": "2026-09-16",
+  "allowed_datasets": ["RP1-14_published_authorized", "Wells_public", "GSE190905", "GSE280982", "Matos_RfuWAS_frozen"],
+  "excluded_datasets": ["RERF_144_unpublished", "mixed_RP_RERF"],
+  "reference": {
+    "backend_mode": "standard",
+    "rfu_threshold": 0.6,
+    "km5000_rdata_sha256": "64783074360edeca84b3f49ab9d682263e954752fc09bb208edaabde0fd82553",
+    "rfu_r_sha256": "92c2faa33f2e7f60d6470ad7dfd653eb0ca54859aa198ed53ad0c876aae8640b",
+    "trimer_rdata_sha256": "820fb71428913974e994543cbbbaa591f54355cdb73d651f068f0e691a6cdffd"
+  },
+  "primary_policy": "threshold",
+  "sensitivity_policy": "nearest",
+  "clone_definition": "primary_TRB_nucleotide_CDR3_with_source_V_and_J",
+  "weights": ["cell", "unique_clone"],
+  "min_cells_per_visit": 100,
+  "depth_cap_cells": 500,
+  "depth_replicates": 50,
+  "random_group_replicates": 30,
+  "random_group_strata": ["v_call", "j_call", "cdr3_length_bin_5aa"],
+  "random_seed": 20260916,
+  "random_group_inference": "descriptive_only_no_calibrated_pvalue",
+  "rfu_detection_cell_counts": [1, 5],
+  "wells_min_donors": 4,
+  "wells_min_cells": 50,
+  "gse190905_compartments": {
+    "CD4": ["Th", "CD4_Naive", "Treg", "CD4_TE", "CD4_Memory"],
+    "CD8": ["CD8_TE", "CD8_EM", "CD8_CM", "CD8_Naive", "CD8_HAVCR2"]
+  },
+  "source_sha256": {
+    "GSE190905_TCR_data.csv.gz": "85a9db858306b68d328b82b53b99ed38f3f4228d18c06a446c4d461c813e47c1",
+    "GSE190905_meta_data.csv.gz": "568297bbba944323b860cc3df89e7d1377c04bcab93246eca94749886c617537",
+    "GSE190905_per_row": "a17662c469c327fe44311f3d4e0824561084b91b8373199e096387f70bf1dd09",
+    "Wells_per_row": "3af98d84eff050461b3229412e478e8b5b44ca0fe9598307e51bb4e743049e42"
+  }
+}
