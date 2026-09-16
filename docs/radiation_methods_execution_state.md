@@ -17,7 +17,7 @@ between these versions. No receptor assignments or prediction models were refit.
 
 | Asset | Reuse status | Validated scope |
 | --- | --- | --- |
-| RP1-14 | Blocked on current asset location | Historical matrix, receptor mappings and donor/visit registry not found. No published-only results fabricated. |
+| RP1-14 | Restored, audited and analyzed | Six donors × three visits × CD4/CD8; historical vector alignment repaired without reassignment; 216/216 bounded parity. Six-panel figure and all source tables complete. |
 | Wells full standard-backend run | Reused; complete-run and checksum checks passed | 610,429 atlas cells / 24 donors; 303,088 primary-TRB cells / 21 donors; 233,913 threshold cells; 4,928 RFUs. Coverage retains three donors without eligible TRB. |
 | GSE190905 cached release | Reused; receptor/RNA/assignment joins verified | 27,655 TCR cells, 43,051 metadata cells, six donors, twelve visits, eight physical library pools. Four source `SBRT`, two `I-SBRT` donors. |
 | GSE280982 | Public processed-file and pair inventory completed | Eight tumor visits across three donors have both GEX and TCR entries; three paired blood visits. No external endpoint analysis or new assignment yet. |
@@ -27,7 +27,8 @@ The local asset inventory, full source donor crosswalks and library membership
 are external. Historical RP1-14/Wells paths were checked first, followed by
 targeted recovery manifests, configs, recovery bundles and document/download
 locations. No unrestricted filesystem search or unpublished-cohort analysis was
-performed. The user was asked for the current RP1-14 location; it remains pending.
+performed. The initial checkpoint lacked RP1-14 files; the user subsequently
+restored both source and RFU directories. That blocker is now resolved.
 
 The reusable public runner and configuration generated two real longitudinal
 figures, five indexed panels and source tables for TV decomposition, coverage,
@@ -103,12 +104,12 @@ NUMBA_CACHE_DIR=/tmp/scrfu-radiation-numba-cache "$SCRFU_PY" \
 Expected message: `Completed manuscript stage verified; reused without recomputation.`
 Changed scientific inputs/code/settings require a **new** output directory.
 
-Next RP1-14 step requires the current path of the existing RFU matrix and its
-published-only sample registry. Inspect actual sample counts, raw/proportion/
-transformed values, denominator, assignment policy, reference hashes and
-receptor-level availability before specifying a command. A fabricated command
-to the absent historical file would not be executable. Do not rerun assignment
-to compensate for a missing archive location or reuse mixed-cohort PCA/UMAP.
+RP1-14 preparation and result commands are in the
+[reuse audit](rp1_14_reuse_audit.md). Both directories are now complete and their
+hashes verify. Repeating those commands returns after verification, without
+repeating assignment or endpoints. An explicit `--refresh-exports` on the RP
+analysis runner reuses the independently hashed measurement stage; changed
+measurement inputs or functions are rejected. Do not use mixed-cohort PCA/UMAP.
 
 The external processed-file inventory lists exact HTTPS URLs and paired visits:
 
@@ -123,7 +124,7 @@ annotation requires a separate source-label availability check; do not rebuild
 a large expression atlas or assume missing patient visits. Existing paired-
 receptor inputs genuinely do not yet have RFU assignments for this study.
 
-## Validation
+## Earlier development validation
 
 Focused multiscale, boundary/library, completed-run and existing longitudinal
 tests: **33 passed**. Final full suite: **484 passed, 4 skipped, 32 warnings**
@@ -135,3 +136,72 @@ The initial full-suite attempt had
 483 passes and one missing-manuscript-path failure during the archive/new-draft
 transition; that was a transient incomplete documentation state, not a numerical
 failure. All 32 dependency warnings and four optional-backend skips are retained.
+
+## Completed RP1-14 checkpoint
+
+The restored raw directories remain in the checkout, untracked and protected by
+exact ignore rules. `git ls-files data` lists only `data/schema.md`. No biological
+input is staged. The detailed external inventory has **81 file/member records**
+(45 physical files plus 36 ZIP members). Source crosswalks remain external.
+
+Active RP1-14 outputs:
+
+- `prepared/rp1_14_v1/`: raw-count reconciliation, corrected source-row mapping,
+  sample registry, reference parity and preparation completion manifest.
+- `sources/rp1_14_asset_manifest.tsv` and `sources/rp1_14_provenance.json`: detailed
+  inventory and supplemental audit of the recovered map-aware backend. R 4.1.2
+  reports its version to stderr; the supplemental provenance captures it explicitly.
+- `results/rp1_14_v1/`: measured distances, coverage, similarities, RFU persistence,
+  dominant-clone/read-depth/fixed-map sensitivities, six-panel PDF/PNG,
+  `figure_source_index.tsv`, provenance and final `completion.json`.
+
+**Verified findings:** six donors, 36 samples, 14.95–24.86 years between first/last
+visits; 4,342,203 raw sequence rows and 70,960,689 reads. The historical matrix
+is assignment-row mass per 10,000, not read abundance. Its map-aware export
+misaligned 330,433 sequence labels; the saved RFU/score vectors were preserved
+and realigned with source rows. All repeated-sequence conflicts disappeared;
+216/216 parity receptors agree with the current reference.
+
+The fixed reused dictionary covers 617,506 qualified sample–receptor observations,
+508,972 distinct nucleotide-CDR3/V/J identities and 4,958 RFUs. Qualified reads are
+28.35–78.44% of productive source reads. Earliest/latest median receptor/RFU TV is
+0.8246/0.3055 in CD4 and 0.7180/0.4309 in CD8. All **432** repeated measurement
+rows satisfy contraction. CD8 RFU TV is higher in five of six paired donors;
+median paired difference +0.1192. These are descriptive six-person results.
+
+Matched-map cancellation is similar to the observed grouping. At five-read RFU
+detection, 41.4%/59.8% of persistent RFUs have no shared observed receptor
+(median across CD4/CD8 donors). Aggressive 500-read subsampling and unique-clone
+weighting materially change distances. No RFU-specific functional stability,
+antigen persistence or population aging model is inferred.
+
+The original `AssignRFUs_with_map` function was recovered in the local historical
+RFU checkout and contains the exact truncation error. Its hash and bounded parity
+support reuse; the original invocation/reference execution manifest remains
+unavailable. No full RFU assignment was rerun. No 144-person inputs, aging-score
+shortlists or mixed embeddings enter the RP pipeline.
+
+Integrity:
+
+- Completion SHA256: `6917164a67eca9420201ff78ac9ab7e889fe342bc25fddc896a9130628aa8a56`.
+- Evidence counts: `8c33c0e9d56feb59d8b04965ee8f029bce262c5a1e9364326038402031f15331`.
+- Main distance table: `e30ef684fbab8c1b3f75a1458ab84dd29e6c8dc7543447fc87ed9350af109dd7`.
+- Figure source index: `342e9c7fd588a45f747e5ba1d0fb3d27ada95ff6cf8054a0a56ea71c6bb20e55`.
+- Figure PDF: `45d87bacf433583591f7179078c5aa49593b0abbcc107a6195adc26cbb362808`.
+
+Two export-only errors during execution (canonical score-column name, then a
+filtered aggregate count field) were corrected. Completed preparation and
+measurement stages were verified and resumed; biological distances, controls
+and the bounded reference assay were not repeated. Final figures were inspected
+visually after moving legends away from data. The manuscript, claims and source
+index agree. The existing GSE190905, Wells, prediction and QTL results are unchanged.
+
+Current validation: **37 focused tests passed**; full suite **503 passed,
+4 skipped, 32 warnings** in 22.63 seconds. `ruff check .` passes;
+`ruff format --check .` reports **231 files already formatted**;
+`git diff --check` passes. Logs are external under `logs/rp1_14_*`.
+
+Next: checkpoint this completed RP figure, then acquire the already inventoried
+GSE280982 processed contigs and matched GEX barcode metadata. Verify actual
+productive receptor/cell and donor/visit coverage before assignment. Keep the
+frozen GSE190905 configuration, missing visits and blood/tumor denominators.

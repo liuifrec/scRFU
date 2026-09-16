@@ -19,6 +19,9 @@ pip-wheel-metadata/
 .DS_Store
 
 # Outputs
+# Restored biological inputs: exact local paths only; keep data/schema.md tracked.
+/data/Data to be shared_RP P1-14/
+/data/RFU_out_RP_P1-14/
 *.h5ad
 *.h5mu
 *.loom

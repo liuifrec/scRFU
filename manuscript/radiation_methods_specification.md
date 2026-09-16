@@ -93,7 +93,7 @@ integer counts are inferred from proportions or transformed matrices.
 | --- | --- |
 | 1. Framework / assignment fidelity / computational behavior | Reuse public technical evidence only after source-hash reconciliation. Old figure branch is preserved; only its general plotting helper is reused here. |
 | 2. Multiscale change and controls | Synthetic regression scenarios plus real GSE190905 source tables and depth/grouping controls. No mathematical novelty claim. |
-| 3. Published RP1-14 trajectories | Pending asset location and published-only matrix audit; do not substitute the unpublished cohort. |
+| 3. Published RP1-14 trajectories | Complete from restored authorized source counts and repaired historical assignments; six-panel figure and separate source index. No unpublished cohort substitution. |
 | 4. Radiotherapy trajectories | GSE190905 paired donor figure; GSE280982 pending processed-input execution. Different compartments are portability examples, not equivalent treatment replications. |
 | 5. Public cellular / external regulatory context | Broad Wells tables and frozen regulatory evidence. Do not require a positive treatment–QTL shortlist intersection. |
 
@@ -102,3 +102,26 @@ input/configuration/code fingerprint, command, denominator, biological unit,
 interpretation limits and completion status in `figure_source_index.tsv`.
 `completion.json` is written last and verifies every output. A different
 scientific fingerprint requires a new output directory.
+
+## Restored RP1-14 adaptation, before endpoint inspection
+
+`config/rp1_14_v1.json` records the bulk-read adaptation of the frozen controls.
+The source dataset has six donors and three paired-compartment visits. Visits
+are sorted by measured collection age; filename suffixes reverse time. Historical
+maps require the demonstrated C-start filtering/prefix-alignment repair, never
+new RFU values. A bounded 216-receptor reference comparison gates reuse.
+
+The fixed union of existing productive amino-acid assignments is applied to
+full productive source counts in every visit, preventing the historical per-visit
+top-10,000 selection from creating false absence. The estimand is conditional on
+this recoverable universe, with per-sample excluded read mass. Primary pairs are
+earliest/latest available visits; all observed pairs are a separate repeated-
+measurement sensitivity. Source integer reads replace cell counts; all seeds,
+30 grouping controls, 50 subsamples and the 500-observation cap are unchanged.
+Grouping uses V/J and five-amino-acid length bins, with unresolved source calls
+explicitly marked. No constraints are retuned after seeing RP1-14 endpoints.
+
+These are observed read/receptor summaries, not absolute cell abundance, template
+sampling or an aging prediction model. No legacy eRFU score or mixed-cohort
+transformation is reused. Historical row-normalized profiles and read-weighted
+measurements have different denominators and are never silently interchanged.

@@ -1,8 +1,8 @@
 # scRFU: reference-anchored analysis of longitudinal T-cell repertoire remodeling with applications to radiotherapy
 
 Manuscript v1, 2026-09-16. This is a results-bearing draft, not a submission-ready
-manuscript. RP1-14 reconstruction and the external radiotherapy endpoint analysis
-are explicitly unfinished. The paused unpublished survivor cohort contributes
+manuscript. RP1-14 reconstruction and its six-panel longitudinal figure are
+complete; the external GSE280982 endpoint application remains unfinished. The paused unpublished survivor cohort contributes
 no observations, outcome-selected features, transformations or thresholds.
 
 ## Abstract
@@ -12,8 +12,12 @@ observed, how expanded clones are weighted and how sequences are grouped.
 We describe scRFU, a reproducible interface to the published frozen-reference
 Repertoire Functional Unit (RFU) method, with explicit assignment provenance
 and longitudinal measurement at receptor, group and cellular-annotation scales.
-Using existing assignments from a public radiotherapy dataset, we recovered six
-paired donors and 27,655 TCR-bearing cells. On threshold-qualified cells, median
+After repairing a demonstrable row-alignment error in historical RP1-14 exports,
+we reused assignments from six donors, three visits and both CD4/CD8 compartments
+over 14.95–24.86 years. Median receptor/RFU total variation was 0.825/0.305 in
+CD4 and 0.718/0.431 in CD8. Fixed matched groupings produced similar aggregation
+effects. Using existing assignments from a public radiotherapy dataset, we also
+recovered six paired donors and 27,655 TCR-bearing cells. On threshold-qualified cells, median
 pre/post total variation was 0.840 for primary-TRB identities and 0.733 for RFUs;
 median within-donor aggregation cancellation was 0.099. Group-size and receptor-
 feature-matched controls produced similar cancellation, while depth and clone
@@ -44,7 +48,7 @@ boundaries. Reference membership alone does not prove a shared antigen target.
 
 Radiotherapy provides a useful application because relative repertoire change
 can reflect receptor redistribution, state composition, expansion and sampling.
-Here we use published or public data only, with separate roles for a planned
+Here we use published or public data only, with separate roles for a
 published RP1-14 longitudinal demonstration, an existing multi-tissue atlas and
 public radiotherapy studies. The present draft reports completed public-data
 measurements and marks unavailable analyses instead of substituting findings
@@ -60,6 +64,79 @@ receptor outputs passed completed-run validation and recorded checksum checks.
 We did not rerun receptor assignment. RFU labels retain the original `RFU` prefix
 and one-based numbering. The older Wells map-aware cache was unavailable and
 was not treated as equivalent merely because its atlas filename was similar.
+
+### Multiscale change distinguishes receptor turnover from aggregation
+
+We apply one fixed receptor-to-group map at every visit, normalize each observed
+sample consistently and compute total variation (TV) before and after grouping.
+The difference, aggregation cancellation, is change hidden by the grouping.
+Comparison with V/J and constrained random maps separates this mathematical
+effect from claims about RFU-specific biology. Missing visits remain missing;
+coverage and clone/read weighting define the estimand, rather than being hidden
+inside a group-level score.
+
+### RP1-14 recovers long-term donor profiles despite constituent-receptor turnover
+
+The restored published-only material contains six donors, three chronological
+visits and both CD4/CD8 compartments at every visit: 36 repertoires, 4,342,203
+sequence rows and 70,960,689 sequencing reads. Collection-age metadata establish
+14.95–24.86 years of follow-up. Source filename suffixes run in reverse time
+order; they were not used as chronological labels. These are the healthy-volunteer
+longitudinal samples described by
+[Yoshida et al.](https://doi.org/10.1016/j.exger.2017.05.015), not the paused
+144-person survivor cohort or a radiotherapy exposure comparison.
+
+The historical 5,000-by-36 RFU matrix counts assignment rows per 10,000, including
+below-threshold nearest labels. Its accompanying receptor exports contained a
+row-alignment error: source labels were truncated while the upstream encoder
+filtered CDR3s not starting with C. Exact source reconciliation repaired 330,433
+row labels across 359,530 records without changing a single RFU or score. Repeated
+sequence assignment conflicts disappeared, and all 216 receptors in a bounded
+standard-reference check reproduced their historical labels. The recovered
+map-aware function contains this truncation; its original invocation manifest
+is unavailable. The [reuse audit](../docs/rp1_14_reuse_audit.md) preserves the
+checks and remaining provenance limit.
+
+A fixed dictionary of historical sequence assignments was applied to each
+visit's full productive counts. Thus a clone falling below the old top-10,000
+cutoff was not automatically treated as absent. The primary threshold-qualified
+analysis covers 508,972 distinct nucleotide-CDR3/V/J receptor identities,
+617,506 sample–receptor observations, 4,958 RFUs and 25,513,582 reads. Per-sample
+coverage is 28.35–78.44% of productive reads, or 23.55–58.09% of all source reads.
+Results remain conditional on the recoverable assignment universe. They do not
+represent a new complete-repertoire assignment run.
+
+| Compartment | Donors | Median receptor TV | Median RFU TV | Median cancellation | Median V / V–J TV |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| CD4 | 6 | 0.8246 | 0.3055 | 0.4640 | 0.0549 / 0.1229 |
+| CD8 | 6 | 0.7180 | 0.4309 | 0.2867 | 0.2034 / 0.2864 |
+
+These earliest-to-latest comparisons use the same receptors for every grouping.
+All 432 repeated donor/visit-pair/policy/weighting/grouping rows satisfy TV
+contraction. CD8 RFU TV exceeds paired CD4 TV in five of six donors; the median
+paired difference is +0.1192. This describes the observed small cohort, not a
+population aging model. Different grouping granularities prevent interpreting
+smaller V/J distances as greater functional stability.
+
+Across all observed visit pairs, equal-donor mean within-person RFU cosine
+similarity is 0.7609 in CD4 and 0.6763 in CD8, versus 0.3033 and 0.0426 for each
+donor's average between-person comparisons. At a five-read detection threshold,
+median persistent/union RFU fractions are 0.7942 and 0.7400. Among persistent
+RFUs, median fractions with no shared observed nucleotide/V/J receptor are
+0.4140 and 0.5983. Persistent groups can therefore contain different observed
+receptors; neither detection nor persistence establishes antigen function.
+
+Expansion and depth strongly affect the measurement. Unique-receptor weighting
+reduces median RFU TV to 0.2365/0.2922 (CD4/CD8). Removing each pair's dominant
+receptors gives 0.3053/0.4117. At the deliberately stringent common depth of
+500 reads, median within-donor subsample RFU TV is 0.8235/0.7595. Those 50
+read-subsampling replicates are neither cell/template resampling nor donor
+confidence intervals. Thirty fixed feature-matched groupings give median
+cancellation 0.4786/0.2942, close to the observed 0.4640/0.2867; this does not
+support special functional stability of RFUs. Legacy age-related RFU scores and
+mixed-cohort embeddings were not reused.
+
+### GSE190905 measures radiotherapy-associated remodeling with sampling dependence
 
 The cached GSE190905 release contains 43,051 RNA metadata cells and 27,655
 TCR-bearing cells from six donors with two visits each. Four donors have the
@@ -77,8 +154,6 @@ prior immunotherapy-plus-chemotherapy group. Our results apply to the cached
 six-donor release; the absent seventh donor is not reconstructed. GEO's
 metastatic-disease wording also differs from the paper's early-stage description.
 These discrepancies limit clinical subgroup interpretation.
-
-### Aggregation hides receptor change, with substantial sampling dependence
 
 The primary analysis retained 21,657 threshold-qualified cells. Assignment
 coverage among TCR-bearing cells ranged from 72.45% to 91.82% across the twelve
@@ -177,13 +252,6 @@ validation or evidence that molecular QTLs mediate radiation effects.
 
 ### Explicitly unfinished applications
 
-**RP1-14:** prior assignment is known to exist historically, but the matrix,
-underlying receptor mappings and published-only donor/visit registry were not
-located at the provided historical paths or bounded recovery locations. No new
-RP1-14 trajectory or aging score is reported. Once recovered, only transformations
-shown to depend on the mixed cohort will be regenerated from allowed samples;
-frozen assignments will be reused.
-
 **GSE280982:** public metadata list paired processed GEX/TCR resources for eight
 tumor visits across three donors, plus three paired blood visits. The first
 tumor donor has GEX entries without released matching TCR entries in the
@@ -208,9 +276,39 @@ checks chunk completion, reconstruction, labels and source checksums.
 Only allowlisted datasets with explicit authorized sample membership enter the
 manuscript runner. Source files are pinned by checksum. The unpublished
 144-person cohort and mixed-cohort coordinates, scores and outcome-based
-shortlists are excluded. The missing RP1-14 asset is not replaced with a filename-
-matched or pooled matrix. All original source identifiers and derived biological
-tables remain external to Git.
+shortlists are excluded. Restored RP1-14 source files are protected by exact local
+Git-ignore paths; they are not staged or redistributed. All source crosswalks and
+derived biological tables remain outside Git.
+
+### RP1-14 source reconciliation and count units
+
+A study-specific loader verifies metadata/filename compartment agreement,
+chronology by collection age, complete source sample membership and both read-
+count header variants. Source percent frequencies must reconcile to the complete
+integer-read denominator. CDR3 nucleotide intervals are sliced using the
+zero-based source V index and CDR3 length, then translated and checked against
+the supplied amino acids. Receptor identity uses that nucleotide CDR3 and source
+maximum-resolved V/J calls. Family-only/unresolved gene categories are retained
+explicitly in the V/J grouping controls.
+
+Historical sequence/V prefixes, upstream C-start filter lengths, threshold
+flags, matrix reconstruction and repeated-sequence consistency gate alignment
+repair. The existing RFU vectors remain unchanged. A deterministic six-receptor-
+per-sample comparison checks bounded current-reference parity; it is not a new
+assignment campaign. The recovered union of productive historical amino-acid
+assignments is applied unchanged to the full productive counts at all visits,
+with coverage against both productive and all-source read denominators. Unmapped
+mass is never combined into a fictitiously stable RFU.
+
+Primary comparisons use threshold 0.6, earliest/latest visits and source read
+weights. All observed visit pairs, nearest labels and unique-receptor weights
+are sensitivities. The frozen development control settings are retained: 30
+fixed maps permuted within V/J/five-amino-acid-length bins, 50 observed-count
+subsamples capped at 500, and dominant-receptor removal. For this bulk dataset,
+hypergeometric subsampling draws actual reads without replacement; it neither
+estimates independent template sampling nor removes PCR dependence. The six
+people, rather than reads, RFUs, visit pairs or control maps, are the biological
+replicates. The RP-specific adaptation was recorded before endpoint inspection.
 
 ### Longitudinal design and grouping
 
@@ -249,8 +347,10 @@ receptor-gene contributions to expression labeling remain in its evidence record
 The runner saves source tables, figures, software versions, executable/import
 paths, input/configuration/code hashes and the command. A completion manifest is
 written only after all scoped outputs exist. Reuse verifies both the scientific
-fingerprint and every listed output hash. Blocked RP1-14 and unexecuted external
-endpoints are recorded separately from completed public development analyses.
+fingerprint and every listed output hash. Preparation, measurement and export completion are recorded separately so an
+interrupted figure/summary cannot masquerade as a finished analysis. Completed
+RP1-14 measurements are reused when only exports require repair. Unexecuted
+GSE280982 endpoints remain distinct from completed development results.
 The original failed library-number assumption was corrected by source membership
 reconciliation. A coverage-denominator test preserves Wells donors without
 eligible TRB; corrected version `development_v1_1` leaves all GSE190905 source
@@ -274,8 +374,10 @@ previously examined, and no external endpoint replication is claimed. Wells is
 cross-sectional and contains heterogeneous tissue and donor support, not a
 longitudinal treatment replication.
 
-RP1-14 remains a required asset-recovery task. Its small published demonstration
-will not support a population aging model. Formal RFU colocalization requires
+RP1-14 is a six-person longitudinal benchmark, not radiation biology or a
+population aging model. Its recoverable assignment coverage is incomplete,
+source reads can be PCR-dependent, and historical-reference identity is supported
+by a bounded parity check rather than an original execution manifest. Formal RFU colocalization requires
 dense regional RFU-QTL statistics, verified effect alleles and suitable study-
 specific LD; significant-only associations and GRCh37 lasso weights cannot
 substitute. No antigen, functional-recovery, genetic-mediation or clinical-
@@ -312,9 +414,20 @@ equal-depth subsamples (gray). B, observed cancellation and the corresponding
 range across 30 fixed size/feature-matched random groupings. These ranges are
 not donor confidence intervals or calibrated null tests.
 
-The external `figure_source_index.tsv` maps all five completed panels to input
-and source hashes, exact generating command, denominators and limitations.
-Framework, RP1-14 and external endpoint panels remain unassembled. The
+**RP1-14 longitudinal figure** (`rp1_14_longitudinal.pdf`). A, six donors with
+three CD4/CD8 visits; marker area indicates threshold-reuse coverage among
+productive reads. B, donor-level means of within- and between-person RFU cosine
+similarity. C, receptor versus RFU TV on identical mapped productive reads.
+D, paired CD4/CD8 earliest/latest RFU TV. E, persistent/union RFU detection and
+the fraction of persistent RFUs without shared observed receptors (at least five
+reads per visit). F, observed cancellation and 30 fixed feature-matched map
+controls. Neither control ranges nor repeated sample pairs are independent
+participants. Persistence is an observed grouping property, not antigen-function
+preservation.
+
+Separate external `figure_source_index.tsv` files map all five development panels
+and six RP1-14 panels to source hashes, exact commands, denominators and limits.
+Framework and external endpoint panels remain unassembled. The
 [execution state](../docs/radiation_methods_execution_state.md) and
 [claim-to-evidence table](radiation_methods_claims.tsv) identify the active
 checkpoint and unfinished work.
