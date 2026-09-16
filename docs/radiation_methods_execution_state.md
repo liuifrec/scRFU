@@ -20,7 +20,7 @@ between these versions. No receptor assignments or prediction models were refit.
 | RP1-14 | Restored, audited and analyzed | Six donors × three visits × CD4/CD8; historical vector alignment repaired without reassignment; 216/216 bounded parity. Six-panel figure and all source tables complete. |
 | Wells full standard-backend run | Reused; complete-run and checksum checks passed | 610,429 atlas cells / 24 donors; 303,088 primary-TRB cells / 21 donors; 233,913 threshold cells; 4,928 RFUs. Coverage retains three donors without eligible TRB. |
 | GSE190905 cached release | Reused; receptor/RNA/assignment joins verified | 27,655 TCR cells, 43,051 metadata cells, six donors, twelve visits, eight physical library pools. Four source `SBRT`, two `I-SBRT` donors. |
-| GSE280982 | Public processed-file and pair inventory completed | Eight tumor visits across three donors have both GEX and TCR entries; three paired blood visits. No external endpoint analysis or new assignment yet. |
+| GSE280982 | Processed inputs acquired and prepared after RP checkpoint | 22 verified contig/barcode files, 13,077 GEX-matched primary-TRB cells; eight tumor and three blood visits. Frozen configuration saved; RFU assignment/endpoints pending. |
 | Matos/RfuWAS | Frozen supporting example retained | 17/32 conditional eQTL/caQTL variants; six same-variant overlaps. No formal RFU colocalization. Negative held-out state-prediction result preserved. |
 
 The local asset inventory, full source donor crosswalks and library membership
@@ -205,3 +205,77 @@ Next: checkpoint this completed RP figure, then acquire the already inventoried
 GSE280982 processed contigs and matched GEX barcode metadata. Verify actual
 productive receptor/cell and donor/visit coverage before assignment. Keep the
 frozen GSE190905 configuration, missing visits and blood/tumor denominators.
+
+## GSE280982 source checkpoint after RP1-14
+
+RP1-14 checkpoint **`7aa878285ccba53f44367521a24a20b7b4ac9830`** was committed and
+pushed before starting the external source preparation. Original public
+GSE190905/Wells/QTL/prediction outputs remain unchanged.
+
+All **22** requested processed files are now available (11 filtered contig tables
+and 11 matched GEX barcode lists), totaling **3,094,261 bytes**. Gzip CRC checks
+pass and local SHA256 values are recorded. The inventory did not provide a
+publisher checksum; none is invented. No expression matrices, raw sequencing
+reads or unrelated cohorts were downloaded.
+
+`prepared/gse280982_v1/` contains a verified sample registry, canonical primary-TRB
+receptors, source manifest, original development configuration snapshot and
+completion manifest. It represents **13,077 cells / 7,086 unique CDR3 amino-acid
+sequences**, with nucleotide CDR3 and V/J present for every selected receptor.
+All selected primary-TRB barcodes match the corresponding GEX sample. Multiple-
+TRB cells are recorded; the existing adapter chooses primary chains by productive/
+high-confidence status, UMI count, reads and source order. The original adapter
+code hash is pinned. Barcode IDs are namespaced by sample before concatenation.
+
+There are **11,418 tumor cells across eight visits and three donors**, and
+**1,659 blood cells across three visits and two donors**. Only one blood donor
+has two available visits. Tumor visit counts are 3/2/3; one donor's final
+visit is missing. The first published donor has GEX entries without matching
+released TCR entries in the pinned inventory; its TCR counts remain UNKNOWN.
+The three observed last-radiation-day tumor samples have **170, 185 and 215**
+primary-TRB cells before RFU qualification. Do not lower the frozen 100-qualified-
+cell rule if post-assignment counts fall below it.
+
+Source sample treatment strings independently establish pre-treatment, last day
+of radiation and six weeks post-radiation; one `Radition` typo is normalized
+explicitly. The [publication](https://doi.org/10.1038/s41467-025-60827-w) confirms
+the treatment/biopsy order. Cell counts here measure processed receptor coverage,
+not absolute lymphocyte depletion. No external RFU endpoint has been examined.
+The downloaded inputs do not include author cell-state labels; obtaining a
+compatible annotated metadata table remains separate from receptor assignment.
+
+Hashes:
+
+- Preparation completion: `8f346bc4e4363b8d8d99960d54119854c8851c57be84111b514990427e3112cc`.
+- Source manifest: `9a569c6963f197f3242a82555bbdc1127525638b5b69a5570b9ef44a50d8eaa3`.
+- Verified registry: `8443d723405eace203ab1fb95349e6a0089bae9d9a0ab8f9892c14088e1a24e1`.
+- Canonical receptors: `5303df577df6256297870126093d6929a33b6d086a088b4e3bada7fe03d3dbd5`.
+- Frozen configuration snapshot: `cb51b5933bb1494401934f016f8f964ef4327e62f842d3d931d575587fa89e8b`.
+
+Revalidate without downloading or rebuilding:
+
+```bash
+NUMBA_CACHE_DIR=/tmp/scrfu-radiation-numba-cache MPLCONFIGDIR=/tmp/scrfu-radiation-mpl "$SCRFU_PY" \
+  -m manuscript.scripts.gse280982_prepare \
+  --inventory "$SCRFU_METHODS_DIR/results/development_v1_1/gse280982_processed_file_inventory.tsv" \
+  --pairs "$SCRFU_METHODS_DIR/results/development_v1_1/gse280982_public_pair_availability.tsv" \
+  --raw "$SCRFU_METHODS_DIR/sources/GSE280982" \
+  --out "$SCRFU_METHODS_DIR/prepared/gse280982_v1"
+```
+
+Use `--download` only when the inventoried inputs are absent. Downloads use two
+workers, bounded retries and resumable partial files. This checkpoint's repeat
+invocation verified completion and returned without repeating preparation.
+
+**Exact next analysis:** load `gse280982_primary_trb_matched_gex.parquet` and call
+`scrfu.tl.assign_rfu` with the pinned standard reference, threshold 0.6,
+deduplication, chunk size 500 and an external resumable work directory. Preserve
+primary-chain choices and sample labels. Validate completion/coverage, then apply
+the frozen 100-cell minimum and multiscale measurements separately to tumor and
+blood, with missing visits unchanged. Independent RNA labels are needed for
+CD4/CD8/state-stratified endpoints; no new classifier search is planned.
+
+Latest validation (including this preparation code): **4 new focused tests
+passed; full suite 507 passed, 4 skipped, 32 warnings** in 21.95 seconds.
+`ruff check .` passes; `ruff format --check .` reports **233 files already
+formatted**. RP-only validation above remains its original 503-test checkpoint.

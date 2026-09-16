@@ -117,6 +117,9 @@ contraction. CD8 RFU TV exceeds paired CD4 TV in five of six donors; the median
 paired difference is +0.1192. This describes the observed small cohort, not a
 population aging model. Different grouping granularities prevent interpreting
 smaller V/J distances as greater functional stability.
+Family-only or unresolved V calls account for 8.2–30.2% of qualified reads per
+sample. These controls compare recorded source-call categories, not uniformly
+resolved V genes; this also limits the specificity of feature matching.
 
 Across all observed visit pairs, equal-donor mean within-person RFU cosine
 similarity is 0.7609 in CD4 and 0.6763 in CD8, versus 0.3033 and 0.0426 for each
@@ -252,15 +255,27 @@ validation or evidence that molecular QTLs mediate radiation effects.
 
 ### Explicitly unfinished applications
 
-**GSE280982:** public metadata list paired processed GEX/TCR resources for eight
-tumor visits across three donors, plus three paired blood visits. The first
-tumor donor has GEX entries without released matching TCR entries in the
-inspected record, and one later tumor visit is absent. These are resource-
-availability findings, not external endpoint results. The
-[source publication](https://doi.org/10.1038/s41467-025-60827-w) concerns tumor
-biopsies around radiotherapy; blood and tumor analyses will be reported as
-portability applications, not interchangeable effect replications. No external
-RFU assignments have been started in this checkpoint.
+**GSE280982:** following the RP1-14 checkpoint, we acquired the 22 inventoried
+processed TCR/GEX-barcode files (3.09 MB), verified gzip integrity and recorded
+local hashes. They yield 13,077 primary-TRB cells that all match their respective
+GEX barcode lists: 11,418 tumor cells across eight visits/three donors and 1,659
+blood cells across three visits/two donors. No selected receptor lacks nucleotide
+CDR3 or V/J annotation. Two tumor donors have three visits, one has two; only
+one blood donor has a longitudinal pair. The first published tumor donor lacks
+released paired TCR entries in the inspected record, and a later visit is absent.
+These missing observations are not zero-cell samples.
+
+The frozen development configuration was saved before inspecting these receptor
+files. Pre-treatment, last-day-of-radiation and six-week post-radiation labels
+are verified against GEO characteristics and the
+[source publication](https://doi.org/10.1038/s41467-025-60827-w). The three
+last-day tumor samples have 170, 185 and 215 primary-TRB cells before RFU
+qualification, so the original minimum-support rule remains consequential.
+Source primary-chain selection uses the existing adapter; multichain counts and
+sample-specific barcode namespaces are retained. RFU assignment and external
+endpoint analysis are **not yet completed**. Author-derived cell-state labels
+are not included in the downloaded files. Blood and tumor analyses will test
+portability, rather than interchangeable replication of one treatment effect.
 
 ## Methods
 
