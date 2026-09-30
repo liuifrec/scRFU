@@ -1,0 +1,88 @@
+{
+  "captions": "manifests/captions.md",
+  "completion_sha256": "208e78fcfe8739b1bb2023fafb5f363a30566ab10541ac64b64347f44fc8787e",
+  "contact_sheet": "preview/contact_sheet.png",
+  "dataset": "Wells public atlas",
+  "figure_exports": {
+    "figures/manuscript/A_umap_context.pdf": "ff0e1eda9f024b30b69663aab85b1e31a014b1451ed85612035d23ed28af9f29",
+    "figures/manuscript/A_umap_context.png": "343e2e07769b5b73e0a2fe4d924b4ee5fc5ebc93003c5ac539d35fc34ad1ba8c",
+    "figures/manuscript/A_umap_context.svg": "b391337439f7884aee346abc9581afd26b9d39d30a72f0e02b5a0f3d8da71453",
+    "figures/manuscript/B_rfu_logos.pdf": "f9a7aa26a4e769bc1912eaa70c75d113d4c3b1dc86f760c55b2261181334e7fc",
+    "figures/manuscript/B_rfu_logos.png": "dec89f00d8d81465e4f9d0b0a8e7907a2611038b686591cce04da0389417dd0d",
+    "figures/manuscript/B_rfu_logos.svg": "01a2cc0bb92e7090c8a96ccf426384a1ecbed7b13e538bfc098f0b938069c81a",
+    "figures/manuscript/C_exploratory_volcano.pdf": "71a6f0eafb05f7fbc7bd1417460a2e956f8fcadfd5314458898e80d2c485cea4",
+    "figures/manuscript/C_exploratory_volcano.png": "056ebbc48165d18da200245c7b53ff1b3afdf7ebb2553d559633e4af609a8025",
+    "figures/manuscript/C_exploratory_volcano.svg": "bd60c359f53c5a4cb17d7a520d7dc61af1047d600e535ebb4be2cdebecfe7dad",
+    "figures/manuscript/D_context_block.pdf": "41168a1ea95c1a85674edc827f60cc4152d96887cf035a695e3ad728ad7d0a79",
+    "figures/manuscript/D_context_block.png": "8f2eae4015aff4f368a3c569b9ad9601d740426e95ec14a9183ffbd1d5d7589e",
+    "figures/manuscript/D_context_block.svg": "303fdb9f3c362f4e415023cf2d76e6fe45075eb38f714920ac32975281960862",
+    "figures/poster/A_umap_context.pdf": "917ef21bc4853abf93aa602345f8009dbaac03ac1c81edce476e8e08561f725a",
+    "figures/poster/A_umap_context.png": "f3b254728f4004d209de1a76577c8f68ce8fbd3d1a35b3fe793643a85b1a7f5e",
+    "figures/poster/A_umap_context.svg": "ea2bd59e02fdfbc90fe126e8a5348601203c2494e9fb0abf3f9187c5af18b4c7",
+    "figures/poster/B_rfu_logos.pdf": "22f74e14b2640dee391876d20d1206cc66b17a43d2fe9d2a577974ab0f054d66",
+    "figures/poster/B_rfu_logos.png": "d4c714b16d79066323259bb2c972d7c560588ed7a0d34ba5cb3aa9f38634010f",
+    "figures/poster/B_rfu_logos.svg": "db0873dde2a07b6a524958cf7ce557dbaee808a069328717db0dada921b11af7",
+    "figures/poster/C_exploratory_volcano.pdf": "e0330230f1dea39af7ff47da7e853812b41d6034f7b04c67ce616790550645b7",
+    "figures/poster/C_exploratory_volcano.png": "c7b3cb53c4f35498d132f9c006747665fe57076fdb6ba6ac8c11bc86263da027",
+    "figures/poster/C_exploratory_volcano.svg": "78bc9d19f363cbea767216819146dd8b493b36c7f21d4fca06beec7362d2feb7",
+    "figures/poster/D_context_block.pdf": "693c9780f82dc17d203297c601d6ec3a1ff9de33fa43572db242896ae24cf3e8",
+    "figures/poster/D_context_block.png": "4d50c431186b656f1d84a3e2da5a7d7c0532fbf418d559ace9c852fb4406affd",
+    "figures/poster/D_context_block.svg": "a9a989c29e0520257c1efb74a0954936eea99afdbb680fc0cb0f06e9ce830108"
+  },
+  "focused_tests": "19 passed: singlecell_context, rp1_14_reusable, cross_application_reusable",
+  "format": "passed",
+  "independent_contact_sheet_byte_identical": true,
+  "independent_exports_byte_identical": 24,
+  "lint": "passed",
+  "manifest": "manifests/figure_manifest.json",
+  "pack_directory": "/home/liuyuchen/data/scRFU_radiation_methods_20260916/results/singlecell_context_reusable_figures_v1",
+  "previous_packs": {
+    "apbc2026_poster_assets_v1": {
+      "completion_sha256": "84a51545a3dad9270730f1cfe5e3ca44ba017d9efa57413b11cdb5f2f10a7b3b",
+      "unchanged_outputs": 62
+    },
+    "cross_application_reusable_figures_v1": {
+      "completion_sha256": "7a40fa21de3556b41f074fb5bd8f503db4bca8f5855207e8df02b7bf11615fdd",
+      "unchanged_outputs": 123
+    },
+    "rp1_14_reusable_figures_v1": {
+      "completion_sha256": "0b9cbd974cabd4ea9b84a3852e524fdd0f1338645a8f065391df76f89b3a0d99",
+      "unchanged_outputs": 129
+    }
+  },
+  "recommendation": "UMAP and logos for poster context; volcano supplementary/backup; all manuscript versions supporting/supplementary, with main quantitative benchmark figures unchanged.",
+  "scientific_scope": "Existing UMAP and assignments; one bounded exploratory paired DE contrast on 244 matched cells. No assignment, UMAP, model, QTL or longitudinal endpoint rerun.",
+  "source_commit": "ec48ce12f68faca41569029b41a9c58d81c1e567",
+  "status": "complete",
+  "summary": {
+    "all_selected_rfu_cells": 562,
+    "atlas_cells": 610429,
+    "de_cells_per_donor_max": 26,
+    "de_cells_per_donor_min": 5,
+    "de_cells_per_group": 122,
+    "de_donors": 12,
+    "de_genes_q_lt_0_05": 0,
+    "de_genes_tested": 6650,
+    "displayed_umap_cells": 40516,
+    "qualified_cells": 233913,
+    "selected_rfus": [
+      "RFU3526",
+      "RFU2114",
+      "RFU527"
+    ]
+  },
+  "validation": {
+    "exports": 8,
+    "outputs_hashed": 62,
+    "source_validation": {
+      "assignment_or_embedding_recomputed": false,
+      "frozen_umap_coordinates_exact": 40516,
+      "raw_expression_rows_verified": 244,
+      "selected_rfu_cells_verified": 562,
+      "status": "passed",
+      "tested_genes_verified": 6650
+    },
+    "status": "passed"
+  },
+  "verify_only_unchanged_file_mtimes": 63
+}

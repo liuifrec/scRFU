@@ -1,0 +1,33 @@
+{
+  "pack": "singlecell_context_reusable_figures_v1",
+  "source_commit": "ec48ce12f68faca41569029b41a9c58d81c1e567",
+  "output": "/home/liuyuchen/data/scRFU_radiation_methods_20260916/results/singlecell_context_reusable_figures_v1",
+  "sources": {
+    "atlas": {"path": "/home/liuyuchen/data/wells/wells_atlas_source.h5ad", "sha256": "de47634244ff060af7273e4485816326734b36dbabe78253b8c2e70bbf0181bc"},
+    "assignments": {"path": "/home/liuyuchen/data/wells/scrfu_full_validation_20260825/full_run/rfu_results_per_row.tsv.gz", "sha256": "3af98d84eff050461b3229412e478e8b5b44ca0fe9598307e51bb4e743049e42"},
+    "assignment_manifest": {"path": "/home/liuyuchen/data/wells/scrfu_full_validation_20260825/evidence_manifest_full_rfu.json", "sha256": "9e93719eb4b20808f800f64f6976da66715f9f574cf8f8502b72c496e6ec3ec8"},
+    "support": {"path": "/home/liuyuchen/data/scRFU_radiation_methods_20260916/results/development_v1_1/wells_rfu_support.tsv", "sha256": "af96475197f52d122c6379e80542c5c6da02c6fe88d4c57c68635a8ee11d1245"}
+  },
+  "selected_rfus": ["RFU3526", "RFU2114", "RFU527"],
+  "selection": "Rank threshold-qualified RFUs by number of donors with >=10 cells, then donors with >=5 cells, then total cells, then literal RFU label; take the first three. Metadata only; no expression or UMAP-based selection.",
+  "embedding": {"key": "obsm/X_umap", "background_cells": 40000, "seed": "scrfu-context-v1", "include_all_selected_rfu_cells": true},
+  "logo": {"weight": "one per distinct CDR3 amino-acid string", "length": "modal unique-sequence length within each RFU, shorter length breaks ties", "ordinate": "amino-acid frequency (not information content)"},
+  "contrast": {
+    "case_rfu": "RFU3526",
+    "population": "All source-annotated Wells cells with a threshold-qualified primary-TRB assignment",
+    "background": "Other threshold-qualified RFUs",
+    "match_columns": ["donor_id", "tissue", "cell_type", "library_id", "v_call"],
+    "selection": "SHA256(seed|group|cell_id) ordering; min(case, background) without replacement within each exact stratum",
+    "minimum_cells_per_group_per_donor": 5,
+    "expression": "raw/X; require nonnegative, finite, integer-valued stored counts",
+    "normalization": "Sum selected cells within donor/group; CPM using all raw genes; log2(CPM+1)",
+    "test": "Two-sided paired t-test across donors, equal donor weights; no cell-level replication",
+    "gene_filter": "CPM >=1 in at least N of 2N pseudobulks, positive variance of paired differences, source feature_is_filtered false; exclude TCR genes matching ^TR[ABDG][VDJC]",
+    "adjustment": "Benjamini-Hochberg over all tested genes; q<0.05",
+    "effect": "Mean within-donor difference in log2(CPM+1), case minus matched background",
+    "scope": "Exploratory donor-paired inference with small pseudobulks, observational RFU membership, residual state/clone confounding; not radiotherapy DE or a mechanistic result."
+  },
+  "poster_min_font_pt": 22,
+  "manuscript_min_font_pt": 8,
+  "png_dpi": 300
+}
