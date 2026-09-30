@@ -1,0 +1,210 @@
+{
+  "asset_pack": "apbc2026_poster_assets_v1",
+  "source_commit": "104d767e64cb47a46758ab72bc80aa0faf443480",
+  "workspace": "/home/liuyuchen/data/scRFU_radiation_methods_20260916",
+  "output_directory": "results/apbc2026_poster_assets_v1",
+  "minimum_font_pt": 24,
+  "png_dpi": 300,
+  "background": "white",
+  "upstream": {
+    "rp1": {
+      "directory": "results/rp1_14_reusable_figures_v1",
+      "completion_sha256": "0b9cbd974cabd4ea9b84a3852e524fdd0f1338645a8f065391df76f89b3a0d99"
+    },
+    "applications": {
+      "directory": "results/cross_application_reusable_figures_v1",
+      "completion_sha256": "7a40fa21de3556b41f074fb5bd8f503db4bca8f5855207e8df02b7bf11615fdd"
+    }
+  },
+  "sources": {
+    "rp_samples": [
+      "rp1",
+      "tables/A_samples.tsv"
+    ],
+    "rp_depth": [
+      "rp1",
+      "tables/A_donor_depth.tsv"
+    ],
+    "rp_controls": [
+      "rp1",
+      "tables/C_donors.tsv"
+    ],
+    "rp_persistence": [
+      "rp1",
+      "tables/D_donors.tsv"
+    ],
+    "gse190905_pairs": [
+      "applications",
+      "tables/A_pairs.tsv"
+    ],
+    "gse280982_visits": [
+      "applications",
+      "tables/B_visits.tsv"
+    ],
+    "gse280982_pairs": [
+      "applications",
+      "tables/B_pairs.tsv"
+    ],
+    "regulatory_counts": [
+      "applications",
+      "tables/D_counts.tsv"
+    ],
+    "regulatory_matrix": [
+      "applications",
+      "tables/D_matrix.tsv"
+    ]
+  },
+  "assets": {
+    "rp1_14_design_coverage": {
+      "contact_label": "RP1-14 · design / coverage",
+      "size_inches": [
+        18,
+        6.8
+      ],
+      "sources": [
+        "rp_samples",
+        "rp_depth"
+      ],
+      "caption": "Six RP1-14 donors have three CD4/CD8 visits over 14.95–24.86 years; coverage is the frozen qualified fraction of source sequencing reads."
+    },
+    "rp1_14_cancellation_controls": {
+      "contact_label": "RP1-14 · cancellation / controls",
+      "size_inches": [
+        18,
+        6.8
+      ],
+      "sources": [
+        "rp_controls"
+      ],
+      "caption": "Aggregation cancellation is receptor TV minus RFU TV; similar cancellation under 30 matched maps (median and 2.5th–97.5th percentiles) is not uniquely RFU-specific."
+    },
+    "rp1_14_persistence_turnover": {
+      "contact_label": "RP1-14 · persistence / turnover",
+      "size_inches": [
+        17,
+        6.5
+      ],
+      "sources": [
+        "rp_persistence"
+      ],
+      "caption": "Persistent RFUs (≥5 qualified reads at both endpoints) can lack shared observed nucleotide CDR3/V/J receptors; persistence does not establish preserved antigen function."
+    },
+    "gse190905_paired_tv": {
+      "contact_label": "GSE190905 · paired TV",
+      "size_inches": [
+        18,
+        6.5
+      ],
+      "sources": [
+        "gse190905_pairs"
+      ],
+      "caption": "Lines pair receptor TV (nucleotide CDR3/V/J) and RFU TV for the same six GSE190905 donors in threshold-qualified Total T, CD4 and CD8 cells."
+    },
+    "gse280982_visit_coverage": {
+      "contact_label": "GSE280982 · visit coverage",
+      "size_inches": [
+        16,
+        6.5
+      ],
+      "sources": [
+        "gse280982_visits"
+      ],
+      "caption": "Counts and colors show qualified / gene-expression-matched primary-TRB cells at ordered visits; all seven missing visits remain explicitly unavailable."
+    },
+    "gse280982_interval_tv": {
+      "contact_label": "GSE280982 · interval TV",
+      "size_inches": [
+        16,
+        7.5
+      ],
+      "sources": [
+        "gse280982_pairs"
+      ],
+      "caption": "Eight supported GSE280982 intervals compare receptor TV (nucleotide CDR3/V/J) with RFU TV; radiation denotes the last radiation day and intervals reuse donors."
+    },
+    "regulatory_overlap_counts": {
+      "contact_label": "Regulatory · overlap counts",
+      "size_inches": [
+        14,
+        3.8
+      ],
+      "sources": [
+        "regulatory_counts"
+      ],
+      "caption": "Among 623 RFU-QTL variants, 17 overlap conditional expression QTLs and 32 overlap accessibility QTLs, with six same-variant both-layer overlaps; these are overlapping sets, not colocalization."
+    },
+    "regulatory_six_variant_matrix": {
+      "contact_label": "Regulatory · six-variant matrix",
+      "size_inches": [
+        18,
+        5.8
+      ],
+      "sources": [
+        "regulatory_matrix"
+      ],
+      "caption": "The six both-layer variants retain TCR/non-TCR expression-target labels and frozen chromatin target/rank and RFU counts; RFUs can recur across rows."
+    }
+  },
+  "rules": [
+    "Only read the completed figure-pack tables; never invoke biological or figure-summary derivation runners.",
+    "Copy source TSVs byte-for-byte; no new ratios, medians, confidence intervals, resampling or inferred measurements.",
+    "Only categorical layout positions, colors and display formatting may be transformed; numerical plot coordinates stay at frozen values.",
+    "No overall title or panel letter on individual cutouts; subgroup and axis labels remain.",
+    "Native placement sizes retain at least 24-point text; shrinking in PowerPoint also shrinks labels.",
+    "No manuscript figure or completed reusable pack is changed; generated assets and source copies stay outside Git."
+  ],
+  "completed": {
+    "status": "complete",
+    "output_directory": "/home/liuyuchen/data/scRFU_radiation_methods_20260916/results/apbc2026_poster_assets_v1",
+    "completion_sha256": "84a51545a3dad9270730f1cfe5e3ca44ba017d9efa57413b11cdb5f2f10a7b3b",
+    "outputs_hashed": 62,
+    "total_files": 63,
+    "asset_files_sha256": {
+      "assets/gse190905_paired_tv.pdf": "b0b898928d0133fcebf4740042b343f03ca6c8bb20e47a7be0488b4552f54b4f",
+      "assets/gse190905_paired_tv.png": "0d2dc2122cceca3286a59ec3ac41e97e5eeef2f6476eaee1e504ae1a85ea32db",
+      "assets/gse190905_paired_tv.svg": "89ea258d539030b86f5737465453a104fe2825e8a5303b7d0cc6eb0b48fd9fb7",
+      "assets/gse280982_interval_tv.pdf": "b31323a9f1c448622cdb06d6d63924e1551c8c7f44f079bcb6bc55fc9207e6c6",
+      "assets/gse280982_interval_tv.png": "d785aac05e8cdd6b06296cfef56befbd46e40f3eccf0080ac2182122a338da9f",
+      "assets/gse280982_interval_tv.svg": "b7df832022a2a903960f01510aa461e43e6c08979b433fdfdaf861de6853eff7",
+      "assets/gse280982_visit_coverage.pdf": "83fbe1011b0f143e8f32f0c9abda312691fb1b913fc88d686cbf10a82656220f",
+      "assets/gse280982_visit_coverage.png": "a182141b123fb9efc50ad5645bdec6ac456eeec21cb214712fdf7527d6e995e9",
+      "assets/gse280982_visit_coverage.svg": "2d82ac3a6fb915d16f52da615be6dbe6b4343bf2dc1542ab335d44a7edb0ae16",
+      "assets/regulatory_overlap_counts.pdf": "3faaa28113f11eeec4370c8a57205b7ffa8f91c6d98229eaa86553c35aa01815",
+      "assets/regulatory_overlap_counts.png": "9b268d1439b65af78f30e05a7b203fdb17d08da2be4c77e7ed9a84172a895e92",
+      "assets/regulatory_overlap_counts.svg": "f7b84a9093893921a8292189483c7ee7dc4b5d7a93363b6d607444c0fbcbcb02",
+      "assets/regulatory_six_variant_matrix.pdf": "eefa62537ad794e56b70972d6cab9e58ca70c6cd0e81ed940d1be1c6f0f476f1",
+      "assets/regulatory_six_variant_matrix.png": "7bc98ad573464739fd0b2437a40a2e9a57681e8f7b3875e66efcce0905a4970a",
+      "assets/regulatory_six_variant_matrix.svg": "3166b753aa2df8138a8a5c43e84810a7f0342ff2ea9b4ce86312cd0abf4c810d",
+      "assets/rp1_14_cancellation_controls.pdf": "6c0574f5c181154c0691970755318dfb688c8e8d60c899fad7bb20ab4d524c51",
+      "assets/rp1_14_cancellation_controls.png": "5f17a1d91931205505044f91368e95cca7eed0f95dd3faa6613f5994b2d47dae",
+      "assets/rp1_14_cancellation_controls.svg": "bcd2b61d51f5719584ba8772c3cd026e57b963f238d58963c147e06e8448e471",
+      "assets/rp1_14_design_coverage.pdf": "067ad000621e912dbb16165aff1ec3c98c8e1fa14aed7f48d7deb3c30e26a578",
+      "assets/rp1_14_design_coverage.png": "b575d18661287837b43a58a4d151d285c4fc24a09989dc89b62e7a1910db49f4",
+      "assets/rp1_14_design_coverage.svg": "c6a4e1dfa6aa837c55e18cd7debaaf659088fcc2f98bdcab227267ce8a957b5d",
+      "assets/rp1_14_persistence_turnover.pdf": "681115ba5adb213a79e8621275a640b107d55ff58006115c5c7c5a331a68e149",
+      "assets/rp1_14_persistence_turnover.png": "6b8ecf00ab6b09f1e05c226775859cc127f7bd7489dba7fc43e1445fb881b693",
+      "assets/rp1_14_persistence_turnover.svg": "611378e5fa799dac5097aea685c1079fa7bb15f8949ae0090520beed5574c3bb"
+    },
+    "contact_sheet_sha256": "184ab72341564dd69d42540cf13c51299cefbe70a55f7848b2db4f89b2b84c7a",
+    "validation": {
+      "all_values_match_frozen_tables": true,
+      "asset_files": 24,
+      "biological_analysis_or_new_results": false,
+      "completed_figure_packs_unchanged": true,
+      "cutouts": 8,
+      "minimum_font_pt": 24,
+      "source_copies": 9,
+      "status": "passed",
+      "upstream_outputs_verified": 252,
+      "vector_pdfs_and_svgs": true,
+      "verified_artist_bindings": 311
+    },
+    "independent_exports_byte_identical": 24,
+    "independent_contact_sheet_byte_identical": true,
+    "repeat_unchanged_file_mtimes": 63,
+    "lint": "passed",
+    "format": "247 files already formatted",
+    "captions": "captions/*.md and captions.md",
+    "command": "/home/liuyuchen/data/scRFU_regulatory_20260909/environment/bin/python -m manuscript.scripts.apbc2026_poster_assets --workspace /home/liuyuchen/data/scRFU_radiation_methods_20260916 --out /home/liuyuchen/data/scRFU_radiation_methods_20260916/results/apbc2026_poster_assets_v1"
+  }
+}
