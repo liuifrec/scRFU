@@ -1,4 +1,36 @@
-# Radiation-methods execution checkpoint — 2026-09-16
+# Radiation-methods execution checkpoint — 2026-09-30
+
+## Current reusable-figure checkpoint
+
+The figure-only continuation from `9078dc3e9e6e7adb95e7cc675bc5cd5e014f242b`
+adds reusable RP1-14 A–F manuscript/poster panels, an A/C/D/E poster block and an
+A–D manuscript main-figure draft. The original six-panel RP1-14 figure and all
+35 outputs in the RP1-14/repair completion manifests are preserved unchanged.
+No biological endpoint, assignment, matched map or subsampling draw was rerun;
+the paused 144-person cohort remains outside scope.
+
+Output: `$SCRFU_METHODS_DIR/results/rp1_14_reusable_figures_v1/`. Each audience
+has vector PDF/SVG and 300-dpi PNG exports; fifteen source tables, per-figure
+input hashes/column READMEs, structured captions and color/grayscale previews
+accompany them. Poster text is at least 18 pt at the native 762 × 508 mm block
+size, and manuscript text is at least 8 pt. C/D carry the main poster message,
+A supplies context and E is the sensitivity inset. The paper uses A–D as the
+refined main-figure draft; E/F remain supplementary, with F available for Q&A.
+
+The [reusable-figure guide](rp1_14_reusable_figures.md) contains exact commands,
+artifact paths, frozen selection rules, validation and layout recommendations.
+The new script imports no biological analysis runner and refuses to overwrite
+completed exports with changed identities. A repeat invocation verifies and
+returns without rewriting files. Prior scientific checkpoints follow unchanged.
+
+Validation: **28 focused tests passed**; Ruff lint/format and diff checks passed.
+Independent rendering reproduced all 54 figure exports and 15 source tables
+byte-for-byte. All 18 PDFs are single-page vector figures; final color/grayscale
+previews and an independent PDF render were inspected. Completion SHA256:
+`0b9cbd974cabd4ea9b84a3852e524fdd0f1338645a8f065391df76f89b3a0d99`.
+The [safe figure checkpoint](../manuscript/figures/rp1_14_reusable_checkpoint.json)
+records the 129 output hashes' parent manifest and confirms that a repeat run
+left all 130 output-file modification times unchanged.
 
 ## Current finishing checkpoint
 

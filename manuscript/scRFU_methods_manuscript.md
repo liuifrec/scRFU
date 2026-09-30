@@ -587,6 +587,19 @@ controls. Neither control ranges nor repeated sample pairs are independent
 participants. Persistence is an observed grouping property, not antigen-function
 preservation.
 
+**Reusable Figure 2 assembly draft** (`rp1_14_manuscript_main.pdf`, in
+`results/rp1_14_reusable_figures_v1/figures/manuscript/`). A, longitudinal design,
+donor/compartment read depths and qualified-universe totals. B, paired receptor,
+RFU, TRBV and V/J TV in each compartment. C, observed cancellation and the frozen
+matched-map controls. D, persistent RFUs lacking shared observed receptors,
+with a clearly labeled hypothetical schematic. This alternative presentation
+reuses the same endpoints; the six-panel figure above remains unchanged,
+including its within/between-donor and paired-compartment views. Reusable E
+(weighting/common-depth sensitivity) and F (repair QC) are supplementary.
+Full legends, poster captions, source tables and reproduction commands are in
+the [reusable-figure guide](../docs/rp1_14_reusable_figures.md) and its indexed
+external manifests. No biological analyses were rerun for these exports.
+
 **Figure 4. External radiotherapy transportability**
 (`gse280982_external_final.pdf`). A, qualified primary-TRB counts by visit;
 the dotted line is the frozen 100-cell rule. The donor lacking all matched TCR

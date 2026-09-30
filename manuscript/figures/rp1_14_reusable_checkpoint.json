@@ -1,0 +1,39 @@
+{
+  "assembly_sha256": {
+    "figures/manuscript/rp1_14_manuscript_main.pdf": "567007e48422147ddb21d227bc1325597003116eb04030648807bcf85b020d52",
+    "figures/manuscript/rp1_14_manuscript_main.png": "8a6c7256768070ae99a8876987d0becce17cbb1a2da89aaf08de9d0aabdc9f1a",
+    "figures/manuscript/rp1_14_manuscript_main.svg": "2b8967f89855827914f13d57b187de2e7fa71fb8706407151dece1a718fc584e",
+    "figures/poster/rp1_14_poster_block.pdf": "12bf15a236b59ce83fd93020ef4e59a44769aeb1b94cadd9dd886904f6757d88",
+    "figures/poster/rp1_14_poster_block.png": "a9cb7c1d5f409e30c1f881151c3a0bb0f7f5e109f8477ed6c2a9aa15e6056c36",
+    "figures/poster/rp1_14_poster_block.svg": "4f10ad74796f96e4f5ebec2a0b08ea70614bc49a86e7c302e3967ed87809b64e"
+  },
+  "biological_workflows_rerun": false,
+  "completion_sha256": "0b9cbd974cabd4ea9b84a3852e524fdd0f1338645a8f065391df76f89b3a0d99",
+  "export_sets": 18,
+  "external_path_relative_to_workspace": "results/rp1_14_reusable_figures_v1",
+  "figure_fingerprint": "439de5a414a9942a8095b4b0502df5f30aecdeeb249d6390717c7275d7a0e98d",
+  "figure_set": "rp1_14_reusable_figures_v1",
+  "hashed_outputs": 129,
+  "independently_regenerated_byte_identical_exports": 54,
+  "independently_regenerated_byte_identical_source_tables": 15,
+  "main_assembly": "refined A-D draft; no endpoint changes",
+  "manuscript_minimum_font_pt": 8.0,
+  "original_six_panel_rp1_14_figure": "preserved byte-for-byte",
+  "poster_minimum_font_pt": 18.0,
+  "repeat_invocation_all_file_mtimes_unchanged": true,
+  "single_page_pdfs_with_no_raster_images": 18,
+  "source_checkpoint": "9078dc3e9e6e7adb95e7cc675bc5cd5e014f242b",
+  "source_tables": 15,
+  "tests": {
+    "focused_passed": 28,
+    "git_diff_check": "passed",
+    "ruff_check": "passed",
+    "ruff_format_check": "242 files formatted"
+  },
+  "upstream_outputs_verified_unchanged": 35,
+  "visual_review": [
+    "All A-F manuscript and poster panels",
+    "Color and grayscale assemblies",
+    "Independent Poppler render of poster PDF"
+  ]
+}

@@ -1,0 +1,41 @@
+{
+  "figure_set": "rp1_14_reusable_figures_v1",
+  "checkpoint": "9078dc3e9e6e7adb95e7cc675bc5cd5e014f242b",
+  "upstream": {
+    "rp1_14_v1": "6917164a67eca9420201ff78ac9ab7e889fe342bc25fddc896a9130628aa8a56",
+    "rp1_14_repair_qc_v1": "1841c4e6b72d8a870da5e65c0bd034ef2ded17b1a12808dab4b8163b2a72403b"
+  },
+  "selection": {
+    "primary_pair": true,
+    "policy": "threshold",
+    "weighting": "reads",
+    "threshold": 0.6,
+    "persistence_detection_reads": 5,
+    "control_replicates": 30,
+    "subsample_replicates": 50,
+    "subsample_reads_per_visit": 500,
+    "quantiles": [0.025, 0.5, 0.975],
+    "quantile_interpolation": "linear"
+  },
+  "expected": {
+    "donors": 6,
+    "samples": 36,
+    "visits_per_donor_compartment": 3,
+    "source_reads": 70960689,
+    "primary_mapped_reads": 25513582,
+    "primary_unique_receptors": 508972,
+    "primary_unique_rfus": 4958
+  },
+  "exports": {
+    "formats": ["pdf", "svg", "png"],
+    "manuscript_inches": [7.5, 4.6],
+    "poster_inches": [14.0, 8.8],
+    "manuscript_assembly_inches": [7.5, 10.4],
+    "poster_assembly_inches": [30.0, 20.0],
+    "png_dpi": 300,
+    "preview_dpi": 110,
+    "font": "DejaVu Sans",
+    "manuscript_min_font_pt": 8,
+    "poster_min_font_pt": 18
+  }
+}
