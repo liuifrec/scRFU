@@ -1,6 +1,34 @@
 # Radiation-methods execution checkpoint — 2026-09-30
 
-## Current reusable-figure checkpoint
+## Current cross-application figure checkpoint
+
+The second, data-only asset pack continues from
+`c9cd3d41f049c04f27e5a9909b5472180d90fa8d`. It adds reusable GSE190905,
+GSE280982, cross-dataset transportability, regulatory-evidence, negative
+prediction and Wells-context figures. All six have manuscript/poster
+PDF/SVG/300-dpi PNG exports, source TSVs, column definitions, captions and
+input/output hashes. The A/B/D poster block reserves blank space for BioRender;
+the manuscript assembly combines compact A/B and cross-study C. No conceptual
+artwork was generated. E remains supplementary/backup; D/F are separate
+supporting figures.
+
+Output: `$SCRFU_METHODS_DIR/results/cross_application_reusable_figures_v1/`.
+The [cross-application guide](cross_application_reusable_figures.md) gives exact
+paths, reproducible commands, placement and denominator rules. The
+[safe checkpoint](../manuscript/figures/cross_application_reusable_checkpoint.json)
+records final hashes and validation. The runner checks 231 upstream outputs
+across eight completion manifests, including the entire protected RP1-14 pack.
+It reads completed summaries and derives plotting tables only: no assignment,
+QTL search, model, RP1-14 endpoint or technical draw is rerun. The paused cohort
+is unchanged. Prior figure and scientific checkpoints follow below.
+
+Validation: **26 focused tests passed**; repository Ruff lint/format and diff
+checks passed. All 19 plotting TSVs agree with the frozen sources; all 16 export
+sets pass source-reference, layout, font-size and 300-dpi checks. The poster
+block's reserved rectangle is verified blank. Independent vector-PDF/export
+and no-write repeat checks are recorded in the safe checkpoint.
+
+## Completed RP1-14 reusable-figure checkpoint
 
 The figure-only continuation from `9078dc3e9e6e7adb95e7cc675bc5cd5e014f242b`
 adds reusable RP1-14 A–F manuscript/poster panels, an A/C/D/E poster block and an

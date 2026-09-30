@@ -1,0 +1,68 @@
+{
+  "assemblies": {
+    "manuscript_assembly": {
+      "files_sha256": {
+        "figures/manuscript/cross_application_manuscript_assembly.pdf": "585eb7eafb9ddcfda029d5ebc3f6aafa1d98e58f6451153c80cb627bac840a37",
+        "figures/manuscript/cross_application_manuscript_assembly.png": "3d8712609e3105fcc0857d498ccf8825da29d6465823fd6728c2fa5e1dff67f2",
+        "figures/manuscript/cross_application_manuscript_assembly.svg": "ef25cfc57bee2608d5b12ae4cede175e24e475097fcc7f15a696dd801baf5d48"
+      },
+      "minimum_font_pt": 8.0,
+      "size_inches": [
+        7.5,
+        10.5
+      ]
+    },
+    "poster_block": {
+      "biorender_blank_rectangle_fraction": [
+        0.63,
+        0.055,
+        0.35,
+        0.365
+      ],
+      "files_sha256": {
+        "figures/poster/cross_application_poster_block.pdf": "a33751b1f6849b325002ede4e2bb1285ed939f765bf4d28870a02975af8bd901",
+        "figures/poster/cross_application_poster_block.png": "6729e089719ee62deda2850659fb437a7801295edb197a521ba7fd1210c16b7f",
+        "figures/poster/cross_application_poster_block.svg": "addd48df9ec4235b5b30783869c8e112b94a13c0aec2cc5fdb01f79c6c949cbd"
+      },
+      "minimum_font_pt": 18.0,
+      "size_inches": [
+        30.0,
+        24.0
+      ]
+    }
+  },
+  "completion_hashed_outputs": 123,
+  "completion_sha256": "7a40fa21de3556b41f074fb5bd8f503db4bca8f5855207e8df02b7bf11615fdd",
+  "conceptual_artwork": false,
+  "deliverable_files": 48,
+  "export_sets": 16,
+  "new_biological_analyses": [],
+  "regenerate": "See docs/cross_application_reusable_figures.md and external manifests/provenance.json",
+  "reusable_figures": {
+    "A": "GSE190905",
+    "B": "GSE280982",
+    "C": "Cross-dataset transportability",
+    "D": "Regulatory evidence",
+    "E": "Negative held-out prediction",
+    "F": "Wells context"
+  },
+  "source_commit": "c9cd3d41f049c04f27e5a9909b5472180d90fa8d",
+  "source_tables": 19,
+  "status": "complete",
+  "total_output_files": 124,
+  "validation": {
+    "color_grayscale_and_independent_pdf_render_inspected": true,
+    "diff_check": "passed",
+    "focused_tests_passed": 26,
+    "independent_byte_identical_exports": 48,
+    "independent_byte_identical_tables": 19,
+    "protected_rp1_14_pack_unchanged": true,
+    "repeat_unchanged_file_mtimes": 124,
+    "reserved_biorender_region_blank": true,
+    "ruff_check": "passed",
+    "ruff_format": "246 files already formatted",
+    "single_page_vector_pdfs": 16,
+    "upstream_outputs_verified": 231
+  },
+  "workspace": "/home/liuyuchen/data/scRFU_radiation_methods_20260916/results/cross_application_reusable_figures_v1"
+}

@@ -613,6 +613,25 @@ contributes multiple intervals; these points are not independent human
 replicates. Depth, unique-receptor and clone-removal results remain in the source
 table, including unstable and zero-persistence cases.
 
+**Reusable cross-application assembly draft**
+(`cross_application_manuscript_assembly.pdf`, in
+`results/cross_application_reusable_figures_v1/figures/manuscript/`). A,
+GSE190905 donor-paired receptor/RFU TV in total T, CD4 and CD8 subsets, with
+assignment coverage and six supported donors per subset. B, GSE280982 ordered
+visit coverage and supported TV comparisons, explicitly retaining missing
+visits. C, the seven frozen RP1-14/GSE190905/GSE280982 TV and cancellation
+summary rows with their distinct sampling units, intervals and donor counts.
+No effects are pooled. Standalone A/B exports retain sampling sensitivity and
+persistence details. Separate reusable D shows conditional regulatory overlaps
+and a six-variant evidence matrix with TCR/non-TCR targets; E shows the negative
+ordinary/purged prediction benchmark and belongs in the supplement; F documents
+Wells donor/tissue coverage and source-label support. These are data-only
+presentation alternatives from completed outputs; the existing figures and
+RP1-14 pack remain unchanged. The
+[cross-application figure guide](../docs/cross_application_reusable_figures.md)
+links exact inputs, full draft legends, poster captions, take-home messages,
+source tables, export hashes and reproducible commands.
+
 **Supplementary Table S1. RP1-14 export-repair QC**
 (`rp1_14_repair_qc_table.pdf`; TSV source `parity_summary.tsv`). A total of 1,600
 unique amino-acid receptors, stratified before assay, show zero RFU-label or

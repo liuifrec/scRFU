@@ -1,0 +1,25 @@
+{
+  "figure_set": "cross_application_reusable_figures_v1",
+  "source_checkpoint": "c9cd3d41f049c04f27e5a9909b5472180d90fa8d",
+  "upstream": {
+    "development": {"workspace": "methods", "directory": "results/development_v1_1", "sha256": "4b5c1fd1f6d9c78e11612547809ce4c806c677835744bf4d51e4cd776171bf17"},
+    "external": {"workspace": "methods", "directory": "results/gse280982_v1", "sha256": "f285da99bc0ee955d2ca357d75c4c46fd59fcff27f485bfebf7c67cb1c75a75d"},
+    "finish": {"workspace": "methods", "directory": "results/manuscript_finish_v1_1", "sha256": "b0b0e8597b0c7b877c8bcfc25a6f3901ba69d1502dfb5d55a9ddb4243ca1130c"},
+    "rp": {"workspace": "methods", "directory": "results/rp1_14_v1", "sha256": "6917164a67eca9420201ff78ac9ab7e889fe342bc25fddc896a9130628aa8a56"},
+    "protected_rp_figures": {"workspace": "methods", "directory": "results/rp1_14_reusable_figures_v1", "sha256": "0b9cbd974cabd4ea9b84a3852e524fdd0f1338645a8f065391df76f89b3a0d99"},
+    "regulatory": {"workspace": "regulatory", "directory": "results/final_pilot", "sha256": "b425c9b0cd306d3568fb7aba085f6283032b2f49a0a41ca6973d91de1ccf1aec"},
+    "ordinary": {"workspace": "regulatory", "directory": "results/rfu_state_validation_donor_generalization", "sha256": "00626a2813b6c226a9c7bfbeb77939f3a852740b746dacb762b9e17e514e0e67"},
+    "purged": {"workspace": "regulatory", "directory": "results/rfu_state_validation_audited_purged", "sha256": "e3c726ff174c6e391884e78bab75f481c6c626b54156f608891be1d65857bb10"}
+  },
+  "exports": {
+    "dpi": 300,
+    "preview_dpi": 110,
+    "manuscript_sizes_inches": {"A": [7.5, 5.8], "B": [7.5, 6.5], "C": [7.5, 5.5], "D": [7.5, 4.8], "E": [7.5, 4.8], "F": [7.5, 7.0]},
+    "poster_sizes_inches": {"A": [14, 10.5], "B": [14, 11], "C": [14, 10], "D": [14, 9], "E": [14, 9], "F": [14, 13]},
+    "poster_block_inches": [30, 24],
+    "manuscript_assembly_inches": [7.5, 10.5],
+    "poster_min_font_pt": 18,
+    "manuscript_min_font_pt": 8,
+    "poster_biorender_blank_rectangle_fraction": [0.63, 0.055, 0.35, 0.365]
+  }
+}
