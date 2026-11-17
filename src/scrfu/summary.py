@@ -5,6 +5,7 @@ import re
 from collections.abc import Sequence
 from typing import Any
 
+import numpy as np
 import pandas as pd
 
 
@@ -196,84 +197,97 @@ def rfu_metrics(
 
     work[cell_col] = work[cell_col].astype(str)
     work[cdr3_col] = work[cdr3_col].astype(str)
-    group_key: str | list[str] = groups[0] if len(groups) == 1 else groups
-    metadata_totals: dict[tuple[Any, ...], dict[str, int]] = {}
-    for values, group_frame in frame.groupby(group_key, dropna=False, sort=True, observed=True):
-        key = values if isinstance(values, tuple) else (values,)
-        metadata_totals[key] = {
-            f"{label}s": group_frame[column].dropna().nunique()
-            for label, column in (("donor", donor_col), ("sample", sample_col))
-            if column is not None
-        }
-    totals: dict[tuple[Any, ...], dict[str, int]] = {}
-    for values, group_frame in work.groupby(group_key, dropna=False, sort=True, observed=True):
-        key = values if isinstance(values, tuple) else (values,)
-        totals[key] = {
-            "cells": group_frame[cell_col].nunique(),
-            "sequences": group_frame[cdr3_col].nunique(),
-            **metadata_totals[key],
-        }
-
-    rows: list[dict[str, Any]] = []
     by = [*groups, rfu_col]
-    group_rfu_key: str | list[str] = by[0] if len(by) == 1 else by
-    for values, subset in work.groupby(group_rfu_key, dropna=False, sort=True, observed=True):
-        values_tuple = values if isinstance(values, tuple) else (values,)
-        phenotype_values = values_tuple[: len(groups)]
-        phenotype_key = tuple(phenotype_values)
-        total = totals[phenotype_key]
-        observations = subset.drop_duplicates([cell_col, cdr3_col])
-        cell_count = subset[cell_col].nunique()
-        richness = subset[cdr3_col].nunique()
-        observation_count = len(observations)
-        clone_counts = observations.groupby(cdr3_col, observed=True)[cell_col].nunique()
+    grouped = work.groupby(by, dropna=False, sort=True, observed=True)
+    metrics = pd.concat(
+        [
+            grouped[cell_col].nunique().rename("rfu_cell_count"),
+            grouped[cdr3_col].nunique().rename("unique_cdr3_richness"),
+        ],
+        axis=1,
+    )
 
-        if weighting == "cell":
-            weighted_abundance = cell_count / total["cells"] if total["cells"] else 0.0
-            pass_units = subset.drop_duplicates(cell_col)
-        else:
-            weighted_abundance = richness / total["sequences"] if total["sequences"] else 0.0
-            pass_units = subset.drop_duplicates(cdr3_col)
-        pass_values = pass_units[threshold_col].dropna()
-        pass_rate = (
-            float(pass_values.astype("boolean").mean()) if not pass_values.empty else float("nan")
+    observations = work.drop_duplicates([*by, cell_col, cdr3_col])
+    observation_counts = observations.groupby(by, dropna=False, sort=True, observed=True).size()
+    clone_counts = observations.groupby([*by, cdr3_col], dropna=False, sort=True, observed=True)[
+        cell_col
+    ].nunique()
+    group_levels = list(range(len(by)))
+    clone_totals = clone_counts.groupby(level=group_levels, dropna=False).transform("sum")
+    probabilities = clone_counts.astype(float) / clone_totals
+    entropy = (
+        (-(probabilities * np.log(probabilities))).groupby(level=group_levels, dropna=False).sum()
+    )
+    dominant = (
+        clone_counts.groupby(level=group_levels, dropna=False).max()
+        / clone_counts.groupby(level=group_levels, dropna=False).sum()
+    )
+    metrics["observation_count"] = observation_counts
+    metrics["clonotype_entropy"] = entropy
+    metrics["dominant_clonotype_fraction"] = dominant
+
+    pass_unit = cell_col if weighting == "cell" else cdr3_col
+    pass_units = work.drop_duplicates([*by, pass_unit]).copy()
+    pass_units["_threshold_boolean"] = pass_units[threshold_col].astype("boolean")
+    pass_rate = pass_units.groupby(by, dropna=False, sort=True, observed=True)[
+        "_threshold_boolean"
+    ].mean()
+    metrics["rfu_threshold_pass_rate"] = pass_rate
+    metrics = metrics.reset_index()
+
+    group_totals = (
+        work.groupby(groups, dropna=False, sort=True, observed=True)
+        .agg(
+            group_cell_count=(cell_col, "nunique"),
+            group_sequence_count=(cdr3_col, "nunique"),
+        )
+        .reset_index()
+    )
+    metrics = metrics.merge(group_totals, on=groups, how="left", sort=False, validate="many_to_one")
+
+    for label, column in (("donor", donor_col), ("sample", sample_col)):
+        if column is None:
+            continue
+        group_column = f"group_{label}_count"
+        count_column = f"{label}_count"
+        metadata_totals = (
+            frame.groupby(groups, dropna=False, sort=True, observed=True)[column]
+            .nunique()
+            .rename(group_column)
+            .reset_index()
+        )
+        rfu_counts = (
+            work.groupby(by, dropna=False, sort=True, observed=True)[column]
+            .nunique()
+            .rename(count_column)
+            .reset_index()
+        )
+        metrics = metrics.merge(
+            metadata_totals, on=groups, how="left", sort=False, validate="many_to_one"
+        ).merge(rfu_counts, on=by, how="left", sort=False, validate="one_to_one")
+        metrics[f"{label}_prevalence"] = metrics[count_column] / metrics[group_column].replace(
+            0, np.nan
         )
 
-        row: dict[str, Any] = {
-            **dict(zip(groups, phenotype_values, strict=True)),
-            rfu_col: values_tuple[-1],
-            "weighting": weighting,
-            "assignment_policy": assignment_policy,
-            "rfu_cell_count": cell_count,
-            "rfu_cell_abundance": cell_count / total["cells"] if total["cells"] else 0.0,
-            "unique_cdr3_richness": richness,
-            "sequence_convergence_ratio": (
-                richness / total["sequences"] if total["sequences"] else 0.0
-            ),
-            "multiplicity": observation_count / richness if richness else 0.0,
-            "weighted_abundance": weighted_abundance,
-            "clonotype_entropy": _shannon_entropy(clone_counts),
-            "dominant_clonotype_fraction": (
-                float(clone_counts.max() / clone_counts.sum()) if not clone_counts.empty else 0.0
-            ),
-            "rfu_threshold_pass_rate": pass_rate,
-            "cell_abundance": cell_count,
-            "convergence_richness": richness,
-            "mean_sequence_multiplicity": observation_count / richness if richness else 0.0,
-            "normalized_convergence": (
-                richness / total["sequences"] if total["sequences"] else 0.0
-            ),
-            "dominant_sequence_fraction": (
-                float(clone_counts.max() / clone_counts.sum()) if not clone_counts.empty else 0.0
-            ),
-            "threshold_pass_rate": pass_rate,
-        }
-        for label, column in (("donor", donor_col), ("sample", sample_col)):
-            if column is not None:
-                count = subset[column].dropna().nunique()
-                denominator = total[f"{label}s"]
-                row[f"{label}_count"] = count
-                row[f"{label}_prevalence"] = count / denominator if denominator else float("nan")
-                row[f"group_{label}_count"] = denominator
-        rows.append(row)
-    return pd.DataFrame(rows, columns=output_columns)
+    cell_fraction = metrics["rfu_cell_count"] / metrics["group_cell_count"].replace(0, np.nan)
+    sequence_fraction = metrics["unique_cdr3_richness"] / metrics["group_sequence_count"].replace(
+        0, np.nan
+    )
+    multiplicity = metrics["observation_count"] / metrics["unique_cdr3_richness"].replace(0, np.nan)
+    metrics["weighting"] = weighting
+    metrics["assignment_policy"] = assignment_policy
+    metrics["rfu_cell_abundance"] = cell_fraction.fillna(0.0)
+    metrics["sequence_convergence_ratio"] = sequence_fraction.fillna(0.0)
+    metrics["multiplicity"] = multiplicity.fillna(0.0)
+    metrics["weighted_abundance"] = (
+        metrics["rfu_cell_abundance"]
+        if weighting == "cell"
+        else metrics["sequence_convergence_ratio"]
+    )
+    metrics["cell_abundance"] = metrics["rfu_cell_count"]
+    metrics["convergence_richness"] = metrics["unique_cdr3_richness"]
+    metrics["mean_sequence_multiplicity"] = metrics["multiplicity"]
+    metrics["normalized_convergence"] = metrics["sequence_convergence_ratio"]
+    metrics["dominant_sequence_fraction"] = metrics["dominant_clonotype_fraction"]
+    metrics["threshold_pass_rate"] = metrics["rfu_threshold_pass_rate"]
+    return metrics.loc[:, output_columns]

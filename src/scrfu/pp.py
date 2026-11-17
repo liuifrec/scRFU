@@ -56,6 +56,7 @@ _MISSING_TEXT = frozenset({"", "nan", "none", "na", "<na>"})
 
 
 def normalize_chain(value: Any) -> Any:
+    """Normalize a receptor-chain value while preserving missing values."""
     if pd.isna(value):
         return pd.NA
     normalized = str(value).strip().upper().replace("-", "").replace("_", "")
@@ -65,6 +66,7 @@ def normalize_chain(value: Any) -> Any:
 
 
 def normalize_productive(value: Any) -> Any:
+    """Normalize common productive flags to ``True``, ``False``, or missing."""
     if pd.isna(value):
         return pd.NA
     if isinstance(value, bool):
@@ -208,6 +210,7 @@ def validate_receptor_table(table: pd.DataFrame, strict: bool = True) -> dict[st
 
 
 def receptor_schema() -> Mapping[str, Any]:
+    """Return the canonical receptor schema and required/optional fields."""
     return {
         "version": RECEPTOR_SCHEMA_VERSION,
         "required_columns": list(REQUIRED_RECEPTOR_COLUMNS),

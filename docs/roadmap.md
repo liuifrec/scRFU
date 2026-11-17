@@ -2,7 +2,7 @@
 
 scRFU is being developed as a transferable frozen-reference receptor-state
 framework, not solely as an RFU wrapper. The three-month execution criteria are
-in [`three_month_plan.md`](three_month_plan.md).
+in the historical `three_month_plan.md` from the development workstream (not included in this software distribution).
 
 ## Month 1: method and API freeze — current
 

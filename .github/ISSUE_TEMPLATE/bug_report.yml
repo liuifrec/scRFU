@@ -1,0 +1,27 @@
+name: Bug report
+description: Report a reproducible scRFU software defect
+title: "[Bug]: "
+labels: [bug]
+body:
+  - type: textarea
+    id: summary
+    attributes: {label: Summary, description: Describe observed and expected behavior.}
+    validations: {required: true}
+  - type: textarea
+    id: reproduce
+    attributes: {label: Minimal reproduction, description: Use synthetic or public-shareable input only.}
+    validations: {required: true}
+  - type: input
+    id: version
+    attributes: {label: scRFU version and Python version}
+    validations: {required: true}
+  - type: textarea
+    id: provenance
+    attributes: {label: Adapter/backend/provenance, description: Remove local paths, credentials, and private identifiers.}
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: Data safety
+      options:
+        - label: This issue contains no private participant data, credentials, or licensed backend assets.
+          required: true

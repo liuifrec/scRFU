@@ -4,6 +4,26 @@ This document describes the intended stable public API for manuscript reviewers
 and future users. scRFU is currently pre-alpha, but these functions are the
 planned compatibility surface.
 
+## Native Scirpy API (`scrfu.tl.assign_rfu`)
+
+Primary current input is a canonical receptor DataFrame, AnnData containing the
+current Scirpy Awkward `obsm["airr"]`, or MuData with that value in the selected
+AIRR modality. DataFrame execution returns `RFUTableResult`. Native execution
+returns `ScverseRFUResult` when `inplace=False`; `inplace=True` writes the
+chain-aligned result to `obsm[key_added]`, portable provenance to
+`uns["scrfu"]`, and returns `None`.
+
+Every AIRR chain receives exactly one aligned result record. Scientific RFU
+assignment is applied only to productive TRB chains with a non-missing amino
+acid junction and delegates to `call_rfu_table`. Other loci and invalid chains
+remain explicit non-eligible records. The operation does not read `X`, `raw`,
+layers, or `var`.
+
+Cell summaries are opt-in. The default policy is ambiguity-aware. The
+`primary_vdj` policy alone reads Scirpy `chain_indices`; chain-level assignments
+never depend on chain indexing. See `scverse_storage_schema.md` for fields,
+serialization, slicing, concatenation, and version compatibility.
+
 ## Canonical receptor contract
 
 `scrfu.pp.validate_receptor_table()` validates schema-versioned canonical

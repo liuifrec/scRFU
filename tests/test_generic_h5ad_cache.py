@@ -93,7 +93,9 @@ def test_selective_reader_missing_and_unsupported_dataframe(tmp_path: Path) -> N
 def test_obsm_index_mismatch_fails_explicitly(tmp_path: Path) -> None:
     path = _h5ad(tmp_path / "input.h5ad")
     with h5py.File(path, "r+") as handle:
-        handle["obsm/airr/_index"][0] = "different"
+        index = handle["obsm/airr/_index"]
+        values = index if isinstance(index, h5py.Dataset) else index["values"]
+        values[0] = "different"
     with pytest.raises(UnsupportedH5ADLayout, match="does not exactly match"):
         read_h5ad_dataframe(path, location="obsm", key="airr")
 

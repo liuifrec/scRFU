@@ -10,12 +10,6 @@ from typing import Any
 import pandas as pd
 
 
-def _add_repo_src_to_path() -> None:
-    source = Path(__file__).resolve().parents[1] / "src"
-    if source.exists() and str(source) not in sys.path:
-        sys.path.insert(0, str(source))
-
-
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Run dataset-independent RFU calling from a receptor cache, table, or H5AD."
@@ -105,7 +99,6 @@ def _offline_results(
 
 
 def run(args: argparse.Namespace) -> int:
-    _add_repo_src_to_path()
     from scrfu.adapters import prepare_receptors
     from scrfu.io import read_h5ad_dataframe, read_h5ad_obs, read_receptor_cache
     from scrfu.pp import canonicalize_receptor_table, validate_receptor_table
@@ -163,7 +156,7 @@ def run(args: argparse.Namespace) -> int:
         per_sequence, per_row, mapping = _offline_results(receptors, args.chain)
         provenance: dict[str, Any] = {"backend": "skipped", "chain": args.chain}
     else:
-        wrapper = Path(__file__).resolve().parents[1] / "r" / "run_rfu_repo.R"
+        wrapper = None
         result = call_rfu_table(
             receptors,
             rfu_dir=args.rfu_dir,

@@ -19,6 +19,10 @@ pip-wheel-metadata/
 .DS_Store
 
 # Outputs
+# Local biological inputs and outputs remain external; only the schema is tracked.
+/data/*
+!/data/schema.md
+/results/
 *.h5ad
 *.h5mu
 *.loom
@@ -26,9 +30,14 @@ pip-wheel-metadata/
 *.tsv
 *.tsv.gz
 *.log
+!benchmarks/synthetic_python_baseline.tsv
+!src/scrfu/data/tutorial_bcr.tsv
+!src/scrfu/data/tutorial_receptors.tsv
+!src/scrfu/data/tutorial_vdjdb.tsv
 
 # Ruff/Mypy
 .mypy_cache/
 .ruff_cache/
 # scRFU scratch
 .scrfu/
+docs/_build/

@@ -39,7 +39,7 @@ def call_rfu_table(
     resume: bool = True,
     force_recompute: bool = False,
     workdir: PathLike | None = None,
-    wrapper_r_path: PathLike = "r/run_rfu_repo.R",
+    wrapper_r_path: PathLike | None = None,
     rscript_bin: str = "Rscript",
     extra_r_args: Sequence[str] | None = None,
 ) -> RFUTableResult:
@@ -126,6 +126,8 @@ def call_rfu_table(
             columns=[
                 "unique_sequence_id",
                 "cdr3aa",
+                "chain",
+                "v_call",
                 "query_v_call",
                 "multiplicity",
                 "rfu_id",
@@ -143,9 +145,16 @@ def call_rfu_table(
     else:
         summary = eligible.groupby("unique_sequence_id", sort=False, as_index=False).agg(
             cdr3aa=("cdr3aa", "first"),
-            query_v_call=("v_call", "first"),
+            v_call=(
+                "v_call",
+                lambda values: (
+                    values.dropna().iloc[0] if values.dropna().astype(str).nunique() == 1 else pd.NA
+                ),
+            ),
             multiplicity=("input_row_id", "size"),
         )
+        summary.insert(2, "chain", selected_chain)
+        summary["query_v_call"] = summary["v_call"]
         assignments = eligible.drop_duplicates("unique_sequence_id", keep="first").loc[
             :,
             [
@@ -191,7 +200,7 @@ def call_rfu_repo(
     chain: str = "TRB",
     airr_key: str = "airr",
     prefer_productive: bool = True,
-    wrapper_r_path: PathLike = "r/run_rfu_repo.R",
+    wrapper_r_path: PathLike | None = None,
     rscript_bin: str = "Rscript",
     extra_r_args: Sequence[str] | None = None,
     workdir: PathLike | None = None,

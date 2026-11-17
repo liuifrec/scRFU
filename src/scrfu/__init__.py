@@ -1,4 +1,4 @@
-from . import adapters, io, pl, pp, tl, wells
+from . import adapters, bcr, io, pl, pp, tl, wells
 from ._version import __version__
 
-__all__ = ["__version__", "adapters", "io", "pl", "pp", "tl", "wells"]
+__all__ = ["__version__", "adapters", "bcr", "io", "pl", "pp", "tl", "wells"]

@@ -169,7 +169,9 @@ def test_unique_cdr3_scientific_equivalence_and_multiplicity_reconstruction(
 
 
 @pytest.mark.skipif(not _READY, reason=_REASON)
-def test_official_standard_chunked_matches_unchunked(tmp_path: Path) -> None:
+@pytest.mark.parametrize("executor", ["thread", "process"])
+def test_official_standard_chunked_matches_unchunked(tmp_path: Path, monkeypatch, executor) -> None:
+    monkeypatch.chdir(tmp_path)
     features = pd.DataFrame(
         {
             "cell_id": ["c1", "c2", "c3", "c4", "c5"],
@@ -186,11 +188,12 @@ def test_official_standard_chunked_matches_unchunked(tmp_path: Path) -> None:
     backend = RFURepoBackend(
         rfu_dir=Path(os.environ["RFU_DIR"]),
         mode="standard",
-        wrapper_r_path=WRAPPER,
     )
 
     unchunked = backend.run(features, workdir=tmp_path / "unchunked")
-    chunked = backend.run(features, chunk_size=2, workdir=tmp_path / "chunked")
+    chunked = backend.run(
+        features, chunk_size=2, max_workers=2, executor=executor, workdir=tmp_path / "chunked"
+    )
 
     columns = [
         "input_row_id",

@@ -1,5 +1,18 @@
 # Examples
 
+## End-to-end public tutorial
+
+`tutorial_end_to_end.py` uses the small synthetic fixtures shipped with scRFU
+and requires neither R nor external data in its default mock-backend mode:
+
+```bash
+python examples/tutorial_end_to_end.py --outdir /tmp/scrfu-tutorial
+```
+
+Use `--backend rfu_repo --rfu-dir /path/to/external/RFU` to replace the clearly
+labelled mock assignments with a real official RFU execution. See
+[`docs/tutorial.md`](../docs/tutorial.md) for the output contract and caveats.
+
 ## Dataset-independent receptor workflow
 
 `receptor_table_workflow.py` accepts a canonical receptor cache, canonical TSV,
@@ -50,7 +63,7 @@ directory.
 
 ## Benchmark h5ad workflow
 
-`benchmark_scirpy_dataset.py` runs manuscript-oriented summaries, matrices,
+`benchmark_scirpy_dataset.py` runs repertoire summaries, matrices,
 plots, and a run manifest from a user-provided AnnData/scirpy h5ad file.
 
 ```bash
@@ -149,3 +162,18 @@ RFU_DIR=/path/to/RFU python examples/wells_atlas_workflow.py \
   --chunk-size 20000 \
   --primary-chain
 ```
+
+## Local regulatory evidence
+
+`rfuwas_regulatory_prepare.py --input DATA1 --format xlsx|tsv|csv --release RELEASE
+--outdir RESULTS` prepares published RfuWAS Supplementary Data 1 as GRCh38 RFU-QTL
+evidence, leaving effect alleles unresolved. XLSX requires optional `openpyxl`;
+TSV/CSV exports use pandas only. See the
+[preparation instructions](../docs/regulatory_triangulation.md#preparing-the-published-rfuwas-rfu-qtl-input).
+
+`matos_regulatory_triangulation.py --manifest MANIFEST.json --outdir RESULTS`
+integrates user-supplied RFU-QTL and molecular-QTL/GWAS files. It performs no
+downloads. The [worked example](../docs/regulatory_triangulation.md#adapting-matos-molecular-qtl-files)
+defines canonical/tensorQTL/SuSiE columns, explicit allele-order choices, releases,
+builds, checksums, and output tables. Association and credible-set overlaps are
+descriptive, not formal colocalization or causal inference.
