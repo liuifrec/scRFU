@@ -2,7 +2,8 @@
 
 **0.4.1rc1 is unreleased.** This branch integrates the complete reviewed software
 implementation onto public main, without importing unpublished manuscript history.
-Use the installation instructions in the {download}`source README <../README.md>`. No package-registry
+The {download}`source README <../README.md>` pins installation to the already
+public repaired software commit `4bb6bc18cf7c762c2e15255aaebe5af7bc16df05`. No package-registry
 release, software DOI or hosted documentation service is claimed.
 
 Start with the [synthetic quickstart](tutorial.md), [first real RFU run](first_real_rfu.md),

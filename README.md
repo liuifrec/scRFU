@@ -8,30 +8,28 @@ summaries support repeated-measures comparisons without imputing missing visits.
 User-supplied RFU-QTL, eQTL, caQTL and GWAS tables provide descriptive evidence
 integration; shared variants do not establish colocalization or causality.
 
-The current **0.4.1rc1 software integration candidate is unreleased**.
-Install the reviewed source checkout as below. An immutable public installation
-pin is added only after the repaired software commit is publicly reachable.
+The current **0.4.1rc1 software candidate is unreleased**. With Git installed,
+use the immutable [repaired source commit](https://github.com/liuifrec/scRFU/commit/4bb6bc18cf7c762c2e15255aaebe5af7bc16df05):
 
 ```bash
 python -m venv /tmp/scrfu-env
 source /tmp/scrfu-env/bin/activate
-python -m pip install /absolute/path/to/reviewed/scRFU
+python -m pip install "git+https://github.com/liuifrec/scRFU.git@4bb6bc18cf7c762c2e15255aaebe5af7bc16df05"
 scrfu --version
 scrfu doctor
 python -m scrfu.tutorial --outdir /tmp/scrfu-synthetic
 ```
 
-On Windows use `py -m venv .venv` and `.venv\Scripts\Activate.ps1`, with local
-Windows paths. The tutorial works outside the checkout and requires no R or
+On Windows use `py -m venv .venv` and `.venv\Scripts\Activate.ps1`, with Windows output paths. The tutorial works outside the checkout and requires no R or
 real data. Its 12 receptor rows and RFU labels are **synthetic mock assignments**;
 `run_manifest.json` records this explicitly. See the [executable quickstart](docs/tutorial.md)
 for expected outputs and [first real RFU run](docs/first_real_rfu.md) for R setup.
 
 The core package requires Python 3.10+ and pandas 2 or 3; see the
 [tested dependency matrix and candidate status](docs/current_status.md).
-Matplotlib, Scirpy/Scanpy and MuData remain optional. Install from the same local
-checkout with `python -m pip install '/absolute/path/to/reviewed/scRFU[all]'`
-when those integrations are needed.
+Matplotlib, Scirpy/Scanpy and MuData remain optional. Install them from the same
+source with `python -m pip install "scrfu[all] @ git+https://github.com/liuifrec/scRFU.git@4bb6bc18cf7c762c2e15255aaebe5af7bc16df05"`
+when needed. For a local checkout, `python -m pip install /path/to/scRFU` also works.
 
 RFU assignment uses a separately supplied [upstream RFU checkout](https://github.com/s175573/RFU).
 The scRFU wrapper is packaged; upstream `RFU.R` and its model files remain

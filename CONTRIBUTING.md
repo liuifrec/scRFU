@@ -8,8 +8,8 @@ assets, VDJdb, or large public datasets.
 Development requires Python 3.10 or newer:
 
 ```bash
-python -m pip install -e ".[dev,docs,all]"
-python tools/run_installed_tests.py
+python -m pip install ".[dev,docs,all]" openpyxl pyarrow
+python tools/run_installed_tests.py --python-only
 ruff check src tests examples tools docs/conf.py
 ruff format --check src tests examples tools docs/conf.py
 sphinx-build -W --keep-going -b html docs docs/_build/html
