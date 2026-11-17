@@ -1,0 +1,2 @@
+# Preserve empty trailing TSV fields and the historical synthetic baseline hash.
+benchmarks/synthetic_python_baseline.tsv whitespace=-blank-at-eol

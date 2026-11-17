@@ -53,6 +53,8 @@ def test_wells_workflow_help_runs_from_unrelated_directory(tmp_path: Path) -> No
 
     assert result.returncode == 0, f"stdout:\n{result.stdout}\nstderr:\n{result.stderr}"
     assert "--chunk-size" in result.stdout
+    assert "--max-workers" in result.stdout
+    assert "--executor" in result.stdout
     assert "--all-productive-chains" in result.stdout
     assert "--force-recompute" in result.stdout
 
@@ -131,6 +133,10 @@ def test_wells_workflow_synthetic_smoke(tmp_path: Path, monkeypatch: pytest.Monk
             str(outdir),
             "--chunk-size",
             "2",
+            "--max-workers",
+            "2",
+            "--executor",
+            "thread",
             "--primary-chain",
             "--write-annotated",
         ]
@@ -150,6 +156,8 @@ def test_wells_workflow_synthetic_smoke(tmp_path: Path, monkeypatch: pytest.Monk
     manifest = json.loads((outdir / "run_manifest.json").read_text())
     assert manifest["backend_mode"] == "standard"
     assert manifest["run_id"] == "synthetic-run"
+    assert manifest["max_workers"] == 2
+    assert manifest["executor"] == "thread"
     per_cell = pd.read_csv(outdir / "rfu_results_per_cell.tsv.gz", sep="\t")
     assert per_cell["cell_id"].tolist() == ["c1", "c2", "c3"]
     sequence_map = pd.read_csv(outdir / "unique_sequence_map.tsv.gz", sep="\t")

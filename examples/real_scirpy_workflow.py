@@ -8,13 +8,6 @@ from pathlib import Path
 from typing import Any
 
 
-def _add_repo_src_to_path() -> None:
-    repo_root = Path(__file__).resolve().parents[1]
-    src_dir = repo_root / "src"
-    if src_dir.exists() and str(src_dir) not in sys.path:
-        sys.path.insert(0, str(src_dir))
-
-
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description=(
@@ -70,8 +63,6 @@ def _prepare_runtime(outdir: Path) -> tuple[Any, Any, Any]:
     mpl_config_dir = outdir / ".mplconfig"
     mpl_config_dir.mkdir(parents=True, exist_ok=True)
     os.environ.setdefault("MPLCONFIGDIR", str(mpl_config_dir))
-
-    _add_repo_src_to_path()
 
     import anndata as ad
     import matplotlib

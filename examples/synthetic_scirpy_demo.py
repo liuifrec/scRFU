@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import os
-import sys
 from importlib import import_module
 from pathlib import Path
 
@@ -9,9 +8,6 @@ import anndata as ad
 import pandas as pd
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-SRC_DIR = REPO_ROOT / "src"
-if str(SRC_DIR) not in sys.path:
-    sys.path.insert(0, str(SRC_DIR))
 
 DEFAULT_OUTDIR = REPO_ROOT / ".scrfu" / "demo"
 DEMO_OUTDIR = Path(os.environ.get("SCRFU_DEMO_OUTDIR", DEFAULT_OUTDIR)).expanduser().resolve()

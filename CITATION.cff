@@ -1,0 +1,32 @@
+cff-version: 1.2.0
+message: "If you use scRFU, please cite the software and the upstream RFU method."
+title: "scRFU: transferable frozen-reference receptor-state analysis"
+type: software
+authors:
+  - family-names: Liu
+    given-names: Yu-Chen
+    email: liu_y@rerf.or.jp
+version: 0.4.1rc1
+repository-code: "https://github.com/liuifrec/scRFU"
+license: MIT
+references:
+  - type: article
+    title: "Quantifiable blood TCR repertoire components associate with immune aging"
+    authors:
+      - family-names: Hu
+        given-names: Jing
+      - family-names: Pan
+        given-names: Mingyao
+      - family-names: Reid
+        given-names: Brett
+      - family-names: Tworoger
+        given-names: Shelley
+      - family-names: Li
+        given-names: Bo
+    journal: Nature Communications
+    volume: 15
+    number: 1
+    start: 8171
+    year: 2024
+    doi: "10.1038/s41467-024-52522-z"
+    url: "https://www.nature.com/articles/s41467-024-52522-z"

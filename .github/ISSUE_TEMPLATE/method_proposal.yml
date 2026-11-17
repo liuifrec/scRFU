@@ -1,0 +1,21 @@
+name: Method proposal
+description: Propose a scientifically defined analysis method
+title: "[Method]: "
+labels: [method]
+body:
+  - type: textarea
+    id: estimand
+    attributes: {label: Scientific quantity and unit of analysis}
+    validations: {required: true}
+  - type: textarea
+    id: definition
+    attributes: {label: Mathematical definition, assumptions, and edge cases}
+    validations: {required: true}
+  - type: textarea
+    id: validation
+    attributes: {label: Hand-calculable tests, nulls, comparators, and real-data validation}
+    validations: {required: true}
+  - type: textarea
+    id: claims
+    attributes: {label: Permitted claims and explicit non-claims}
+    validations: {required: true}

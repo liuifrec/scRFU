@@ -134,7 +134,7 @@ def _representative_airr(airr_full: pd.DataFrame, obs_index: pd.Index) -> pd.Dat
     aligned = pd.DataFrame(index=obs_index)
     aligned["cell_id"] = obs_index.astype(str)
     reindexed = representative.reindex(obs_index.astype(str))
-    for col in ["chain", "cdr3aa", "v_call"]:
+    for col in ["chain", "cdr3aa", "v_call", "j_call", "junction", "clonotype_id"]:
         if col in reindexed.columns:
             aligned[col] = reindexed[col].fillna("").astype(str).to_numpy()
     if "productive" in reindexed.columns:
@@ -154,27 +154,38 @@ def prepare(args: argparse.Namespace) -> int:
             explicit=args.cell_col,
             source="TCR",
         )
-        chain_col = _pick_column(
-            tcr,
-            role="chain",
-            aliases=CHAIN_ALIASES,
-            explicit=args.chain_col,
-            source="TCR",
+        wide_gse190905 = (
+            args.chain_col is None
+            and args.cdr3_col is None
+            and args.v_col is None
+            and {"TRB_1_cdr3", "TRB_1_v_gene"}.issubset(tcr.columns)
         )
-        cdr3_col = _pick_column(
-            tcr,
-            role="cdr3",
-            aliases=CDR3_ALIASES,
-            explicit=args.cdr3_col,
-            source="TCR",
-        )
-        v_col = _pick_column(
-            tcr,
-            role="v",
-            aliases=V_ALIASES,
-            explicit=args.v_col,
-            source="TCR",
-        )
+        if wide_gse190905:
+            chain_col = None
+            cdr3_col = "TRB_1_cdr3"
+            v_col = "TRB_1_v_gene"
+        else:
+            chain_col = _pick_column(
+                tcr,
+                role="chain",
+                aliases=CHAIN_ALIASES,
+                explicit=args.chain_col,
+                source="TCR",
+            )
+            cdr3_col = _pick_column(
+                tcr,
+                role="cdr3",
+                aliases=CDR3_ALIASES,
+                explicit=args.cdr3_col,
+                source="TCR",
+            )
+            v_col = _pick_column(
+                tcr,
+                role="v",
+                aliases=V_ALIASES,
+                explicit=args.v_col,
+                source="TCR",
+            )
         productive_col = _pick_optional_column(
             tcr,
             role="productive",
@@ -199,13 +210,25 @@ def prepare(args: argparse.Namespace) -> int:
         airr_full = pd.DataFrame(
             {
                 "cell_id": tcr[tcr_cell_col].astype(str),
-                "chain": tcr[chain_col].astype(str),
+                "chain": "TRB" if wide_gse190905 else tcr[chain_col].astype(str),
                 "cdr3aa": tcr[cdr3_col].astype(str),
                 "v_call": tcr[v_col].astype(str),
             }
         )
         if productive_col is not None:
             airr_full["productive"] = tcr[productive_col]
+        if wide_gse190905:
+            optional_wide_columns = {
+                "TRB_1_j_gene": "j_call",
+                "TRB_1_cdr3_nt": "junction",
+                "clonotype": "clonotype_id",
+            }
+            for source_column, canonical_column in optional_wide_columns.items():
+                if source_column in tcr:
+                    values = tcr[source_column]
+                    airr_full[canonical_column] = (
+                        values.astype("string") if canonical_column == "clonotype_id" else values
+                    )
 
         tcr_cells = set(airr_full["cell_id"].dropna().astype(str))
         metadata_cells = set(meta.index.astype(str))
@@ -239,6 +262,7 @@ def prepare(args: argparse.Namespace) -> int:
             "v_col": v_col,
             "productive_col": productive_col,
             "metadata_cell_col": metadata_cell_col,
+            "source_layout": "gse190905_wide_primary_trb" if wide_gse190905 else "long",
         }
         report = {
             "n_metadata_rows": int(len(metadata)),

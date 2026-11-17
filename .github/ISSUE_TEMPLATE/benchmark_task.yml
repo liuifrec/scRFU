@@ -1,0 +1,20 @@
+name: Benchmark task
+description: Specify a reproducible fidelity, robustness, or performance benchmark
+title: "[Benchmark]: "
+labels: [benchmark]
+body:
+  - type: textarea
+    id: question
+    attributes: {label: Benchmark question and acceptance threshold}
+    validations: {required: true}
+  - type: textarea
+    id: inputs
+    attributes: {label: Input role, hashes, licensing, and bounded size}
+    validations: {required: true}
+  - type: textarea
+    id: metrics
+    attributes: {label: Metrics, unit of analysis, and undefined-value policy}
+    validations: {required: true}
+  - type: textarea
+    id: provenance
+    attributes: {label: Required runtime and provenance fields}

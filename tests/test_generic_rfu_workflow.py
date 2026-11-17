@@ -96,6 +96,8 @@ def test_call_rfu_table_preserves_canonical_provenance_and_reconstructs(
     ]
     assert result.per_row["source_row_id"].tolist() == ["a", "b", "c"]
     assert result.per_sequence["multiplicity"].tolist() == [2]
+    assert pd.isna(result.per_sequence.loc[0, "v_call"])
+    assert pd.isna(result.per_sequence.loc[0, "query_v_call"])
     assert result.mapping["unique_sequence_id"].tolist()[:2] == [
         "sequence_00000000",
         "sequence_00000000",

@@ -1,0 +1,99 @@
+{
+  "schema_version": 1,
+  "scope": "software only",
+  "included": [
+    "complete src/scrfu runtime API",
+    "scRFU-owned R wrappers",
+    "synthetic packaged fixtures and performance baseline",
+    "generic examples/adapters and software tests",
+    "distribution gates, CI, metadata, licensing, user/API documentation"
+  ],
+  "excluded": [
+    "manuscript directories and scientific revisions",
+    "study notebooks and their inputs/outputs",
+    "study-specific orchestration and validation listed below",
+    "biological inputs and derived result tables",
+    "upstream RFU implementation/model assets",
+    "local review bundles and deployment configuration"
+  ],
+  "excluded_test_cases": [
+    {
+      "path": "tests/test_cross_application_reusable_figures.py",
+      "source_test_cases": 8,
+      "dependency": "manuscript scripts/configuration or study-specific evidence/prediction/figure orchestration; no public runtime API removed"
+    },
+    {
+      "path": "tests/test_evidence_index.py",
+      "source_test_cases": 1,
+      "dependency": "manuscript scripts/configuration or study-specific evidence/prediction/figure orchestration; no public runtime API removed"
+    },
+    {
+      "path": "tests/test_gse280982_analysis.py",
+      "source_test_cases": 7,
+      "dependency": "manuscript scripts/configuration or study-specific evidence/prediction/figure orchestration; no public runtime API removed"
+    },
+    {
+      "path": "tests/test_gse280982_prepare.py",
+      "source_test_cases": 4,
+      "dependency": "manuscript scripts/configuration or study-specific evidence/prediction/figure orchestration; no public runtime API removed"
+    },
+    {
+      "path": "tests/test_radiation_methods.py",
+      "source_test_cases": 7,
+      "dependency": "manuscript scripts/configuration or study-specific evidence/prediction/figure orchestration; no public runtime API removed"
+    },
+    {
+      "path": "tests/test_regulatory_locus_background.py",
+      "source_test_cases": 1,
+      "dependency": "manuscript scripts/configuration or study-specific evidence/prediction/figure orchestration; no public runtime API removed"
+    },
+    {
+      "path": "tests/test_regulatory_manuscript_audit.py",
+      "source_test_cases": 4,
+      "dependency": "manuscript scripts/configuration or study-specific evidence/prediction/figure orchestration; no public runtime API removed"
+    },
+    {
+      "path": "tests/test_regulatory_realdata_pilot.py",
+      "source_test_cases": 3,
+      "dependency": "manuscript scripts/configuration or study-specific evidence/prediction/figure orchestration; no public runtime API removed"
+    },
+    {
+      "path": "tests/test_regulatory_rfu_state_validation.py",
+      "source_test_cases": 5,
+      "dependency": "manuscript scripts/configuration or study-specific evidence/prediction/figure orchestration; no public runtime API removed"
+    },
+    {
+      "path": "tests/test_rp1_14.py",
+      "source_test_cases": 19,
+      "dependency": "manuscript scripts/configuration or study-specific evidence/prediction/figure orchestration; no public runtime API removed"
+    },
+    {
+      "path": "tests/test_rp1_14_repair_qc.py",
+      "source_test_cases": 3,
+      "dependency": "manuscript scripts/configuration or study-specific evidence/prediction/figure orchestration; no public runtime API removed"
+    },
+    {
+      "path": "tests/test_rp1_14_reusable_figures.py",
+      "source_test_cases": 6,
+      "dependency": "manuscript scripts/configuration or study-specific evidence/prediction/figure orchestration; no public runtime API removed"
+    },
+    {
+      "path": "tests/test_singlecell_context_figures.py",
+      "source_test_cases": 5,
+      "dependency": "manuscript scripts/configuration or study-specific evidence/prediction/figure orchestration; no public runtime API removed"
+    },
+    {
+      "path": "tests/test_package_metadata.py::test_submission_gate_is_machine_readable_and_evidence_exists",
+      "source_test_cases": 1,
+      "dependency": "Scientific submission_gate.json and its evidence references; replaced with a software sdist-scope check"
+    }
+  ],
+  "source_suite_cases": 590,
+  "retained_source_cases": 516,
+  "new_cases": [
+    {
+      "path": "tests/test_package_metadata.py::test_sdist_scope_excludes_scientific_and_local_evidence",
+      "purpose": "Require software assets and exclude scientific/local paths from the sdist allowlist"
+    }
+  ]
+}

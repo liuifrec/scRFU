@@ -1,6 +1,8 @@
+import json
+
 import pytest
 
-from scrfu.cli import build_parser, main
+from scrfu.cli import build_parser, entrypoint, main
 
 
 def test_cli_parser():
@@ -48,6 +50,17 @@ def test_cli_parser_requires_subcommand():
         parser.parse_args([])
 
 
+@pytest.mark.parametrize(
+    "subcommand",
+    ["call-rfu", "prepare-wells", "prepare-receptors", "migrate-receptor-cache", "doctor"],
+)
+def test_every_cli_subcommand_has_help(subcommand: str, capsys) -> None:
+    with pytest.raises(SystemExit) as error:
+        main([subcommand, "--help"])
+    assert error.value.code == 0
+    assert "usage:" in capsys.readouterr().out
+
+
 def test_cli_parser_allows_rfu_dir_environment_fallback():
     parser = build_parser()
 
@@ -57,6 +70,43 @@ def test_cli_parser_allows_rfu_dir_environment_fallback():
     assert ns.mode == "standard"
     assert ns.threshold == 0.6
     assert ns.deduplicate is True
+
+
+def test_cli_version(capsys) -> None:
+    with pytest.raises(SystemExit) as error:
+        main(["--version"])
+    assert error.value.code == 0
+    assert capsys.readouterr().out == "scrfu 0.4.1rc1\n"
+
+
+def test_cli_doctor_redacts_paths(monkeypatch, tmp_path, capsys) -> None:
+    monkeypatch.setenv("RFU_DIR", str(tmp_path / "private" / "RFU"))
+    main(["doctor", "--output-dir", str(tmp_path / "output")])
+    report = json.loads(capsys.readouterr().out)
+    assert report["rfu_dir"] == "…/RFU"
+    assert str(tmp_path) not in json.dumps(report)
+    assert report["rfu_capability_mode"] == "invalid"
+
+
+def test_cli_doctor_verbose_shows_explicit_path(monkeypatch, tmp_path, capsys) -> None:
+    monkeypatch.setenv("RFU_DIR", str(tmp_path / "RFU"))
+    main(["doctor", "--verbose"])
+    report = json.loads(capsys.readouterr().out)
+    assert report["rfu_dir"] == str((tmp_path / "RFU").resolve())
+
+
+def test_cli_entrypoint_formats_ordinary_user_errors_without_traceback(monkeypatch, capsys) -> None:
+    def fail() -> None:
+        raise ValueError("configuration is invalid")
+
+    monkeypatch.setattr("scrfu.cli.main", fail)
+    with pytest.raises(SystemExit) as error:
+        entrypoint()
+    assert error.value.code == 2
+    captured = capsys.readouterr()
+    assert captured.out == ""
+    assert captured.err == "scrfu: error: configuration is invalid\n"
+    assert "Traceback" not in captured.err
 
 
 def test_cli_main_dispatches_current_call_rfu_signature(monkeypatch):

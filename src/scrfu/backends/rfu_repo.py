@@ -11,8 +11,10 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Literal, cast
 
+import numpy as np
 import pandas as pd
 
+from .._resources import wrapper_details, wrapper_path
 from .._version import __version__
 from ..rfu import RFURunResult, file_sha256
 from .rfu_chunks import (
@@ -280,6 +282,7 @@ class RFURepoBackend:
         mode: str = "standard",
         wrapper_r_path: PathLike | None = None,
         rscript_bin: str = "Rscript",
+        timeout_seconds: float | None = None,
         environ: Mapping[str, str] | None = None,
     ) -> None:
         self.paths = RFURepoPaths.resolve(rfu_dir, environ=environ)
@@ -287,15 +290,19 @@ class RFURepoBackend:
         self.capabilities = RFUCapabilities.from_rfu_r(self.paths.rfu_r)
         self.capabilities.require(self.mode)
 
-        if wrapper_r_path is None:
-            wrapper_r_path = Path("r") / "run_rfu_repo.R"
-        self.wrapper_r_path = Path(wrapper_r_path).expanduser().resolve()
-        if not self.wrapper_r_path.is_file():
-            raise FileNotFoundError(
-                f"Wrapper R script not found:\n  {self.wrapper_r_path}\n"
-                "Expected r/run_rfu_repo.R inside scrfu repo."
-            )
+        # Keep only an explicit override, never an as_file() extraction path.
+        self.wrapper_r_path = (
+            Path(wrapper_r_path).expanduser().resolve() if wrapper_r_path is not None else None
+        )
+        wrapper_details(self.wrapper_r_path)  # fail early for an invalid selection
         self.rscript_bin = rscript_bin
+        if timeout_seconds is not None and (
+            isinstance(timeout_seconds, bool)
+            or not isinstance(timeout_seconds, (int, float))
+            or not float(timeout_seconds) > 0
+        ):
+            raise ValueError("timeout_seconds must be a positive number or None.")
+        self.timeout_seconds = float(timeout_seconds) if timeout_seconds is not None else None
 
     def _run_query_file(
         self,
@@ -309,7 +316,7 @@ class RFURepoBackend:
     ) -> RFURunResult:
         cmd = [
             self.rscript_bin,
-            str(self.wrapper_r_path),
+            "",  # resolved inside the resource lifetime below
             "--in",
             str(input_path),
             "--out",
@@ -323,7 +330,27 @@ class RFURepoBackend:
             "--threshold",
             str(float(threshold)),
         ] + list(extra_args)
-        proc = subprocess.run(cmd, capture_output=True, text=True)
+        try:
+            with wrapper_path(self.wrapper_r_path) as selected_wrapper:
+                cmd[1] = str(selected_wrapper)
+                proc = subprocess.run(
+                    cmd,
+                    capture_output=True,
+                    text=True,
+                    timeout=self.timeout_seconds,
+                )
+        except FileNotFoundError as exc:
+            raise RFUConfigurationError(
+                f"R executable {self.rscript_bin!r} was not found. Install R or pass "
+                "rscript_bin='/path/to/Rscript'. No RFU result was produced."
+            ) from exc
+        except subprocess.TimeoutExpired as exc:
+            raise RFUChunkError(
+                f"RFURepoBackend timed out after {self.timeout_seconds:g} seconds. "
+                f"Failed workdir: {execution_dir}. Completed validated chunks remain reusable.",
+                stdout=str(exc.stdout or ""),
+                stderr=str(exc.stderr or ""),
+            ) from exc
         if proc.returncode != 0:
             raise RFUChunkError(
                 "RFURepoBackend execution failed.\n"
@@ -339,7 +366,19 @@ class RFURepoBackend:
                 stdout=proc.stdout,
                 stderr=proc.stderr,
             )
-        assignments = pd.read_csv(output_path, sep="\t")
+        try:
+            assignments = pd.read_csv(output_path, sep="\t")
+        except (
+            OSError,
+            UnicodeDecodeError,
+            pd.errors.EmptyDataError,
+            pd.errors.ParserError,
+        ) as exc:
+            raise RFUChunkError(
+                f"RFU wrapper output is unreadable or malformed: {output_path}",
+                stdout=proc.stdout,
+                stderr=proc.stderr,
+            ) from exc
         required = {
             "unique_sequence_id",
             "rfu_id",
@@ -363,6 +402,40 @@ class RFURepoBackend:
                 stdout=proc.stdout,
                 stderr=proc.stderr,
             )
+        numeric_score = pd.to_numeric(assignments["rfu_score"], errors="coerce")
+        numeric_id = pd.to_numeric(assignments["rfu_id"], errors="coerce")
+        assigned = assignments["rfu_id"].notna()
+        invalid_id = assigned & (
+            numeric_id.isna()
+            | ~np.isfinite(numeric_id)
+            | numeric_id.le(0)
+            | numeric_id.mod(1).ne(0)
+        )
+        invalid_score = assigned & (numeric_score.isna() | ~np.isfinite(numeric_score))
+        labels = assignments["rfu_label"].astype("string").str.strip()
+        invalid_label = assigned & (labels.isna() | labels.eq(""))
+        pass_text = assignments["pass_thr"].astype("string").str.strip().str.lower()
+        invalid_pass = ~pass_text.isin(["true", "false"])
+        upstream = pd.to_numeric(assignments["upstream_n_miss"], errors="coerce")
+        invalid_upstream = (
+            upstream.isna() | ~np.isfinite(upstream) | upstream.lt(0) | upstream.mod(1).ne(0)
+        )
+        if invalid_id.any() or invalid_score.any() or invalid_label.any() or invalid_pass.any():
+            raise RFUChunkError(
+                "RFU wrapper output contains invalid RFU IDs, labels, scores, or threshold flags.",
+                stdout=proc.stdout,
+                stderr=proc.stderr,
+            )
+        if invalid_upstream.any():
+            raise RFUChunkError(
+                "RFU wrapper output contains an invalid upstream_n_miss value.",
+                stdout=proc.stdout,
+                stderr=proc.stderr,
+            )
+        assignments["rfu_id"] = numeric_id.astype("Int64")
+        assignments["rfu_score"] = numeric_score.astype(float)
+        assignments["pass_thr"] = pass_text.eq("true").astype("boolean")
+        assignments["upstream_n_miss"] = upstream.astype("Int64")
         return RFURunResult(
             df=assignments,
             stdout=proc.stdout,
@@ -405,7 +478,7 @@ class RFURepoBackend:
             "rfu_r_sha256": file_sha256(self.paths.rfu_r),
             "trimer_rdata_sha256": file_sha256(self.paths.trimer_rdata),
             "km5000_rdata_sha256": file_sha256(self.paths.km5000_rdata),
-            "wrapper_r_sha256": file_sha256(self.wrapper_r_path),
+            "wrapper_r_sha256": wrapper_details(self.wrapper_r_path)["sha256"],
         }
         identity = RFURunIdentity(
             mode=self.mode,
@@ -584,8 +657,9 @@ class RFURepoBackend:
             "trimer_rdata_sha256": file_sha256(paths.trimer_rdata),
             "km5000_rdata_sha256": file_sha256(paths.km5000_rdata),
             "detected_capabilities": self.capabilities.as_dict(),
-            "wrapper_r_path": str(self.wrapper_r_path),
-            "wrapper_r_sha256": file_sha256(self.wrapper_r_path),
+            "wrapper_r_path": wrapper_details(self.wrapper_r_path)["path"],
+            "wrapper_source": wrapper_details(self.wrapper_r_path)["source"],
+            "wrapper_r_sha256": wrapper_details(self.wrapper_r_path)["sha256"],
             "timestamp": datetime.now(timezone.utc).isoformat(),
             "rscript_bin": self.rscript_bin,
         }
