@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.4.1 — 2026-11-18
+
+- Finalize the reviewed 0.4.1rc1 software integration for release; the only runtime change is the version identifier. Public APIs, scientific defaults and packaged resources are unchanged.
+- Synchronize software citation, installation route, release notes and support documentation. Keep original RFU/Scirpy attribution and all historical execution-version records.
+- Release wheel/sdist gates use separate clean installations outside the checkout. Python/package checks cover Linux, macOS and Windows; actual upstream R execution is validated on Linux only.
+- Exclude unpublished manuscripts, study notebooks, biological inputs/results, local review bundles and externally supplied upstream RFU code/models. No biological analyses were rerun.
+
 ## 0.4.1rc1 — software integration candidate, unreleased
 
 - Restore an installable package using the complete local 0.4.0 development lineage; retain public APIs and optional dependencies.

@@ -5,7 +5,7 @@ scRFU applies a frozen external RFU reference to interoperable receptor/chain
 representations, longitudinal measurements and traceable cellular/regulatory
 context. Upstream RFU code and model files are obtained separately.
 
-The current software candidate is 0.4.1rc1, unreleased. Study manuscripts and
+The software version is 0.4.1. Study manuscripts and
 notebooks are maintained separately. No hosted service or package-registry
 release is implied by these source documents.
 
@@ -23,7 +23,7 @@ release is implied by these source documents.
    longitudinal
    regulatory_triangulation
    api/index
-   release_notes_0.4.1rc1
+   release_notes_0.4.1
    software_integration_scope
    software_verification
    release_licensing_boundary

@@ -1,5 +1,10 @@
 # Software integration verification
 
+The results below describe the verified 0.4.1rc1 integration at public merge
+`f320ede184f9b9741a28df54a2cc755248b46eb0`; they are historical evidence, not
+a substitute for the final 0.4.1 release gates. The exact release source commit,
+artifact hashes and new results are recorded with the GitHub Release.
+
 Validation is performed on this reconstructed software tree, independently of
 the prior 590-case local manuscript/development candidate. Exact local results
 and remote checks are recorded for the integration PR head. See
