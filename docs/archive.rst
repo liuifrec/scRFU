@@ -40,5 +40,6 @@ supersede the current software guide or constitute manuscript approval.
    v0.2_api_review
    vdjdb_reference
    versioning
+   release_notes_0.4.1rc1
    visualization
    wells_receptor_cache

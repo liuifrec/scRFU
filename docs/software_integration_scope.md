@@ -1,6 +1,6 @@
 # Public software integration scope
 
-This candidate is reconstructed on public main. Its ancestry does not include
+This software was reconstructed on public main. Its ancestry does not include
 unpublished manuscript commits. The complete package implementation is retained;
 no intended public symbol is removed or replaced by a stub. Publication-specific
 genetic-to-single-cell RFU identity is not asserted.
@@ -37,6 +37,6 @@ The existing public historical plans remain at their public-base contents,
 with archival context in the navigation; one broken historical-plan link is
 identified as belonging to the separate workstream. Newer scientific edits are excluded.
 API snapshots labelled 0.4/0.5 record development contracts; the actual package
-version remains 0.4.1rc1. Frozen manuscript/notebook lint findings belong to the
+version is now 0.4.1; 0.4.1rc1 identifies the preceding integration checkpoint. Frozen manuscript/notebook lint findings belong to the
 separate workstream. Both local and CI software lint cover only `src`, `tests`,
 `examples`, `tools` and `docs/conf.py`.

@@ -1,8 +1,8 @@
 # Versioning and release policy
 
-The current software integration candidate is `0.4.1rc1` (unreleased). See
+The software version is `0.4.1`, finalized from the verified `0.4.1rc1` integration. See
 [current status](current_status.md) and the
-[manual release checklist](release_notes_0.4.1rc1.md). Runtime, CITATION.cff,
+[manual release procedure](release_notes_0.4.1.md). Runtime, CITATION.cff,
 wheel and sdist metadata must agree. Historical tags remain unchanged. A source
 version change does not create a tag, package upload, hosted documentation,
 GitHub Release, archive or DOI.
