@@ -41,6 +41,24 @@ def main():
     if args.require_core_only:
         for name in ["matplotlib", "awkward", "scirpy", "scanpy", "mudata", "openpyxl", "pyarrow"]:
             assert importlib.util.find_spec(name) is None, f"Unexpected optional dependency: {name}"
+        simple = pd.DataFrame(
+            {
+                "cell_id": ["invented_cell"],
+                "chain": ["TRB"],
+                "cdr3aa": ["CAAF"],
+                "v_call": ["TRBV1"],
+                "rfu_label": ["mock_A"],
+            }
+        )
+        result = scrfu.tl.prepare_rfu_membership(simple)
+        assert len(result.edges) == 1
+        assert "matplotlib" not in sys.modules
+        try:
+            scrfu.pl.rfu_membership_network(result)
+        except ImportError as exc:
+            assert "plotting" in str(exc)
+        else:
+            raise AssertionError("Plotting must require the optional extra")
     cli = str(Path(sys.prefix) / ("Scripts/scrfu.exe" if os.name == "nt" else "bin/scrfu"))
     commands = [[cli, "--version"], [cli, "--help"]]
     commands += [

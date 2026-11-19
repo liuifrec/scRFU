@@ -8,7 +8,7 @@ summaries support repeated-measures comparisons without imputing missing visits.
 User-supplied RFU-QTL, eQTL, caQTL and GWAS tables provide descriptive evidence
 integration; shared variants do not establish colocalization or causality.
 
-The software version is **0.4.1**. Its version-tag installation route is shown
+The published software version is **0.4.1**; this checkout is **0.5.0.dev0 (unreleased)**. Its version-tag installation route is shown
 below; the tag is published with the verified GitHub Release. During release
 preparation, install the local source with `python -m pip install /path/to/scRFU`.
 With Git installed, the version-tag command is:
@@ -56,3 +56,31 @@ Package-registry publication, a software archive DOI and hosted documentation
 are separate publication steps; no unverified endpoint is claimed here. The MIT license
 covers scRFU-owned code and synthetic fixtures; see the
 [external-resource boundary](docs/release_licensing_boundary.md).
+
+
+### V(D)J visualization (unreleased development)
+
+Install this development checkout with `python -m pip install '.[plotting]'`.
+Plot saved embeddings, literal V/J usage, CDR3 lengths, observed receptor–RFU
+membership and ordered identity presence without running RFU assignment.
+
+```python
+import matplotlib.pyplot as plt
+import scrfu
+
+# receptor_table contains your saved, explicitly selected receptor rows.
+data = scrfu.tl.prepare_receptor_plot_data(receptor_table, unit="cell")
+fig, axes = plt.subplots(1, 2, layout="constrained")
+scrfu.pl.rfu_vj_usage(data, groupby="rfu_label", ax=axes[0])
+scrfu.pl.rfu_membership_network(data, max_per_rfu=10, ax=axes[1])
+```
+
+All plots return Axes without automatic save/show. Exact AA+V identities,
+nucleotide-resolved identities, independently called clonotypes and RFU
+membership remain distinct. Missing values, multiple chains, count units and
+complete denominators have explicit policies in the
+[visualization guide](docs/visualization.md). Run the fully synthetic gallery:
+
+```bash
+python examples/vdj_plotting.py --outdir /tmp/scrfu-synthetic-gallery
+```

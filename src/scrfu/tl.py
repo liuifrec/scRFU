@@ -100,6 +100,20 @@ from .vdjdb import (
     summarize_vdjdb_evidence,
     validate_vdjdb_reference,
 )
+from .visualization import (
+    EmbeddingPlotData,
+    LongitudinalPresenceResult,
+    MembershipResult,
+    ReceptorPlotData,
+    SpectratypeResult,
+    VJUsageResult,
+    prepare_receptor_plot_data,
+    prepare_rfu_cdr3_spectratype,
+    prepare_rfu_embedding,
+    prepare_rfu_longitudinal_presence,
+    prepare_rfu_membership,
+    prepare_rfu_vj_usage,
+)
 
 PathLike = str | Path
 
@@ -280,6 +294,18 @@ def call_rfu(
 
 
 __all__ = [
+    "EmbeddingPlotData",
+    "LongitudinalPresenceResult",
+    "MembershipResult",
+    "ReceptorPlotData",
+    "SpectratypeResult",
+    "VJUsageResult",
+    "prepare_receptor_plot_data",
+    "prepare_rfu_embedding",
+    "prepare_rfu_vj_usage",
+    "prepare_rfu_cdr3_spectratype",
+    "prepare_rfu_membership",
+    "prepare_rfu_longitudinal_presence",
     "MultiscaleChangeResult",
     "multiscale_repertoire_change",
     "permute_fixed_groups",

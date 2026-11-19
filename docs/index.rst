@@ -5,7 +5,7 @@ scRFU applies a frozen external RFU reference to interoperable receptor/chain
 representations, longitudinal measurements and traceable cellular/regulatory
 context. Upstream RFU code and model files are obtained separately.
 
-The software version is 0.4.1. Study manuscripts and
+This checkout is unreleased 0.5.0.dev0 development; the published version is 0.4.1. Study manuscripts and
 notebooks are maintained separately. No hosted service or package-registry
 release is implied by these source documents.
 
@@ -18,6 +18,8 @@ release is implied by these source documents.
    first_real_rfu
    configuration
    scverse_tutorial
+   visualization
+   vdj_api_review
    scirpy_interoperability_scope
    scverse_storage_schema
    longitudinal

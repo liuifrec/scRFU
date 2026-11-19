@@ -37,3 +37,9 @@ Plotting is optional and importing core scRFU does not import Matplotlib.
 
 .. automodule:: scrfu.pl
    :members:
+   :imported-members:
+
+The unreleased V(D)J additions use typed preparation results exported by
+``scrfu.tl``. See :doc:`../visualization` for identity definitions, units,
+missing-data behavior and examples. Preparation and drawing never execute RFU
+assignment, clonotype calling, embedding fitting or sequence-distance inference.

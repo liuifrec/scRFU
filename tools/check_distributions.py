@@ -59,6 +59,34 @@ def main():
                 check=True,
             )
             subprocess.run([str(python), "-m", "pip", "check"], check=True, env=env)
+            # Upgrade only the optional plotting extra after proving core isolation.
+            subprocess.run(
+                [str(python), "-m", "pip", "install", f"scrfu[plotting] @ {artifact.as_uri()}"],
+                check=True,
+                env=env,
+            )
+            shutil.copy2(root / "examples/vdj_plotting.py", outside / "vdj_plotting.py")
+            subprocess.run(
+                [str(python), "vdj_plotting.py", "--outdir", "gallery"],
+                cwd=outside,
+                env=env,
+                check=True,
+            )
+            subprocess.run(
+                [
+                    str(python),
+                    "-c",
+                    "import importlib.util; assert all(importlib.util.find_spec(x) is None for x in ['scirpy', 'scanpy', 'mudata', 'networkx', 'logomaker'])",
+                ],
+                cwd=outside,
+                env=env,
+                check=True,
+            )
+            subprocess.run([str(python), "-m", "pip", "check"], check=True, env=env)
+            print(
+                f"PASS: {artifact.name}: core-only then plotting-extra gallery outside checkout",
+                flush=True,
+            )
 
 
 if __name__ == "__main__":

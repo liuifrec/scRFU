@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.5.0.dev0 — unreleased
+
+- Add existing-embedding, literal V/J usage, CDR3 spectratype, observed
+  identity–RFU membership and donor-stratified longitudinal presence plots in
+  `scrfu.pl`. All return composable Matplotlib axes without saving or showing.
+- Add typed, inspectable `scrfu.tl.prepare_*` results with explicit units,
+  identity definitions, complete denominators and missing-data audits.
+- Support canonical tables and saved chain-aligned AnnData/MuData AIRR results;
+  require explicit primary selection for ambiguous cell-weighted records.
+- Add an entirely synthetic plotting gallery and installation/compatibility tests.
+  Matplotlib remains optional; no additional core dependencies are introduced.
+
+This is development work for a proposed additive 0.5.0 release. Published 0.4.1
+and historical scientific execution versions are unchanged.
+
 ## 0.4.1 — 2026-11-18
 
 - Finalize the reviewed 0.4.1rc1 software integration for release; the only runtime change is the version identifier. Public APIs, scientific defaults and packaged resources are unchanged.
