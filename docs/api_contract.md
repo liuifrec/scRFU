@@ -443,3 +443,21 @@ AnnData fields written: none.
 
 Common errors: `ValueError` for missing grouping or RFU columns; filesystem
 errors if the output path cannot be written.
+
+
+### Unreleased V(D)J visualization additions
+
+`pl.rfu_umap`, `pl.rfu_vj_usage`, `pl.rfu_cdr3_spectratype`,
+`pl.rfu_membership_network` and `pl.rfu_longitudinal_presence` follow the existing
+Axes-returning contract without automatic save/show. They do not mutate input,
+recompute embeddings or RFUs, call clonotypes, or infer distances.
+
+The reusable preparation surface is `tl.prepare_receptor_plot_data`,
+`prepare_rfu_embedding`, `prepare_rfu_vj_usage`, `prepare_rfu_cdr3_spectratype`,
+`prepare_rfu_membership` and `prepare_rfu_longitudinal_presence`. Their respective
+result types are `ReceptorPlotData`, `EmbeddingPlotData`, `VJUsageResult`,
+`SpectratypeResult`, `MembershipResult` and `LongitudinalPresenceResult`.
+Results expose complete source aggregations, explicit denominators and audits.
+These dataclasses are frozen containers with caller-inspectable DataFrames;
+callers should treat their tables as read-only. No private datasets are bundled.
+See [visualization.md](visualization.md) for the full policies and examples.

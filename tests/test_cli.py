@@ -76,7 +76,7 @@ def test_cli_version(capsys) -> None:
     with pytest.raises(SystemExit) as error:
         main(["--version"])
     assert error.value.code == 0
-    assert capsys.readouterr().out == "scrfu 0.4.1\n"
+    assert capsys.readouterr().out == "scrfu 0.5.0.dev0\n"
 
 
 def test_cli_doctor_redacts_paths(monkeypatch, tmp_path, capsys) -> None:

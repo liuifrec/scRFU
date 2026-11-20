@@ -5,6 +5,13 @@ from typing import TYPE_CHECKING, Any
 import numpy as np
 import pandas as pd
 
+from ._vdj_plots import (
+    rfu_cdr3_spectratype,
+    rfu_longitudinal_presence,
+    rfu_membership_network,
+    rfu_umap,
+    rfu_vj_usage,
+)
 from .downstream import RFUOverlapResult, RFUPseudobulkResult
 from .regulatory import RegulatoryTriangulationResult
 from .summary import aggregate_rfu
@@ -515,6 +522,11 @@ def rfu_antigen_bubble(
 
 
 __all__ = [
+    "rfu_umap",
+    "rfu_vj_usage",
+    "rfu_cdr3_spectratype",
+    "rfu_membership_network",
+    "rfu_longitudinal_presence",
     "regulatory_evidence_heatmap",
     "regulatory_evidence_bar",
     "antigen_permutation_distribution",

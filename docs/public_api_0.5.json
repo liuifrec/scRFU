@@ -1223,6 +1223,159 @@
       "result_type": "dict[str, Any]",
       "signature": "(reference: 'VDJdbReference | pd.DataFrame', *, strict: 'bool' = True) -> 'dict[str, Any]'",
       "stability": "stable"
+    },
+    {
+      "namespace": "scrfu.pl",
+      "name": "rfu_umap",
+      "signature": "(data: 'Any' = None, *, coordinates: 'Any' = None, metadata: 'pd.DataFrame | None' = None, cell_ids: 'Sequence[Any] | None' = None, cell_col: 'str | None' = None, basis: 'str' = 'X_umap', modality: 'str | None' = None, allow_missing_metadata: 'bool' = False, color: 'str' = 'rfu_label', highlight: 'Sequence[Any] | None' = None, qualification_col: 'str | None' = None, eligible_col: 'str | None' = None, display_cells: 'Sequence[Any] | None' = None, palette: 'Mapping[Any, Any] | None' = None, labels: 'Mapping[Any, str] | None' = None, background_color: 'Any' = '#D8DBDF', size: 'float' = 3, highlight_size: 'float | None' = None, alpha: 'float' = 1, legend: 'bool' = True, title: 'str | None' = None, ax: 'Axes | None' = None) -> 'Axes'",
+      "stability": "stable",
+      "result_type": "Axes",
+      "module": "scrfu._vdj_plots",
+      "has_docstring": true
+    },
+    {
+      "namespace": "scrfu.pl",
+      "name": "rfu_vj_usage",
+      "signature": "(data: 'Any', *, groupby: 'str | None' = None, unit: 'str | None' = None, identity_cols: 'Sequence[str] | None' = None, v_col: 'str' = 'v_call', j_col: 'str' = 'j_call', top_n: 'int | None' = None, group_order: 'Sequence[Any] | None' = None, segment: 'str' = 'v', style: 'str' = 'heatmap', group: 'Any' = None, normalize: 'bool' = True, cmap: 'str' = 'cividis', palette: 'Mapping[Any, Any] | None' = None, labels: 'Mapping[Any, str] | None' = None, colorbar: 'bool' = True, vmin: 'float | None' = None, vmax: 'float | None' = None, title: 'str | None' = None, ax: 'Axes | None' = None) -> 'Axes'",
+      "stability": "stable",
+      "result_type": "Axes",
+      "module": "scrfu._vdj_plots",
+      "has_docstring": true
+    },
+    {
+      "namespace": "scrfu.pl",
+      "name": "rfu_cdr3_spectratype",
+      "signature": "(data: 'Any', *, groupby: 'str | None' = None, unit: 'str | None' = None, identity_cols: 'Sequence[str] | None' = None, sequence_col: 'str' = 'cdr3aa', bins: 'int | Sequence[float] | None' = None, invalid: 'str' = 'error', group_order: 'Sequence[Any] | None' = None, normalize: 'bool' = True, palette: 'Mapping[Any, Any] | None' = None, labels: 'Mapping[Any, str] | None' = None, legend: 'bool' = True, linestyle: 'str' = '-', linewidth: 'float' = 1.5, title: 'str | None' = None, ax: 'Axes | None' = None) -> 'Axes'",
+      "stability": "stable",
+      "result_type": "Axes",
+      "module": "scrfu._vdj_plots",
+      "has_docstring": true
+    },
+    {
+      "namespace": "scrfu.pl",
+      "name": "rfu_membership_network",
+      "signature": "(data: 'Any', *, identity_cols: 'Sequence[str]' = ('cdr3aa', 'v_call'), rfu_col: 'str' = 'rfu_label', unit: 'str | None' = None, donor_col: 'str | None' = None, allow_multiple_rfus: 'bool' = False, layout: 'str' = 'bipartite', max_per_rfu: 'int | None' = None, receptor_nodes: 'Sequence[str] | None' = None, positions: 'Mapping[str, Sequence[float]] | None' = None, palette: 'Mapping[Any, Any] | None' = None, node_color: 'Any' = '#4A6580', node_colors: 'Mapping[str, Any] | None' = None, open_singletons: 'bool' = False, size_scale: 'float | None' = None, rfu_size: 'float' = 100, labels: 'Mapping[Any, str] | None' = None, receptor_labels: 'bool' = False, legend: 'bool' = True, title: 'str | None' = None, ax: 'Axes | None' = None) -> 'Axes'",
+      "stability": "stable",
+      "result_type": "Axes",
+      "module": "scrfu._vdj_plots",
+      "has_docstring": true
+    },
+    {
+      "namespace": "scrfu.pl",
+      "name": "rfu_longitudinal_presence",
+      "signature": "(data: 'Any', *, sample_col: 'str | None' = None, sample_order: 'Sequence[Any] | None' = None, identity_cols: 'Sequence[str]' = ('rfu_label',), donor_col: 'str | None' = None, unit: 'str | None' = None, min_count: 'float' = 1, sample_metadata: 'pd.DataFrame | None' = None, missing_identity: 'str' = 'exclude', donor: 'Any' = None, style: 'str' = 'heatmap', measure: 'str' = 'presence', normalize: 'bool' = False, max_identities: 'int | None' = None, cmap: 'str' = 'cividis', palette: 'Mapping[Any, Any] | None' = None, colorbar: 'bool' = True, labels: 'Mapping[Any, str] | None' = None, title: 'str | None' = None, ax: 'Axes | None' = None) -> 'Axes'",
+      "stability": "stable",
+      "result_type": "Axes",
+      "module": "scrfu._vdj_plots",
+      "has_docstring": true
+    },
+    {
+      "namespace": "scrfu.tl",
+      "name": "EmbeddingPlotData",
+      "signature": "(coordinates: 'np.ndarray', metadata: 'pd.DataFrame', audit: 'dict[str, Any]') -> None",
+      "stability": "stable",
+      "result_type": "EmbeddingPlotData",
+      "module": "scrfu.visualization",
+      "has_docstring": true
+    },
+    {
+      "namespace": "scrfu.tl",
+      "name": "LongitudinalPresenceResult",
+      "signature": "(matrices: 'dict[Any, pd.DataFrame]', denominators: 'pd.DataFrame', observed: 'pd.DataFrame', presence_flows: 'pd.DataFrame', sample_order: 'tuple[Any, ...]', identity_cols: 'tuple[str, ...]', unit: 'str', min_count: 'float', audit: 'dict[str, Any]') -> None",
+      "stability": "stable",
+      "result_type": "LongitudinalPresenceResult",
+      "module": "scrfu.visualization",
+      "has_docstring": true
+    },
+    {
+      "namespace": "scrfu.tl",
+      "name": "MembershipResult",
+      "signature": "(receptors: 'pd.DataFrame', rfus: 'pd.DataFrame', edges: 'pd.DataFrame', unit: 'str', identity_cols: 'tuple[str, ...]', audit: 'dict[str, Any]') -> None",
+      "stability": "stable",
+      "result_type": "MembershipResult",
+      "module": "scrfu.visualization",
+      "has_docstring": true
+    },
+    {
+      "namespace": "scrfu.tl",
+      "name": "ReceptorPlotData",
+      "signature": "(rows: 'pd.DataFrame', unit: 'PlotUnit', identity_cols: 'tuple[str, ...]', cell_col: 'str', audit: 'dict[str, Any]') -> None",
+      "stability": "stable",
+      "result_type": "ReceptorPlotData",
+      "module": "scrfu.visualization",
+      "has_docstring": true
+    },
+    {
+      "namespace": "scrfu.tl",
+      "name": "SpectratypeResult",
+      "signature": "(counts: 'pd.DataFrame', bin_edges: 'np.ndarray', denominators: 'pd.Series', input_denominators: 'pd.Series', excluded: 'pd.DataFrame', unit: 'str', audit: 'dict[str, Any]') -> None",
+      "stability": "stable",
+      "result_type": "SpectratypeResult",
+      "module": "scrfu.visualization",
+      "has_docstring": true
+    },
+    {
+      "namespace": "scrfu.tl",
+      "name": "VJUsageResult",
+      "signature": "(literal_pairs: 'pd.DataFrame', pairs: 'pd.DataFrame', v_counts: 'pd.DataFrame', j_counts: 'pd.DataFrame', denominators: 'pd.Series', unit: 'str', audit: 'dict[str, Any]') -> None",
+      "stability": "stable",
+      "result_type": "VJUsageResult",
+      "module": "scrfu.visualization",
+      "has_docstring": true
+    },
+    {
+      "namespace": "scrfu.tl",
+      "name": "prepare_receptor_plot_data",
+      "signature": "(data: 'Any', *, unit: 'PlotUnit' = 'cell', identity_cols: 'Sequence[str]' = (), cell_col: 'str' = 'cell_id', chain: 'str | None' = 'TRB', chain_col: 'str' = 'chain', productive_only: 'bool' = False, productive_col: 'str' = 'productive', multi_chain: 'str' = 'error', primary_col: 'str | None' = None, read_count_col: 'str | None' = None, record_id_col: 'str' = 'input_row_id', qualified_only: 'bool' = False, qualification_col: 'str' = 'pass_thr', metadata: 'pd.DataFrame | None' = None, airr_mod: 'str' = 'airr', airr_key: 'str | None' = 'airr', assignment_key: 'str | None' = 'scrfu') -> 'ReceptorPlotData'",
+      "stability": "stable",
+      "result_type": "ReceptorPlotData",
+      "module": "scrfu.visualization",
+      "has_docstring": true
+    },
+    {
+      "namespace": "scrfu.tl",
+      "name": "prepare_rfu_embedding",
+      "signature": "(data: 'Any' = None, *, coordinates: 'Any' = None, metadata: 'pd.DataFrame | None' = None, cell_ids: 'Sequence[Any] | None' = None, cell_col: 'str | None' = None, basis: 'str' = 'X_umap', modality: 'str | None' = None, allow_missing_metadata: 'bool' = False) -> 'EmbeddingPlotData'",
+      "stability": "stable",
+      "result_type": "EmbeddingPlotData",
+      "module": "scrfu.visualization",
+      "has_docstring": true
+    },
+    {
+      "namespace": "scrfu.tl",
+      "name": "prepare_rfu_vj_usage",
+      "signature": "(data: 'Any', *, groupby: 'str | None' = None, unit: 'PlotUnit | None' = None, identity_cols: 'Sequence[str] | None' = None, v_col: 'str' = 'v_call', j_col: 'str' = 'j_call', top_n: 'int | None' = None, group_order: 'Sequence[Any] | None' = None) -> 'VJUsageResult'",
+      "stability": "stable",
+      "result_type": "VJUsageResult",
+      "module": "scrfu.visualization",
+      "has_docstring": true
+    },
+    {
+      "namespace": "scrfu.tl",
+      "name": "prepare_rfu_cdr3_spectratype",
+      "signature": "(data: 'Any', *, groupby: 'str | None' = None, unit: 'PlotUnit | None' = None, identity_cols: 'Sequence[str] | None' = None, sequence_col: 'str' = 'cdr3aa', bins: 'int | Sequence[float] | None' = None, invalid: 'str' = 'error', group_order: 'Sequence[Any] | None' = None) -> 'SpectratypeResult'",
+      "stability": "stable",
+      "result_type": "SpectratypeResult",
+      "module": "scrfu.visualization",
+      "has_docstring": true
+    },
+    {
+      "namespace": "scrfu.tl",
+      "name": "prepare_rfu_membership",
+      "signature": "(data: 'Any', *, identity_cols: 'Sequence[str]' = ('cdr3aa', 'v_call'), rfu_col: 'str' = 'rfu_label', unit: 'PlotUnit | None' = None, donor_col: 'str | None' = None, allow_multiple_rfus: 'bool' = False) -> 'MembershipResult'",
+      "stability": "stable",
+      "result_type": "MembershipResult",
+      "module": "scrfu.visualization",
+      "has_docstring": true
+    },
+    {
+      "namespace": "scrfu.tl",
+      "name": "prepare_rfu_longitudinal_presence",
+      "signature": "(data: 'Any', *, sample_col: 'str', sample_order: 'Sequence[Any]', identity_cols: 'Sequence[str]' = ('rfu_label',), donor_col: 'str | None' = None, unit: 'PlotUnit | None' = None, min_count: 'float' = 1, sample_metadata: 'pd.DataFrame | None' = None, missing_identity: 'str' = 'exclude') -> 'LongitudinalPresenceResult'",
+      "stability": "stable",
+      "result_type": "LongitudinalPresenceResult",
+      "module": "scrfu.visualization",
+      "has_docstring": true
     }
   ],
   "release_line": "0.5",

@@ -6,8 +6,7 @@ authors:
   - family-names: Liu
     given-names: Yu-Chen
     email: liu_y@rerf.or.jp
-version: 0.4.1
-date-released: 2026-11-18
+version: 0.5.0.dev0
 repository-code: "https://github.com/liuifrec/scRFU"
 license: MIT
 references:
